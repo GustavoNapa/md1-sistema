@@ -4,40 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Inscription extends Model
+class Inscription extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'client_id',
         'vendor_id',
-        'produto',
-        'turma',
+        'product',
+        'class_group',
         'status',
-        'classificacao',
-        'medboss',
-        'crmb',
-        'data_inicio',
-        'data_termino_original',
-        'data_termino_real',
-        'data_liberacao_plataforma',
-        'semana_calendario',
-        'semana_real',
-        'valor_pago',
-        'forma_pagamento',
-        'obs_comercial',
-        'obs_geral',
-        'motivo_alteracao_data'
+        'classification',
+        'has_medboss',
+        'crmb_number',
+        'start_date',
+        'original_end_date',
+        'actual_end_date',
+        'platform_release_date',
+        'calendar_week',
+        'current_week',
+        'amount_paid',
+        'payment_method',
+        'commercial_notes',
+        'general_notes'
     ];
 
     protected $casts = [
-        'data_inicio' => 'date',
-        'data_termino_original' => 'date',
-        'data_termino_real' => 'date',
-        'data_liberacao_plataforma' => 'date',
-        'medboss' => 'boolean',
-        'valor_pago' => 'decimal:2'
+        'start_date' => 'date',
+        'original_end_date' => 'date',
+        'actual_end_date' => 'date',
+        'platform_release_date' => 'date',
+        'has_medboss' => 'boolean',
+        'amount_paid' => 'decimal:2'
     ];
 
     // Relacionamentos
@@ -51,9 +53,9 @@ class Inscription extends Model
         return $this->belongsTo(Vendor::class);
     }
 
-    public function preceptorRecord()
+    public function preceptorRecords()
     {
-        return $this->hasOne(PreceptorRecord::class);
+        return $this->hasMany(PreceptorRecord::class);
     }
 
     public function payments()
@@ -90,4 +92,113 @@ class Inscription extends Model
     {
         return $this->hasMany(Document::class);
     }
+
+    // Accessors
+    public function getStatusLabelAttribute()
+    {
+        $labels = [
+            'active' => 'Ativo',
+            'paused' => 'Pausado',
+            'cancelled' => 'Cancelado',
+            'completed' => 'Concluído'
+        ];
+
+        return $labels[$this->status] ?? $this->status;
+    }
+
+    public function getStatusBadgeClassAttribute()
+    {
+        $classes = [
+            'active' => 'bg-success',
+            'paused' => 'bg-warning',
+            'cancelled' => 'bg-danger',
+            'completed' => 'bg-info'
+        ];
+
+        return $classes[$this->status] ?? 'bg-secondary';
+    }
+
+    public function getFormattedAmountAttribute()
+    {
+        return $this->amount_paid ? 'R$ ' . number_format($this->amount_paid, 2, ',', '.') : '-';
+    }
+
+    public function getPaymentMethodLabelAttribute()
+    {
+        $labels = [
+            'credit_card' => 'Cartão de Crédito',
+            'debit_card' => 'Cartão de Débito',
+            'bank_transfer' => 'Transferência Bancária',
+            'pix' => 'PIX',
+            'boleto' => 'Boleto',
+            'cash' => 'Dinheiro',
+            'installments' => 'Parcelado'
+        ];
+
+        return $labels[$this->payment_method] ?? $this->payment_method;
+    }
+
+    public function getMedbossLabelAttribute()
+    {
+        return $this->has_medboss ? 'Sim' : 'Não';
+    }
+
+    // Scopes
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeByProduct($query, $product)
+    {
+        return $query->where('product', $product);
+    }
+
+    public function scopeByVendor($query, $vendorId)
+    {
+        return $query->where('vendor_id', $vendorId);
+    }
+}sMany(Document::class);
+    }
 }
+
+    // Media Collections
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('documents')
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+
+        $this->addMediaCollection('contracts')
+            ->singleFile()
+            ->acceptsMimeTypes(['application/pdf']);
+
+        $this->addMediaCollection('certificates')
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png']);
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10)
+            ->performOnCollections('documents', 'certificates');
+    }
+
+    // Helper methods for media
+    public function getDocumentsAttribute()
+    {
+        return $this->getMedia('documents');
+    }
+
+    public function getContractAttribute()
+    {
+        return $this->getFirstMedia('contracts');
+    }
+
+    public function getCertificatesAttribute()
+    {
+        return $this->getMedia('certificates');
+    }
+}
+

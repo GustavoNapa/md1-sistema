@@ -15,34 +15,22 @@ return new class extends Migration
             $table->id();
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->foreignId('vendor_id')->nullable()->constrained()->onDelete('set null');
-            
-            // Dados da inscrição
-            $table->string('produto'); // mentoria, mastermind, curso
-            $table->string('turma')->nullable();
-            $table->string('status')->default('ativo'); // ativo, pausado, cancelado, concluido
-            $table->string('classificacao')->nullable();
-            $table->boolean('medboss')->default(false);
-            $table->string('crmb')->nullable();
-            
-            // Datas importantes
-            $table->date('data_inicio')->nullable();
-            $table->date('data_termino_original')->nullable();
-            $table->date('data_termino_real')->nullable();
-            $table->date('data_liberacao_plataforma')->nullable();
-            
-            // Controle de semanas
-            $table->integer('semana_calendario')->nullable(); // 27 semanas
-            $table->integer('semana_real')->nullable();
-            
-            // Valores financeiros
-            $table->decimal('valor_pago', 10, 2)->nullable();
-            $table->string('forma_pagamento')->nullable();
-            
-            // Observações
-            $table->text('obs_comercial')->nullable();
-            $table->text('obs_geral')->nullable();
-            $table->text('motivo_alteracao_data')->nullable();
-            
+            $table->string('product');
+            $table->string('class_group')->nullable();
+            $table->enum('status', ['active', 'paused', 'cancelled', 'completed'])->default('active');
+            $table->string('classification')->nullable();
+            $table->boolean('has_medboss')->default(false);
+            $table->string('crmb_number')->nullable();
+            $table->date('start_date')->nullable();
+            $table->date('original_end_date')->nullable();
+            $table->date('actual_end_date')->nullable();
+            $table->date('platform_release_date')->nullable();
+            $table->integer('calendar_week')->nullable();
+            $table->integer('current_week')->nullable();
+            $table->decimal('amount_paid', 10, 2)->nullable();
+            $table->string('payment_method')->nullable();
+            $table->text('commercial_notes')->nullable();
+            $table->text('general_notes')->nullable();
             $table->timestamps();
         });
     }
@@ -55,3 +43,4 @@ return new class extends Migration
         Schema::dropIfExists('inscriptions');
     }
 };
+

@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('nome');
+            $table->string('name');
             $table->string('cpf', 14)->unique();
-            $table->date('data_nascimento')->nullable();
-            $table->string('especialidade')->nullable();
-            $table->string('cidade_atendimento')->nullable();
-            $table->string('uf', 2)->nullable();
-            $table->string('regiao')->nullable();
-            $table->string('instagram')->nullable();
             $table->string('email')->unique();
-            $table->string('telefone')->nullable();
-            $table->boolean('ativo')->default(true);
+            $table->date('birth_date')->nullable();
+            $table->string('specialty')->nullable();
+            $table->string('service_city')->nullable();
+            $table->string('state', 2)->nullable();
+            $table->string('region', 100)->nullable();
+            $table->string('instagram')->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

@@ -20,20 +20,29 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-// Rotas protegidas por autenticação
 Route::middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    
+    // Rotas de Clientes
     Route::resource('clients', ClientController::class);
+    
+    // Rotas de Inscrições
     Route::resource('inscriptions', InscriptionController::class);
     
-    // Rotas de importação
+    // Rotas de Importação
     Route::get('/import', [ImportController::class, 'index'])->name('import.index');
-    Route::post('/import/clients', [ImportController::class, 'clients'])->name('import.clients');
+    Route::post('/import', [ImportController::class, 'import'])->name('import.process');
     Route::get('/import/template', [ImportController::class, 'downloadTemplate'])->name('import.template');
     
+    // Rotas de Documentos
+    Route::prefix('inscriptions/{inscription}/documents')->name('documents.')->group(function () {
+        Route::get('/', [DocumentController::class, 'index'])->name('index');
+        Route::get('/create', [DocumentController::class, 'create'])->name('create');
+        Route::post('/upload', [DocumentController::class, 'upload'])->name('upload');
+        Route::get('/{mediaId}/download', [DocumentController::class, 'download'])->name('download');
+        Route::delete('/{mediaId}', [DocumentController::class, 'destroy'])->name('destroy');
+    });
+});   
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');

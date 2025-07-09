@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inscription;
+use App\Models\Client;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 
 class InscriptionController extends Controller
@@ -11,7 +14,11 @@ class InscriptionController extends Controller
      */
     public function index()
     {
-        //
+        $inscriptions = Inscription::with(['client', 'vendor'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('inscriptions.index', compact('inscriptions'));
     }
 
     /**
@@ -19,7 +26,10 @@ class InscriptionController extends Controller
      */
     public function create()
     {
-        //
+        $clients = Client::where('active', true)->orderBy('name')->get();
+        $vendors = Vendor::where('active', true)->orderBy('name')->get();
+        
+        return view('inscriptions.create', compact('clients', 'vendors'));
     }
 
     /**
@@ -27,38 +37,165 @@ class InscriptionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'client_id' => 'required|exists:clients,id',
+            'vendor_id' => 'nullable|exists:vendors,id',
+            'product' => 'required|string|max:255',
+            'class_group' => 'nullable|string|max:255',
+            'status' => 'required|in:active,paused,cancelled,completed',
+            'classification' => 'nullable|string|max:255',
+            'has_medboss' => 'boolean',
+            'crmb_number' => 'nullable|string|max:255',
+            'start_date' => 'nullable|date',
+            'original_end_date' => 'nullable|date|after_or_equal:start_date',
+            'actual_end_date' => 'nullable|date',
+            'platform_release_date' => 'nullable|date',
+            'calendar_week' => 'nullable|integer|min:1|max:52',
+            'current_week' => 'nullable|integer|min:1|max:52',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:255',
+            'commercial_notes' => 'nullable|string',
+            'general_notes' => 'nullable|string',
+        ], [
+            'client_id.required' => 'Selecione um cliente.',
+            'client_id.exists' => 'Cliente não encontrado.',
+            'vendor_id.exists' => 'Vendedor não encontrado.',
+            'product.required' => 'O produto é obrigatório.',
+            'status.required' => 'O status é obrigatório.',
+            'status.in' => 'Status inválido.',
+            'original_end_date.after_or_equal' => 'A data de término deve ser posterior à data de início.',
+            'calendar_week.min' => 'Semana deve ser entre 1 e 52.',
+            'calendar_week.max' => 'Semana deve ser entre 1 e 52.',
+            'current_week.min' => 'Semana deve ser entre 1 e 52.',
+            'current_week.max' => 'Semana deve ser entre 1 e 52.',
+            'amount_paid.numeric' => 'Valor deve ser numérico.',
+            'amount_paid.min' => 'Valor não pode ser negativo.',
+        ]);
+
+        $inscription = Inscription::create($validated);
+
+        // Disparar evento para webhook
+        \App\Events\InscriptionCreated::dispatch($inscription);
+
+        return redirect()->route('inscriptions.show', $inscription)
+            ->with('success', 'Inscrição criada com sucesso!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Inscription $inscription)
     {
-        //
+        $inscription->load([
+            'client', 
+            'vendor', 
+            'preceptorRecords', 
+            'payments', 
+            'sessions', 
+            'diagnostics',
+            'onboardingEvents',
+            'achievements',
+            'followUps',
+            'documents'
+        ]);
+
+        return view('inscriptions.show', compact('inscription'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Inscription $inscription)
     {
-        //
+        $clients = Client::where('active', true)->orderBy('name')->get();
+        $vendors = Vendor::where('active', true)->orderBy('name')->get();
+        
+        return view('inscriptions.edit', compact('inscription', 'clients', 'vendors'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Inscription $inscription)
     {
-        //
+        $validated = $request->validate([
+            'client_id' => 'required|exists:clients,id',
+            'vendor_id' => 'nullable|exists:vendors,id',
+            'product' => 'required|string|max:255',
+            'class_group' => 'nullable|string|max:255',
+            'status' => 'required|in:active,paused,cancelled,completed',
+            'classification' => 'nullable|string|max:255',
+            'has_medboss' => 'boolean',
+            'crmb_number' => 'nullable|string|max:255',
+            'start_date' => 'nullable|date',
+            'original_end_date' => 'nullable|date|after_or_equal:start_date',
+            'actual_end_date' => 'nullable|date',
+            'platform_release_date' => 'nullable|date',
+            'calendar_week' => 'nullable|integer|min:1|max:52',
+            'current_week' => 'nullable|integer|min:1|max:52',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string|max:255',
+            'commercial_notes' => 'nullable|string',
+            'general_notes' => 'nullable|string',
+        ], [
+            'client_id.required' => 'Selecione um cliente.',
+            'client_id.exists' => 'Cliente não encontrado.',
+            'vendor_id.exists' => 'Vendedor não encontrado.',
+            'product.required' => 'O produto é obrigatório.',
+            'status.required' => 'O status é obrigatório.',
+            'status.in' => 'Status inválido.',
+            'original_end_date.after_or_equal' => 'A data de término deve ser posterior à data de início.',
+            'calendar_week.min' => 'Semana deve ser entre 1 e 52.',
+            'calendar_week.max' => 'Semana deve ser entre 1 e 52.',
+            'current_week.min' => 'Semana deve ser entre 1 e 52.',
+            'current_week.max' => 'Semana deve ser entre 1 e 52.',
+            'amount_paid.numeric' => 'Valor deve ser numérico.',
+            'amount_paid.min' => 'Valor não pode ser negativo.',
+        ]);
+
+        $inscription->update($validated);
+
+        return redirect()->route('inscriptions.show', $inscription)
+            ->with('success', 'Inscrição atualizada com sucesso!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Inscription $inscription)
     {
-        //
+        $inscription->delete();
+
+        return redirect()->route('inscriptions.index')
+            ->with('success', 'Inscrição excluída com sucesso!');
+    }
+
+    /**
+     * Get status options for forms
+     */
+    public static function getStatusOptions()
+    {
+        return [
+            'active' => 'Ativo',
+            'paused' => 'Pausado',
+            'cancelled' => 'Cancelado',
+            'completed' => 'Concluído'
+        ];
+    }
+
+    /**
+     * Get payment method options
+     */
+    public static function getPaymentMethodOptions()
+    {
+        return [
+            'credit_card' => 'Cartão de Crédito',
+            'debit_card' => 'Cartão de Débito',
+            'bank_transfer' => 'Transferência Bancária',
+            'pix' => 'PIX',
+            'boleto' => 'Boleto',
+            'cash' => 'Dinheiro',
+            'installments' => 'Parcelado'
+        ];
     }
 }

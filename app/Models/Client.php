@@ -10,22 +10,22 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nome',
+        'name',
         'cpf',
-        'data_nascimento',
-        'especialidade',
-        'cidade_atendimento',
-        'uf',
-        'regiao',
-        'instagram',
         'email',
-        'telefone',
-        'ativo'
+        'birth_date',
+        'specialty',
+        'service_city',
+        'state',
+        'region',
+        'instagram',
+        'phone',
+        'active'
     ];
 
     protected $casts = [
-        'data_nascimento' => 'date',
-        'ativo' => 'boolean'
+        'birth_date' => 'date',
+        'active' => 'boolean'
     ];
 
     // Relacionamentos
@@ -37,5 +37,26 @@ class Client extends Model
     public function whatsappMessages()
     {
         return $this->hasMany(WhatsappMessage::class);
+    }
+
+    // Accessors para exibição
+    public function getFormattedCpfAttribute()
+    {
+        $cpf = $this->cpf;
+        return substr($cpf, 0, 3) . '.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-' . substr($cpf, 9, 2);
+    }
+
+    public function getFormattedPhoneAttribute()
+    {
+        $phone = preg_replace('/[^0-9]/', '', $this->phone);
+        if (strlen($phone) == 11) {
+            return '(' . substr($phone, 0, 2) . ') ' . substr($phone, 2, 5) . '-' . substr($phone, 7, 4);
+        }
+        return $this->phone;
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        return $this->active ? 'Ativo' : 'Inativo';
     }
 }
