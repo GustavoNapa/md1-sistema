@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Inscription extends Model implements HasMedia
+class Inscription extends Model
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory;
 
     protected $fillable = [
         'client_id',
@@ -158,47 +155,5 @@ class Inscription extends Model implements HasMedia
     {
         return $query->where('vendor_id', $vendorId);
     }
-}sMany(Document::class);
-    }
+
 }
-
-    // Media Collections
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('documents')
-            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
-
-        $this->addMediaCollection('contracts')
-            ->singleFile()
-            ->acceptsMimeTypes(['application/pdf']);
-
-        $this->addMediaCollection('certificates')
-            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png']);
-    }
-
-    public function registerMediaConversions(Media $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->width(300)
-            ->height(300)
-            ->sharpen(10)
-            ->performOnCollections('documents', 'certificates');
-    }
-
-    // Helper methods for media
-    public function getDocumentsAttribute()
-    {
-        return $this->getMedia('documents');
-    }
-
-    public function getContractAttribute()
-    {
-        return $this->getFirstMedia('contracts');
-    }
-
-    public function getCertificatesAttribute()
-    {
-        return $this->getMedia('certificates');
-    }
-}
-

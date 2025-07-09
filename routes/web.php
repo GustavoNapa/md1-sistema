@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\ImportController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +21,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Authentication Routes
+Auth::routes();
 
 Route::middleware('auth')->group(function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
@@ -42,10 +47,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/{mediaId}/download', [DocumentController::class, 'download'])->name('download');
         Route::delete('/{mediaId}', [DocumentController::class, 'destroy'])->name('destroy');
     });
-});   
+    
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');
     })->name('dashboard');
 });
-
