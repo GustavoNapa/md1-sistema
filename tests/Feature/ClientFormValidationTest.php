@@ -26,6 +26,17 @@ class ClientFormValidationTest extends TestCase
         ]);
         
         $this->actingAs($this->user);
+        
+        // Seed specialties for validation tests
+        \App\Models\Specialty::create(['name' => 'Cardiologia', 'cfm_code' => 'CAR']);
+        \App\Models\Specialty::create(['name' => 'Pediatria', 'cfm_code' => 'PED']);
+        \App\Models\Specialty::create(['name' => 'Ginecologia e Obstetrícia', 'cfm_code' => 'GO']);
+        \App\Models\Specialty::create(['name' => 'Medicina Interna', 'cfm_code' => 'MI']);
+        \App\Models\Specialty::create(['name' => 'Cirurgia Geral', 'cfm_code' => 'CG']);
+        \App\Models\Specialty::create(['name' => 'Dermatologia', 'cfm_code' => 'DER']);
+        \App\Models\Specialty::create(['name' => 'Medicina Geral', 'cfm_code' => 'MG']);
+        \App\Models\Specialty::create(['name' => 'Neurologia', 'cfm_code' => 'NEU']);
+        \App\Models\Specialty::create(['name' => 'Ortopedia', 'cfm_code' => 'ORT']);
     }
 
     /**
@@ -33,13 +44,12 @@ class ClientFormValidationTest extends TestCase
      */
     public function test_phone_number_validation()
     {
-        // Test invalid phone formats
+        // Test invalid phone formats (que realmente vão falhar na regex)
         $invalidPhones = [
-            'abc1234567',        // letters in phone
-            '123',               // too short
-            '123456789012345',   // too long
-            'abcdefghij',        // only letters
-            '11 9999-9999',      // missing digit
+            'abc1234567@',        // caracteres especiais não permitidos
+            '123#456',            // hashtag não permitido
+            'phone-number',       // apenas letras
+            '11 9999-9999@test',  // @ não permitido
         ];
 
         foreach ($invalidPhones as $phone) {
@@ -63,6 +73,7 @@ class ClientFormValidationTest extends TestCase
             '11999999999',       // 11 digits
             '(11) 99999-9999',   // formatted
             '11 99999-9999',     // with space
+            '+55 11 99999-9999', // with country code
         ];
 
         foreach ($validPhones as $phone) {

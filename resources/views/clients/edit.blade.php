@@ -49,13 +49,17 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="phone" class="form-label">Telefone</label>
+                                    <label for="phone" class="form-label">Telefone / WhatsApp</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" 
                                            id="phone" name="phone" value="{{ old('phone', $client->phone) }}"
-                                           placeholder="(11) 99999-9999" maxlength="15">
+                                           placeholder="(11) 99999-9999">
+                                    <div class="form-text">Formato: (11) 99999-9999</div>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="phone-error" style="display: none;">
+                                        Por favor, insira um telefone válido com 10 ou 11 dígitos.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -65,10 +69,15 @@
                                 <div class="mb-3">
                                     <label for="birth_date" class="form-label">Data de Nascimento</label>
                                     <input type="date" class="form-control @error('birth_date') is-invalid @enderror" 
-                                           id="birth_date" name="birth_date" value="{{ old('birth_date', $client->birth_date?->format('Y-m-d')) }}">
+                                           id="birth_date" name="birth_date" value="{{ old('birth_date', $client->birth_date?->format('Y-m-d')) }}"
+                                           max="{{ date('Y-m-d') }}">
+                                    <div class="form-text">Não pode ser uma data futura</div>
                                     @error('birth_date')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="birth-date-error" style="display: none;">
+                                        A data de nascimento não pode ser no futuro.
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-8">
@@ -265,17 +274,177 @@ document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
         birthDateInput.setAttribute('max', today);
         
-        birthDateInput.addEventListener('change', function(e) {
-            const selectedDate = new Date(e.target.value);
-            const todayDate = new Date();
-            
-            if (selectedDate > todayDate) {
-                e.target.setCustomValidity('A data de nascimento não pode ser no futuro');
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Aplicar máscaras com jQuery Mask
+    $('#phone').mask('(00) 00000-0000', {
+        placeholder: '(11) 99999-9999',
+        translation: {
+            '0': {pattern: /[0-9]/}
+        }
+    });
+    
+    $('#cpf').mask('000.000.000-00', {
+        placeholder: '000.000.000-00'
+    });
+    
+    // Validação de telefone em tempo real
+    $('#phone').on('input blur', function() {
+        const phone = $(this).val().replace(/\D/g, ''); // Remove tudo que não é dígito
+        const phoneField = $(this);
+        const errorDiv = $('#phone-error');
+        
+        // Remove classes de erro anteriores
+        phoneField.removeClass('is-invalid is-valid');
+        errorDiv.hide();
+        
+        if (phone.length > 0) {
+            if (phone.length === 10 || phone.length === 11) {
+                // Telefone válido
+                phoneField.addClass('is-valid');
             } else {
-                e.target.setCustomValidity('');
+                // Telefone inválido
+                phoneField.addClass('is-invalid');
+                errorDiv.show();
             }
-        });
-    }
+        }
+    });
+    
+    // Validação de data de nascimento
+    $('#birth_date').on('change', function() {
+        const selectedDate = new Date($(this).val());
+        const todayDate = new Date();
+        const dateField = $(this);
+        const errorDiv = $('#birth-date-error');
+        
+        // Remove classes de erro anteriores
+        dateField.removeClass('is-invalid is-valid');
+        errorDiv.hide();
+        
+        if ($(this).val()) {
+            if (selectedDate > todayDate) {
+                dateField.addClass('is-invalid');
+                errorDiv.show();
+            } else {
+                dateField.addClass('is-valid');
+            }
+        }
+    });
+    
+    // Validação de cidade (não pode ser só números)
+    $('#service_city').on('input blur', function() {
+        const city = $(this).val().trim();
+        const cityField = $(this);
+        
+        cityField.removeClass('is-invalid is-valid');
+        
+        if (city.length > 0) {
+            if (/^\d+$/.test(city)) {
+                cityField.addClass('is-invalid');
+                if (!cityField.siblings('.invalid-feedback.city-error').length) {
+                    cityField.after('<div class="invalid-feedback city-error" style="display: block;">A cidade não pode conter apenas números.</div>');
+                }
+            } else {
+                cityField.addClass('is-valid');
+                cityField.siblings('.city-error').remove();
+            }
+        } else {
+            cityField.siblings('.city-error').remove();
+        }
+    });
+    
+    // Validação de região (não pode ser só números)
+    $('#region').on('input blur', function() {
+        const region = $(this).val().trim();
+        const regionField = $(this);
+        
+        regionField.removeClass('is-invalid is-valid');
+        
+        if (region.length > 0) {
+            if (/^\d+$/.test(region)) {
+                regionField.addClass('is-invalid');
+                if (!regionField.siblings('.invalid-feedback.region-error').length) {
+                    regionField.after('<div class="invalid-feedback region-error" style="display: block;">A região não pode conter apenas números.</div>');
+                }
+            } else {
+                // Verificar se é uma região válida
+                const validRegions = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
+                if (validRegions.includes(region)) {
+                    regionField.addClass('is-valid');
+                    regionField.siblings('.region-error').remove();
+                }
+            }
+        } else {
+            regionField.siblings('.region-error').remove();
+        }
+    });
+    
+    // Validação do formulário antes do envio
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        
+        // Validar telefone
+        const phone = $('#phone').val().replace(/\D/g, '');
+        if (phone.length > 0 && phone.length !== 10 && phone.length !== 11) {
+            $('#phone').addClass('is-invalid');
+            $('#phone-error').show();
+            isValid = false;
+        }
+        
+        // Validar data de nascimento
+        const birthDate = $('#birth_date').val();
+        if (birthDate) {
+            const selectedDate = new Date(birthDate);
+            const todayDate = new Date();
+            todayDate.setHours(23, 59, 59, 999); // Final do dia
+            if (selectedDate > todayDate) {
+                $('#birth_date').addClass('is-invalid');
+                $('#birth-date-error').show();
+                isValid = false;
+            }
+        }
+        
+        // Validar cidade
+        const city = $('#service_city').val().trim();
+        if (city && /^\d+$/.test(city)) {
+            $('#service_city').addClass('is-invalid');
+            if (!$('#service_city').siblings('.city-error').length) {
+                $('#service_city').after('<div class="invalid-feedback city-error" style="display: block;">A cidade não pode conter apenas números.</div>');
+            }
+            isValid = false;
+        }
+        
+        // Validar região
+        const region = $('#region').val();
+        if (region) {
+            const validRegions = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
+            if (!validRegions.includes(region)) {
+                $('#region').addClass('is-invalid');
+                if (!$('#region').siblings('.region-error').length) {
+                    $('#region').after('<div class="invalid-feedback region-error" style="display: block;">Selecione uma região válida.</div>');
+                }
+                isValid = false;
+            }
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll para o primeiro erro
+            $('.is-invalid').first().focus();
+            
+            // Mostrar alerta
+            if (!$('.alert-validation').length) {
+                $('.card-body').prepend(`
+                    <div class="alert alert-danger alert-validation alert-dismissible fade show" role="alert">
+                        <strong>Erro!</strong> Por favor, corrija os campos destacados em vermelho.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `);
+            }
+        }
+    });
 });
 </script>
-@endsection

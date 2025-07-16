@@ -180,11 +180,11 @@ class ClientCompleteWorkflowTest extends TestCase
             ['phone' => '123', 'should_pass' => false],
         ];
 
-        foreach ($phoneTestCases as $testCase) {
+        foreach ($phoneTestCases as $index => $testCase) {
             $data = [
-                'name' => 'Teste Phone',
-                'email' => 'teste.phone' . rand(1000, 9999) . '@exemplo.com',
-                'cpf' => '111.222.333-' . rand(10, 99),
+                'name' => 'Teste Phone ' . $index,
+                'email' => 'teste.phone' . $index . rand(1000, 9999) . '@exemplo.com',
+                'cpf' => '111.222.333-' . str_pad($index, 2, '0', STR_PAD_LEFT),
                 'phone' => $testCase['phone'],
                 'specialty' => 'Cardiologia'
             ];
