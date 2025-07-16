@@ -152,9 +152,6 @@ Route::middleware('auth')->group(function () {
         Route::put('/integrations/zapsign/template-mappings/{mapping}', [ZapsignController::class, 'updateTemplateMapping'])->name('integrations.zapsign.template-mappings.update');
         Route::delete('/integrations/zapsign/template-mappings/{mapping}', [ZapsignController::class, 'destroyTemplateMapping'])->name('integrations.zapsign.template-mappings.destroy');
         
-        // Template Fields
-        Route::get('/integrations/zapsign/templates/{templateId}/fields', [ZapsignController::class, 'getTemplateFields'])->name('integrations.zapsign.template-fields');
-        
         // Document Creation
         Route::post('/integrations/zapsign/create-document/{inscription}', [ZapsignController::class, 'createDocumentFromInscription'])->name('integrations.zapsign.create-document');
     });
@@ -165,5 +162,7 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 });
 
+// Rota de teste para template fields (temporária)
+Route::get('/integrations/zapsign/templates/{templateId}/fields', [ZapsignController::class, 'getTemplateFields'])->name('integrations.zapsign.template-fields');
+
 // Webhook público (sem autenticação)
-Route::post('/webhook/zapsign', [ZapsignController::class, 'webhook'])->name('webhook.zapsign');
