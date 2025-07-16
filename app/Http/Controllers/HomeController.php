@@ -23,6 +23,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        // Redirecionar para a página de clientes após login
+        return redirect()->route('clients.index');
     }
 }

@@ -637,6 +637,31 @@ function atualizarAbaPreceptores(novoRegistro) {
     contadorBadge.text(novoCount);
 }
 
+function atualizarAbaPagamentos(novoRegistro) {
+    // Recarregar por enquanto - implementar depois
+    location.reload();
+}
+
+function atualizarAbaSessoes(novoRegistro) {
+    // Recarregar por enquanto - implementar depois
+    location.reload();
+}
+
+function atualizarAbaDiagnosticos(novoRegistro) {
+    // Recarregar por enquanto - implementar depois
+    location.reload();
+}
+
+function atualizarAbaConquistas(novoRegistro) {
+    // Recarregar por enquanto - implementar depois
+    location.reload();
+}
+
+function atualizarAbaFollowUps(novoRegistro) {
+    // Recarregar por enquanto - implementar depois
+    location.reload();
+}
+
 // Funções utilitárias globais
 function formatarData(dataString) {
     if (!dataString) return 'N/A';

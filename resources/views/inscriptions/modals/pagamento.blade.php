@@ -6,7 +6,7 @@
                 <h5 class="modal-title">Novo Pagamento</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form class="form-modal" action="{{ route('payments.store') }}" method="POST">
+            <form class="form-modal" action="{{ route('payments.store') }}" method="POST" id="formPagamento">
                 @csrf
                 <input type="hidden" name="inscription_id" value="{{ $inscription->id }}">
                 
@@ -80,9 +80,76 @@
                 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Salvar</button>
+                    <button type="submit" class="btn btn-success" id="btnSalvarPagamento">Salvar</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Controle específico do modal de pagamento
+    $('#formPagamento').on('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const form = $(this);
+        const formData = new FormData(this);
+        const url = form.attr('action');
+        const submitBtn = $('#btnSalvarPagamento');
+        const textoOriginal = submitBtn.text();
+        
+        // Desabilitar botão
+        submitBtn.prop('disabled', true).text('Salvando...');
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Reabilitar botão
+            submitBtn.prop('disabled', false).text(textoOriginal);
+            
+            if (data.success) {
+                // Fechar modal e limpar formulário
+                $('#modalPagamento').modal('hide');
+                form[0].reset();
+                
+                // Atualizar aba de pagamentos
+                atualizarAbaPagamentos(data.data);
+                
+                // Mostrar mensagem de sucesso
+                mostrarMensagemSucesso(data.message);
+            } else {
+                // Mostrar erros de validação
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+                
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        const input = form.find(`[name="${field}"]`);
+                        input.addClass('is-invalid');
+                        input.after(`<div class="invalid-feedback">${data.errors[field][0]}</div>`);
+                    });
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Erro na requisição:', error);
+            submitBtn.prop('disabled', false).text(textoOriginal);
+            alert('Erro ao salvar registro');
+        });
+    });
+});
+
+function abrirModalPagamento() {
+    $('#modalPagamento').modal('show');
+}
+</script>
