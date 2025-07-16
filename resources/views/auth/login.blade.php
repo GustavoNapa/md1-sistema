@@ -4,6 +4,13 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
+            <!-- Logo acima do formulário -->
+            <div class="text-center mb-4">
+                <img src="{{ asset('images/logo-simbolo-semfundo.png') }}" alt="MD1 Academy" height="80" class="mb-3">
+                <h3 class="text-muted">MD1 Academy</h3>
+                <p class="text-muted">Sistema de Gestão de Clientes</p>
+            </div>
+            
             <div class="card">
                 <div class="card-header">{{ __('app.Login') }}</div>
 
