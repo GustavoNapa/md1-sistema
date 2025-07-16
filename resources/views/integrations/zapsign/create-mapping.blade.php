@@ -34,8 +34,13 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="zapsign_template_id" class="form-label">ID do Template ZapSign *</label>
-                                    <input type="text" class="form-control @error('zapsign_template_id') is-invalid @enderror" 
-                                           id="zapsign_template_id" name="zapsign_template_id" value="{{ old('zapsign_template_id') }}" required>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control @error('zapsign_template_id') is-invalid @enderror" 
+                                               id="zapsign_template_id" name="zapsign_template_id" value="{{ old('zapsign_template_id') }}" required>
+                                        <button type="button" class="btn btn-outline-primary" id="load-template-fields">
+                                            <i class="fas fa-download me-1"></i>Buscar Campos
+                                        </button>
+                                    </div>
                                     <div class="form-text">ID do template no ZapSign (ex: 123456)</div>
                                     @error('zapsign_template_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -125,7 +130,7 @@
                                         <select class="form-select" name="mappings[0][system_field]">
                                             <option value="">Selecione um campo</option>
                                             @foreach($systemFields as $key => $field)
-                                                <option value="{{ $key }}">{{ $field['label'] }}</option>
+                                                <option value="{{ $key }}">{{ $field }}</option>
                                             @endforeach
                                         </select>
                                         <div class="form-text">Campo do sistema que será usado</div>
@@ -173,6 +178,60 @@
 document.addEventListener('DOMContentLoaded', function() {
     let mappingIndex = 1;
     
+    // Buscar campos do template ZapSign
+    document.getElementById('load-template-fields').addEventListener('click', function() {
+        const templateId = document.getElementById('zapsign_template_id').value;
+        
+        if (!templateId) {
+            alert('Por favor, insira o ID do template primeiro.');
+            return;
+        }
+        
+        const button = this;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Buscando...';
+        button.disabled = true;
+        
+        fetch(`/integrations/zapsign/templates/${templateId}/fields`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.fields && data.fields.length > 0) {
+                // Limpar mapeamentos existentes
+                const container = document.getElementById('field-mappings');
+                container.innerHTML = '';
+                
+                // Criar mapeamentos para cada campo encontrado
+                data.fields.forEach((field, index) => {
+                    const newMapping = createMappingRowWithData(index, field.variable, field.label);
+                    container.appendChild(newMapping);
+                });
+                
+                mappingIndex = data.fields.length;
+                updateRemoveButtons();
+                
+                // Mostrar mensagem de sucesso
+                showAlert('success', `${data.fields.length} campos encontrados e carregados automaticamente!`);
+            } else {
+                showAlert('warning', 'Nenhum campo encontrado no template ou template não encontrado.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao buscar campos:', error);
+            showAlert('danger', 'Erro ao buscar campos do template. Verifique o ID e tente novamente.');
+        })
+        .finally(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    });
+    
     // Adicionar novo mapeamento
     document.getElementById('add-mapping').addEventListener('click', function() {
         const container = document.getElementById('field-mappings');
@@ -210,6 +269,70 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    function createMappingRowWithData(index, variable, label) {
+        const div = document.createElement('div');
+        div.className = 'field-mapping-row mb-3';
+        div.innerHTML = `
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="form-label">Variável ZapSign</label>
+                    <input type="text" class="form-control" name="mappings[${index}][zapsign_variable]" 
+                           value="${variable}" placeholder="Ex: NOME_COMPLETO">
+                    <div class="form-text">Nome da variável no template ZapSign</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Campo do Sistema</label>
+                    <select class="form-select" name="mappings[${index}][system_field]">
+                        <option value="">Selecione um campo</option>
+                        @foreach($systemFields as $key => $field)
+                            <option value="{{ $key }}">{{ $field }}</option>
+                        @endforeach
+                    </select>
+                    <div class="form-text">Campo do sistema que será usado</div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Valor Padrão</label>
+                    <input type="text" class="form-control" name="mappings[${index}][default_value]" 
+                           placeholder="Valor opcional">
+                    <div class="form-text">Usado se campo estiver vazio</div>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-danger btn-sm w-100 remove-mapping">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        return div;
+    }
+    
+    function showAlert(type, message) {
+        // Remover alertas existentes
+        const existingAlerts = document.querySelectorAll('.auto-alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Criar novo alerta
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show auto-alert`;
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Inserir antes do formulário
+        const form = document.querySelector('form');
+        form.parentNode.insertBefore(alertDiv, form);
+        
+        // Auto-remover após 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
     function createMappingRow(index) {
         const div = document.createElement('div');
         div.className = 'field-mapping-row mb-3';
@@ -226,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <select class="form-select" name="mappings[${index}][system_field]">
                         <option value="">Selecione um campo</option>
                         @foreach($systemFields as $key => $field)
-                            <option value="{{ $key }}">{{ $field['label'] }}</option>
+                            <option value="{{ $key }}">{{ $field }}</option>
                         @endforeach
                     </select>
                     <div class="form-text">Campo do sistema que será usado</div>

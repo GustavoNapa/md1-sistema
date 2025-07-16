@@ -7,6 +7,7 @@ use App\Models\ZapsignTemplateMapping;
 use App\Models\ZapsignDocument;
 use App\Models\Inscription;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ZapsignController extends Controller
@@ -27,6 +28,75 @@ class ZapsignController extends Controller
     {
         $systemFields = ZapsignTemplateMapping::getAvailableSystemFields();
         return view('integrations.zapsign.create-mapping', compact('systemFields'));
+    }
+
+    /**
+     * Get template fields from ZapSign API.
+     */
+    public function getTemplateFields(Request $request, $templateId)
+    {
+        try {
+            // Buscar configurações do ZapSign
+            $apiToken = IntegrationSetting::where('service', 'zapsign')
+                ->where('key', 'api_token')
+                ->first();
+            
+            if (!$apiToken || !$apiToken->value) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token da API ZapSign não configurado.'
+                ], 400);
+            }
+            
+            // Fazer requisição para API ZapSign
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . decrypt($apiToken->value),
+                'Accept' => 'application/json',
+            ])->get("https://api.zapsign.com.br/api/v1/templates/{$templateId}/");
+            
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao buscar template no ZapSign: ' . $response->body()
+                ], $response->status());
+            }
+            
+            $templateData = $response->json();
+            
+            // Extrair campos/inputs do template
+            $fields = [];
+            if (isset($templateData['inputs']) && is_array($templateData['inputs'])) {
+                foreach ($templateData['inputs'] as $input) {
+                    $fields[] = [
+                        'variable' => $input['variable'] ?? '',
+                        'label' => $input['label'] ?? $input['variable'] ?? '',
+                        'input_type' => $input['input_type'] ?? 'input',
+                        'required' => $input['required'] ?? false,
+                        'order' => $input['order'] ?? 0,
+                    ];
+                }
+            }
+            
+            // Ordenar por ordem se disponível
+            usort($fields, function($a, $b) {
+                return $a['order'] <=> $b['order'];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'fields' => $fields,
+                'template_name' => $templateData['name'] ?? 'Template',
+                'message' => count($fields) . ' campos encontrados.'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erro ao buscar campos do template ZapSign: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno ao buscar campos do template.'
+            ], 500);
+        }
     }
 
     /**
