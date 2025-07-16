@@ -8,11 +8,11 @@
 - [x] Traduzir e-mail de recuperação de senha
 - [x] Traduzir outras páginas relacionadas
 
-## Fase 2: Implementar sistema de permissões e cargos
-- [ ] Criar migrations para permissões, cargos e relacionamentos
-- [ ] Criar models Permission, Role e relacionamentos
-- [ ] Criar controllers para gestão de permissões e cargos
-- [ ] Implementar middleware de autorização
+## Fase 2: Implementar sistema de permissões e cargos ✅
+- [x] Criar migrations para permissões, cargos e relacionamentos
+- [x] Criar models Permission, Role e relacionamentos
+- [x] Criar controllers para gestão de permissões e cargos
+- [x] Implementar middleware de autorização
 
 ## Fase 3: Criar telas de gestão de acessos
 - [ ] Criar interface para gestão de permissões

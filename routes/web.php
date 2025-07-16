@@ -8,6 +8,9 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -99,11 +102,27 @@ Route::middleware('auth')->group(function () {
     // Rotas para documentos das inscrições
     Route::prefix('inscriptions/{inscription}/documents')->name('documents.')->group(function () {
         Route::get('/', [App\Http\Controllers\InscriptionDocumentController::class, 'index'])->name('index');
-        Route::post('/', [App\Http\Controllers\InscriptionDocumentController::class, 'store'])->name('store');
-        Route::put('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'update'])->name('update');
-        Route::delete('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'destroy'])->name('destroy');
-        Route::get('/{document}/download', [App\Http\Controllers\InscriptionDocumentController::class, 'download'])->name('download');
-        Route::post('/{document}/toggle-verification', [App\Http\Controllers\InscriptionDocumentController::class, 'toggleVerification'])->name('toggle-verification');
+        Route::post('/', [App\Http\Controllers\InscriptionDocumentController::class, 'store'])->name('documents.store');
+        Route::put('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'update'])->name('documents.update');
+        Route::delete('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'destroy'])->name('documents.destroy');
+        Route::get('/{document}/download', [App\Http\Controllers\InscriptionDocumentController::class, 'download'])->name('documents.download');
+        Route::post('/{document}/toggle-verification', [App\Http\Controllers\InscriptionDocumentController::class, 'toggleVerification'])->name('documents.toggle-verification');
+    });
+    
+    // Rotas de Gestão de Acessos (protegidas por permissão)
+    Route::middleware('permission:manage-permissions')->group(function () {
+        Route::resource('permissions', PermissionController::class);
+    });
+    
+    Route::middleware('permission:manage-roles')->group(function () {
+        Route::resource('roles', RoleController::class);
+        Route::post('/roles/{role}/toggle-status', [RoleController::class, 'toggleStatus'])->name('roles.toggle-status');
+    });
+    
+    Route::middleware('permission:manage-users')->group(function () {
+        Route::resource('users', UserManagementController::class);
+        Route::post('/users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assign-role');
+        Route::post('/users/{user}/remove-role', [UserManagementController::class, 'removeRole'])->name('users.remove-role');
     });
     
     // Rota para dashboard principal
