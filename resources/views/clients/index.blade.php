@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Clientes</h4>
+                    <h4 class="page-title mb-0">Clientes</h4>
                     <a href="{{ route('clients.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Novo Cliente
                     </a>

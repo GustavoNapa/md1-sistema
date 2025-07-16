@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="text-primary mb-0">
+    <h5 class="section-title text-primary mb-0">
         <i class="fas fa-building"></i> Empresas do Cliente
     </h5>
     <button type="button" class="btn btn-primary" onclick="abrirModalEmpresa()">

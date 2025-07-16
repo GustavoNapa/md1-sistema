@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-6">
-        <h5 class="text-primary mb-3">
+        <h5 class="section-title text-primary mb-3">
             <i class="fas fa-user"></i> Informações Pessoais
         </h5>
         <table class="table table-borderless">
@@ -48,7 +48,7 @@
     </div>
     
     <div class="col-md-6">
-        <h5 class="text-primary mb-3">
+        <h5 class="section-title text-primary mb-3">
             <i class="fas fa-briefcase"></i> Informações Profissionais
         </h5>
         <table class="table table-borderless">
@@ -95,7 +95,7 @@
 @if($client->whatsappMessages->count() > 0)
 <div class="row mt-4">
     <div class="col-12">
-        <h5 class="text-primary mb-3">
+        <h5 class="section-title text-primary mb-3">
             <i class="fab fa-whatsapp"></i> Últimas Mensagens WhatsApp
         </h5>
         <div class="table-responsive">

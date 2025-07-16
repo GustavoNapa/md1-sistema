@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Inscrições</h4>
+                    <h4 class="page-title mb-0">Inscrições</h4>
                     <a href="{{ route('inscriptions.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Nova Inscrição
                     </a>
