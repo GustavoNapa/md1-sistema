@@ -11,6 +11,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\IntegrationController;
+use App\Http\Controllers\ZapsignController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
