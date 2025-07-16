@@ -45,7 +45,7 @@ class ClientController extends Controller
             'state' => 'nullable|string|size:2|in:AC,AL,AP,AM,BA,CE,DF,ES,GO,MA,MT,MS,MG,PA,PB,PR,PE,PI,RJ,RN,RS,RO,RR,SC,SP,SE,TO',
             'region' => 'nullable|string|max:100|not_regex:/^[0-9]+$/|in:Norte,Nordeste,Centro-Oeste,Sudeste,Sul',
             'instagram' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20|regex:/^[\d\s\(\)\-\+]+$/',
+            'phone' => 'nullable|string|max:20|regex:/^(\+?55\s?)?\(?(\d{2})\)?\s?(\d{4,5})\-?(\d{4})$/',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'cpf.required' => 'O CPF é obrigatório.',
@@ -61,7 +61,7 @@ class ClientController extends Controller
             'state.size' => 'O estado deve ter exatamente 2 caracteres (UF).',
             'region.not_regex' => 'A região não pode conter apenas números.',
             'region.in' => 'Selecione uma região válida.',
-            'phone.regex' => 'O telefone deve conter apenas números, espaços, parênteses, hífens e sinal de mais.',
+            'phone.regex' => 'O telefone deve estar no formato brasileiro válido. Ex: (11) 98765-4321 ou 11987654321.',
         ]);
 
         Client::create($validated);
@@ -103,7 +103,7 @@ class ClientController extends Controller
             'state' => 'nullable|string|size:2|in:AC,AL,AP,AM,BA,CE,DF,ES,GO,MA,MT,MS,MG,PA,PB,PR,PE,PI,RJ,RN,RS,RO,RR,SC,SP,SE,TO',
             'region' => 'nullable|string|max:100|not_regex:/^[0-9]+$/|in:Norte,Nordeste,Centro-Oeste,Sudeste,Sul',
             'instagram' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20|regex:/^[\d\s\(\)\-\+]+$/',
+            'phone' => 'nullable|string|max:20|regex:/^(\+?55\s?)?\(?(\d{2})\)?\s?(\d{4,5})\-?(\d{4})$/',
             'active' => 'boolean',
         ], [
             'name.required' => 'O nome é obrigatório.',
@@ -120,7 +120,7 @@ class ClientController extends Controller
             'state.size' => 'O estado deve ter exatamente 2 caracteres (UF).',
             'region.not_regex' => 'A região não pode conter apenas números.',
             'region.in' => 'Selecione uma região válida.',
-            'phone.regex' => 'O telefone deve conter apenas números, espaços, parênteses, hífens e sinal de mais.',
+            'phone.regex' => 'O telefone deve estar no formato brasileiro válido. Ex: (11) 98765-4321 ou 11987654321.',
         ]);
 
         $client->update($validated);

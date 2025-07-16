@@ -52,7 +52,7 @@
                                     <label for="phone" class="form-label">Telefone / WhatsApp</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" 
                                            id="phone" name="phone" value="{{ old('phone', $client->phone) }}"
-                                           placeholder="(11) 99999-9999">
+                                           placeholder="(11) 99999-9999" maxlength="15">
                                     <div class="form-text">Formato: (11) 99999-9999</div>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
