@@ -26,7 +26,8 @@ class ClientController extends Controller
      */
     public function create()
     {
-        return view('clients.create');
+        $specialties = \App\Models\Specialty::active()->orderByName()->pluck('name', 'name');
+        return view('clients.create', compact('specialties'));
     }
 
     /**
@@ -38,13 +39,13 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:clients',
             'email' => 'required|email|unique:clients',
-            'birth_date' => 'nullable|date',
-            'specialty' => 'nullable|string|max:255',
-            'service_city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:2',
-            'region' => 'nullable|string|max:100',
+            'birth_date' => 'nullable|date|before_or_equal:today',
+            'specialty' => 'nullable|exists:specialties,name',
+            'service_city' => 'nullable|string|max:255|not_regex:/^[0-9]+$/',
+            'state' => 'nullable|string|size:2|in:AC,AL,AP,AM,BA,CE,DF,ES,GO,MA,MT,MS,MG,PA,PB,PR,PE,PI,RJ,RN,RS,RO,RR,SC,SP,SE,TO',
+            'region' => 'nullable|string|max:100|not_regex:/^[0-9]+$/|in:Norte,Nordeste,Centro-Oeste,Sudeste,Sul',
             'instagram' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20|regex:/^[\d\s\(\)\-\+]+$/',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'cpf.required' => 'O CPF é obrigatório.',
@@ -53,6 +54,14 @@ class ClientController extends Controller
             'email.email' => 'Digite um email válido.',
             'email.unique' => 'Este email já está cadastrado.',
             'birth_date.date' => 'Digite uma data válida.',
+            'birth_date.before_or_equal' => 'A data de nascimento não pode ser no futuro.',
+            'specialty.exists' => 'Selecione uma especialidade válida.',
+            'service_city.not_regex' => 'A cidade não pode conter apenas números.',
+            'state.in' => 'Selecione um estado (UF) válido.',
+            'state.size' => 'O estado deve ter exatamente 2 caracteres (UF).',
+            'region.not_regex' => 'A região não pode conter apenas números.',
+            'region.in' => 'Selecione uma região válida.',
+            'phone.regex' => 'O telefone deve conter apenas números, espaços, parênteses, hífens e sinal de mais.',
         ]);
 
         Client::create($validated);
@@ -75,7 +84,8 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
-        return view('clients.edit', compact('client'));
+        $specialties = \App\Models\Specialty::active()->orderByName()->pluck('name', 'name');
+        return view('clients.edit', compact('client', 'specialties'));
     }
 
     /**
@@ -87,13 +97,13 @@ class ClientController extends Controller
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:clients,cpf,' . $client->id,
             'email' => 'required|email|unique:clients,email,' . $client->id,
-            'birth_date' => 'nullable|date',
-            'specialty' => 'nullable|string|max:255',
-            'service_city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:2',
-            'region' => 'nullable|string|max:100',
+            'birth_date' => 'nullable|date|before_or_equal:today',
+            'specialty' => 'nullable|exists:specialties,name',
+            'service_city' => 'nullable|string|max:255|not_regex:/^[0-9]+$/',
+            'state' => 'nullable|string|size:2|in:AC,AL,AP,AM,BA,CE,DF,ES,GO,MA,MT,MS,MG,PA,PB,PR,PE,PI,RJ,RN,RS,RO,RR,SC,SP,SE,TO',
+            'region' => 'nullable|string|max:100|not_regex:/^[0-9]+$/|in:Norte,Nordeste,Centro-Oeste,Sudeste,Sul',
             'instagram' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20|regex:/^[\d\s\(\)\-\+]+$/',
             'active' => 'boolean',
         ], [
             'name.required' => 'O nome é obrigatório.',
@@ -103,6 +113,14 @@ class ClientController extends Controller
             'email.email' => 'Digite um email válido.',
             'email.unique' => 'Este email já está cadastrado.',
             'birth_date.date' => 'Digite uma data válida.',
+            'birth_date.before_or_equal' => 'A data de nascimento não pode ser no futuro.',
+            'specialty.exists' => 'Selecione uma especialidade válida.',
+            'service_city.not_regex' => 'A cidade não pode conter apenas números.',
+            'state.in' => 'Selecione um estado (UF) válido.',
+            'state.size' => 'O estado deve ter exatamente 2 caracteres (UF).',
+            'region.not_regex' => 'A região não pode conter apenas números.',
+            'region.in' => 'Selecione uma região válida.',
+            'phone.regex' => 'O telefone deve conter apenas números, espaços, parênteses, hífens e sinal de mais.',
         ]);
 
         $client->update($validated);
