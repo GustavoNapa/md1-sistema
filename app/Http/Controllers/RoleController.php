@@ -65,9 +65,23 @@ class RoleController extends Controller
     /**
      * Display the specified role.
      */
-    public function show(Role $role): View
+    public function show(Request $request, Role $role)
     {
         $role->load(['permissions', 'users']);
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                    'status' => $role->status,
+                    'permissions' => $role->permissions->pluck('id')->toArray(),
+                    'permissions_names' => $role->permissions->pluck('name')->toArray(),
+                    'users_count' => $role->users->count(),
+                ]
+            ]);
+        }
         
         return view('roles.show', compact('role'));
     }
