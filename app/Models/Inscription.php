@@ -12,7 +12,7 @@ class Inscription extends Model
     protected $fillable = [
         'client_id',
         'vendor_id',
-        'product',
+        'product_id',
         'class_group',
         'status',
         'classification',
@@ -48,6 +48,11 @@ class Inscription extends Model
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 
     public function preceptorRecords()

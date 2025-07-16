@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('client_id')->constrained()->onDelete('cascade');
+            $table->string('phone', 20);
+            $table->text('message');
+            $table->enum('type', ['sent', 'received'])->default('sent');
+            $table->enum('status', ['pending', 'sent', 'delivered', 'read', 'failed'])->default('pending');
+            $table->timestamp('sent_at')->nullable();
+            $table->text('response')->nullable();
+            $table->string('external_id')->nullable();
             $table->timestamps();
         });
     }

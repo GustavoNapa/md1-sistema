@@ -219,12 +219,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <h6 class="card-title mb-1">${doc.name}</h6>
                                         <small class="text-muted">${doc.size_formatted} • ${doc.created_at}</small>
                                     </div>
-                                    <div class="btn-group">
-                                        <a href="${doc.download_url}" class="btn btn-sm btn-outline-primary" title="Download">
+                                    <div class="btn-group btn-group-sm" role="group" aria-label="Ações do documento">
+                                        <a href="${doc.download_url}" 
+                                           class="btn btn-primary" 
+                                           title="Download do documento"
+                                           data-bs-toggle="tooltip">
                                             <i class="fas fa-download"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteDocument(${doc.id})" title="Excluir">
-                                            <i class="fas fa-trash"></i>
+                                        <button class="btn btn-danger" 
+                                                onclick="confirmDeleteDocument(${doc.id})" 
+                                                title="Excluir documento"
+                                                data-bs-toggle="tooltip">
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>
                                 </div>

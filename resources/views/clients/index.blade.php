@@ -52,22 +52,29 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="btn-group" role="group">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="Ações do cliente">
                                                 <a href="{{ route('clients.show', $client) }}" 
-                                                   class="btn btn-sm btn-outline-primary" title="Ver">
+                                                   class="btn btn-primary" 
+                                                   title="Visualizar cliente"
+                                                   data-bs-toggle="tooltip">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 <a href="{{ route('clients.edit', $client) }}" 
-                                                   class="btn btn-sm btn-outline-warning" title="Editar">
+                                                   class="btn btn-warning" 
+                                                   title="Editar cliente"
+                                                   data-bs-toggle="tooltip">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('clients.destroy', $client) }}" 
                                                       method="POST" class="d-inline"
-                                                      onsubmit="return confirm('Tem certeza que deseja excluir este cliente?')">
+                                                      onsubmit="return confirm('Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir">
-                                                        <i class="fas fa-trash"></i>
+                                                    <button type="submit" 
+                                                            class="btn btn-danger" 
+                                                            title="Excluir cliente"
+                                                            data-bs-toggle="tooltip">
+                                                        <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </form>
                                             </div>

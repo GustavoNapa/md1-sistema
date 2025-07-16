@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inscription;
 use App\Models\Client;
 use App\Models\Vendor;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class InscriptionController extends Controller
@@ -28,8 +29,9 @@ class InscriptionController extends Controller
     {
         $clients = Client::where('active', true)->orderBy('name')->get();
         $vendors = Vendor::where('active', true)->orderBy('name')->get();
+        $products = Product::where('is_active', true)->orderBy('name')->get();
         
-        return view('inscriptions.create', compact('clients', 'vendors'));
+        return view('inscriptions.create', compact('clients', 'vendors', 'products'));
     }
 
     /**
@@ -40,7 +42,7 @@ class InscriptionController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'vendor_id' => 'nullable|exists:vendors,id',
-            'product' => 'required|string|max:255',
+            'product_id' => 'required|exists:products,id',
             'class_group' => 'nullable|string|max:255',
             'status' => 'required|in:active,paused,cancelled,completed',
             'classification' => 'nullable|string|max:255',
@@ -60,7 +62,8 @@ class InscriptionController extends Controller
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',
             'vendor_id.exists' => 'Vendedor não encontrado.',
-            'product.required' => 'O produto é obrigatório.',
+            'product_id.required' => 'Selecione um produto.',
+            'product_id.exists' => 'Produto não encontrado.',
             'status.required' => 'O status é obrigatório.',
             'status.in' => 'Status inválido.',
             'original_end_date.after_or_equal' => 'A data de término deve ser posterior à data de início.',
@@ -109,8 +112,9 @@ class InscriptionController extends Controller
     {
         $clients = Client::where('active', true)->orderBy('name')->get();
         $vendors = Vendor::where('active', true)->orderBy('name')->get();
+        $products = Product::where('is_active', true)->orderBy('name')->get();
         
-        return view('inscriptions.edit', compact('inscription', 'clients', 'vendors'));
+        return view('inscriptions.edit', compact('inscription', 'clients', 'vendors', 'products'));
     }
 
     /**
@@ -121,7 +125,7 @@ class InscriptionController extends Controller
         $validated = $request->validate([
             'client_id' => 'required|exists:clients,id',
             'vendor_id' => 'nullable|exists:vendors,id',
-            'product' => 'required|string|max:255',
+            'product_id' => 'required|exists:products,id',
             'class_group' => 'nullable|string|max:255',
             'status' => 'required|in:active,paused,cancelled,completed',
             'classification' => 'nullable|string|max:255',
@@ -141,7 +145,8 @@ class InscriptionController extends Controller
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',
             'vendor_id.exists' => 'Vendedor não encontrado.',
-            'product.required' => 'O produto é obrigatório.',
+            'product_id.required' => 'Selecione um produto.',
+            'product_id.exists' => 'Produto não encontrado.',
             'status.required' => 'O status é obrigatório.',
             'status.in' => 'Status inválido.',
             'original_end_date.after_or_equal' => 'A data de término deve ser posterior à data de início.',

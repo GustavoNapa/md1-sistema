@@ -35,6 +35,9 @@
                                 <a class="nav-link" href="{{ route('clients.index') }}">Clientes</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" href="{{ route('products.index') }}">Produtos</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inscriptions.index') }}">Inscrições</a>
                             </li>
                             <li class="nav-item">
@@ -102,6 +105,16 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Ativar tooltips do Bootstrap
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 </body>
 </html>
 

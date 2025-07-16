@@ -4,6 +4,7 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,9 @@ Route::middleware('auth')->group(function () {
     
     // Rotas de Clientes
     Route::resource('clients', ClientController::class);
+    
+    // Rotas de Produtos
+    Route::resource('products', ProductController::class);
     
     // Rotas de Inscrições
     Route::resource('inscriptions', InscriptionController::class);
