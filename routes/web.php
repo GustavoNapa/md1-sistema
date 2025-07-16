@@ -96,6 +96,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/follow-ups', [App\Http\Controllers\FollowUpController::class, 'store'])->name('follow-ups.store');
     Route::delete('/follow-ups/{followUp}', [App\Http\Controllers\FollowUpController::class, 'destroy'])->name('follow-ups.destroy');
     
+    // Rotas para documentos das inscrições
+    Route::prefix('inscriptions/{inscription}/documents')->name('documents.')->group(function () {
+        Route::get('/', [App\Http\Controllers\InscriptionDocumentController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\InscriptionDocumentController::class, 'store'])->name('store');
+        Route::put('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'update'])->name('update');
+        Route::delete('/{document}', [App\Http\Controllers\InscriptionDocumentController::class, 'destroy'])->name('destroy');
+        Route::get('/{document}/download', [App\Http\Controllers\InscriptionDocumentController::class, 'download'])->name('download');
+        Route::post('/{document}/toggle-verification', [App\Http\Controllers\InscriptionDocumentController::class, 'toggleVerification'])->name('toggle-verification');
+    });
+    
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');

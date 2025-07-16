@@ -60,6 +60,12 @@
                                 <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->followUps->count() }}</span>
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab">
+                                Documentos 
+                                <span class="badge bg-secondary rounded-pill ms-1">{{ $inscription->documents->count() }}</span>
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -507,6 +513,125 @@
                                         </div>
                                     @endif
                                 </div>
+
+                                <!-- Documentos Tab -->
+                                <div class="tab-pane fade" id="documentos" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-file-alt"></i> Documentos da Inscrição
+                                        </h6>
+                                        <button class="btn btn-sm btn-primary" onclick="abrirModalDocumento()">
+                                            <i class="fas fa-plus"></i> Novo Documento
+                                        </button>
+                                    </div>
+
+                                    <!-- Estatísticas dos Documentos -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h6 class="card-title mb-1">Total</h6>
+                                                    <span class="badge bg-secondary fs-6" id="total-documentos">{{ $inscription->documents->count() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h6 class="card-title mb-1">Verificados</h6>
+                                                    <span class="badge bg-success fs-6" id="documentos-verificados">{{ $inscription->documents->where('is_verified', true)->count() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h6 class="card-title mb-1">Obrigatórios</h6>
+                                                    <span class="badge bg-warning fs-6" id="documentos-obrigatorios">{{ $inscription->documents->where('is_required', true)->count() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="card bg-light">
+                                                <div class="card-body text-center py-2">
+                                                    <h6 class="card-title mb-1">Contratos</h6>
+                                                    <span class="badge bg-info fs-6" id="documentos-contratos">{{ $inscription->documents->where('category', 'contrato')->count() }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Documentos -->
+                                    <div id="documentos-container">
+                                        @if($inscription->documents->count() > 0)
+                                            <div class="row" id="documentos-grid">
+                                                @foreach($inscription->documents as $document)
+                                                <div class="col-md-6 mb-3" data-document-id="{{ $document->id }}">
+                                                    <div class="card h-100">
+                                                        <div class="card-body">
+                                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                                <h6 class="card-title mb-1">
+                                                                    <i class="{{ $document->icon_class }}"></i>
+                                                                    {{ $document->title }}
+                                                                </h6>
+                                                                <div class="dropdown">
+                                                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                                        <i class="fas fa-ellipsis-v"></i>
+                                                                    </button>
+                                                                    <ul class="dropdown-menu">
+                                                                        @if($document->getDownloadUrl())
+                                                                        <li><a class="dropdown-item" href="{{ $document->getDownloadUrl() }}" target="_blank">
+                                                                            <i class="fas fa-download"></i> Download/Abrir
+                                                                        </a></li>
+                                                                        @endif
+                                                                        <li><a class="dropdown-item" href="#" onclick="editarDocumento({{ $document->id }})">
+                                                                            <i class="fas fa-edit"></i> Editar
+                                                                        </a></li>
+                                                                        <li><a class="dropdown-item" href="#" onclick="toggleVerificacao({{ $document->id }})">
+                                                                            <i class="fas fa-{{ $document->is_verified ? 'times' : 'check' }}"></i> 
+                                                                            {{ $document->is_verified ? 'Remover Verificação' : 'Marcar como Verificado' }}
+                                                                        </a></li>
+                                                                        <li><hr class="dropdown-divider"></li>
+                                                                        <li><a class="dropdown-item text-danger" href="#" onclick="excluirDocumento({{ $document->id }})">
+                                                                            <i class="fas fa-trash"></i> Excluir
+                                                                        </a></li>
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mb-2">
+                                                                <span class="badge bg-primary">{{ $document->category_label }}</span>
+                                                                <span class="badge {{ $document->status_badge_class }}">{{ $document->status_label }}</span>
+                                                                <span class="badge bg-light text-dark">{{ $document->type_label }}</span>
+                                                            </div>
+                                                            
+                                                            @if($document->description)
+                                                            <p class="card-text small text-muted mb-2">{{ Str::limit($document->description, 100) }}</p>
+                                                            @endif
+                                                            
+                                                            <div class="small text-muted">
+                                                                @if($document->type === 'upload')
+                                                                <div><i class="fas fa-hdd"></i> {{ $document->formatted_file_size }}</div>
+                                                                @endif
+                                                                <div><i class="fas fa-calendar"></i> {{ $document->created_at->format('d/m/Y H:i') }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="text-center py-5 text-muted" id="documentos-empty">
+                                                <i class="fas fa-file-alt fa-3x mb-3"></i>
+                                                <h5>Nenhum documento anexado</h5>
+                                                <p>Adicione contratos, certificados e outros documentos importantes para esta inscrição.</p>
+                                                <button class="btn btn-primary" onclick="abrirModalDocumento()">
+                                                    <i class="fas fa-plus"></i> Adicionar Primeiro Documento
+                                                </button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -523,6 +648,7 @@
 @include('inscriptions.modals.diagnostico')
 @include('inscriptions.modals.conquista')
 @include('inscriptions.modals.followup')
+@include('inscriptions.modals.documento')
 @endsection
 
 @section('scripts')

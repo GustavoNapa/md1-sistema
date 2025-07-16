@@ -95,7 +95,7 @@ class Inscription extends Model
 
     public function documents()
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(InscriptionDocument::class);
     }
 
     // Accessors
