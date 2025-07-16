@@ -221,63 +221,6 @@
 
 @section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Máscara para telefone
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            let x = e.target.value.replace(/\D/g, '');
-            let formattedPhone = '';
-            
-            if (x.length > 0) {
-                if (x.length <= 2) {
-                    formattedPhone = `(${x}`;
-                } else if (x.length <= 7) {
-                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2)}`;
-                } else if (x.length <= 11) {
-                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2, 7)}-${x.substring(7)}`;
-                } else {
-                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2, 7)}-${x.substring(7, 11)}`;
-                }
-            }
-            
-            e.target.value = formattedPhone;
-        });
-        
-        // Validação para não aceitar apenas texto
-        phoneInput.addEventListener('blur', function(e) {
-            const value = e.target.value.replace(/\D/g, '');
-            if (value.length > 0 && value.length < 10) {
-                e.target.setCustomValidity('O telefone deve ter pelo menos 10 dígitos');
-            } else {
-                e.target.setCustomValidity('');
-            }
-        });
-    }
-    
-    // Validação para cidade não aceitar apenas números
-    const cityInput = document.getElementById('service_city');
-    if (cityInput) {
-        cityInput.addEventListener('input', function(e) {
-            const value = e.target.value.trim();
-            if (/^\d+$/.test(value)) {
-                e.target.setCustomValidity('A cidade não pode conter apenas números');
-            } else {
-                e.target.setCustomValidity('');
-            }
-        });
-    }
-    
-    // Validação de data de nascimento
-    const birthDateInput = document.getElementById('birth_date');
-    if (birthDateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        birthDateInput.setAttribute('max', today);
-        
-@endsection
-
-@section('scripts')
-<script>
 $(document).ready(function() {
     // Aplicar máscaras com jQuery Mask
     $('#phone').mask('(00) 00000-0000', {
@@ -448,3 +391,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endsection

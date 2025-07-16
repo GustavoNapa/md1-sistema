@@ -1,21 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<di                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">Telefone / WhatsApp</label>
-                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                                           id="phone" name="phone" value="{{ old('phone') }}"
-                                           placeholder="(11) 99999-9999">
-                                    <div class="form-text">Formato: (11) 99999-9999</div>
-                                    @error('phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="invalid-feedback" id="phone-error" style="display: none;">
-                                        Por favor, insira um telefone válido com 10 ou 11 dígitos.
-                                    </div>
-                                </div>
-                            </div>ntainer">
+<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
@@ -62,13 +48,17 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="phone" class="form-label">Telefone</label>
+                                    <label for="phone" class="form-label">Telefone / WhatsApp</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" 
                                            id="phone" name="phone" value="{{ old('phone') }}"
                                            placeholder="(11) 99999-9999" maxlength="15">
+                                    <div class="form-text">Formato: (11) 99999-9999</div>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="invalid-feedback" id="phone-error" style="display: none;">
+                                        Por favor, insira um telefone válido com 10 ou 11 dígitos.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,9 +110,9 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <div class="mb-3">
-                                    <label for="state" class="form-label">UF</label>
+                                    <label for="state" class="form-label">Estado</label>
                                     <select class="form-select @error('state') is-invalid @enderror" 
                                             id="state" name="state">
                                         <option value="">UF</option>
@@ -159,7 +149,7 @@
                                     @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="region" class="form-label">Região</label>
                                     <select class="form-select @error('region') is-invalid @enderror" 
@@ -202,26 +192,6 @@
     </div>
 </div>
 @endsection
-
-@section('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Máscara para telefone
-    const phoneInput = document.getElementById('phone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            let x = e.target.value.replace(/\D/g, '');
-            let formattedPhone = '';
-            
-            if (x.length > 0) {
-                if (x.length <= 2) {
-                    formattedPhone = `(${x}`;
-                } else if (x.length <= 7) {
-                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2)}`;
-                } else if (x.length <= 11) {
-                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2, 7)}-${x.substring(7)}`;
-                } else {
-    @endsection
 
 @section('scripts')
 <script>
@@ -395,3 +365,4 @@ $(document).ready(function() {
     });
 });
 </script>
+@endsection
