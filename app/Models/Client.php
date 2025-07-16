@@ -42,6 +42,21 @@ class Client extends Model
         return $this->hasMany(WhatsappMessage::class);
     }
 
+    public function emails()
+    {
+        return $this->hasMany(ClientEmail::class);
+    }
+
+    public function phones()
+    {
+        return $this->hasMany(ClientPhone::class);
+    }
+
+    public function companies()
+    {
+        return $this->hasMany(ClientCompany::class);
+    }
+
     // Accessors para exibição
     public function getFormattedCpfAttribute()
     {

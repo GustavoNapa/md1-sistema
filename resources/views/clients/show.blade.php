@@ -1,12 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header do Cliente -->
+            <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4>Detalhes do Cliente</h4>
+                    <div>
+                        <h4 class="mb-0">{{ $client->name }}</h4>
+                        <small class="text-muted">{{ $client->email }} • {{ $client->formatted_cpf }}</small>
+                    </div>
                     <div class="btn-group" role="group">
                         <a href="{{ route('clients.edit', $client) }}" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Editar
@@ -16,188 +20,180 @@
                         </a>
                     </div>
                 </div>
+            </div>
+
+            <!-- Navegação por Abas -->
+            <div class="card">
+                <div class="card-header p-0">
+                    <ul class="nav nav-tabs card-header-tabs" id="clientTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#info" type="button" role="tab">
+                                <i class="fas fa-user"></i> Informações Básicas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="emails-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#emails" type="button" role="tab">
+                                <i class="fas fa-envelope"></i> E-mails 
+                                <span class="badge bg-primary ms-1">{{ $client->emails->count() }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="phones-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#phones" type="button" role="tab">
+                                <i class="fas fa-phone"></i> Telefones 
+                                <span class="badge bg-primary ms-1">{{ $client->phones->count() }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="companies-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#companies" type="button" role="tab">
+                                <i class="fas fa-building"></i> Empresas 
+                                <span class="badge bg-primary ms-1">{{ $client->companies->count() }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="inscriptions-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#inscriptions" type="button" role="tab">
+                                <i class="fas fa-graduation-cap"></i> Inscrições 
+                                <span class="badge bg-primary ms-1">{{ $client->inscriptions->count() }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="text-primary">Informações Pessoais</h5>
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Nome:</strong></td>
-                                    <td>{{ $client->name }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>CPF:</strong></td>
-                                    <td>{{ $client->formatted_cpf ?? $client->cpf }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Email:</strong></td>
-                                    <td>{{ $client->email }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Telefone:</strong></td>
-                                    <td>{{ $client->formatted_phone ?? $client->phone }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Data de Nascimento:</strong></td>
-                                    <td>{{ $client->birth_date ? $client->birth_date->format('d/m/Y') : '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Status:</strong></td>
-                                    <td>
-                                        <span class="badge {{ $client->active ? 'bg-success' : 'bg-danger' }}">
-                                            {{ $client->status_label }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </table>
+                    <div class="tab-content" id="clientTabsContent">
+                        <!-- Aba Informações Básicas -->
+                        <div class="tab-pane fade show active" id="info" role="tabpanel">
+                            @include('clients.tabs.info')
                         </div>
-                        <div class="col-md-6">
-                            <h5 class="text-primary">Informações Profissionais</h5>
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td><strong>Especialidade:</strong></td>
-                                    <td>{{ $client->specialty ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Cidade de Atendimento:</strong></td>
-                                    <td>{{ $client->service_city ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Estado:</strong></td>
-                                    <td>{{ $client->state ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Região:</strong></td>
-                                    <td>{{ $client->region ?? '-' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Instagram:</strong></td>
-                                    <td>
-                                        @if($client->instagram)
-                                            <a href="https://instagram.com/{{ ltrim($client->instagram, '@') }}" target="_blank">
-                                                {{ $client->instagram }}
-                                            </a>
-                                        @else
-                                            -
-                                        @endif
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Cadastrado em:</strong></td>
-                                    <td>{{ $client->created_at->format('d/m/Y H:i') }}</td>
-                                </tr>
-                            </table>
+
+                        <!-- Aba E-mails -->
+                        <div class="tab-pane fade" id="emails" role="tabpanel">
+                            @include('clients.tabs.emails')
+                        </div>
+
+                        <!-- Aba Telefones -->
+                        <div class="tab-pane fade" id="phones" role="tabpanel">
+                            @include('clients.tabs.phones')
+                        </div>
+
+                        <!-- Aba Empresas -->
+                        <div class="tab-pane fade" id="companies" role="tabpanel">
+                            @include('clients.tabs.companies')
+                        </div>
+
+                        <!-- Aba Inscrições -->
+                        <div class="tab-pane fade" id="inscriptions" role="tabpanel">
+                            @include('clients.tabs.inscriptions')
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Inscrições do Cliente -->
-            @if($client->inscriptions->count() > 0)
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5>Inscrições ({{ $client->inscriptions->count() }})</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Produto</th>
-                                    <th>Status</th>
-                                    <th>Vendedor</th>
-                                    <th>Valor Pago</th>
-                                    <th>Início</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($client->inscriptions as $inscription)
-                                    <tr>
-                                        <td>
-                                            @if($inscription->product)
-                                                {{ $inscription->product->name }}
-                                            @else
-                                                {{ $inscription->product ?? '-' }}
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 
-                                                $inscription->status === 'active' ? 'success' :
-                                                ($inscription->status === 'paused' ? 'warning' :
-                                                ($inscription->status === 'cancelled' ? 'danger' : 'info'))
-                                            }}">
-                                                {{ ucfirst($inscription->status) }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $inscription->vendor->name ?? '-' }}</td>
-                                        <td>{{ $inscription->formatted_amount }}</td>
-                                        <td>{{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}</td>
-                                        <td>
-                                            <a href="{{ route('inscriptions.show', $inscription) }}" 
-                                               class="btn btn-sm btn-primary" 
-                                               title="Ver inscrição">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            <!-- Mensagens WhatsApp -->
-            @if($client->whatsappMessages->count() > 0)
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5>Mensagens WhatsApp ({{ $client->whatsappMessages->count() }})</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Telefone</th>
-                                    <th>Tipo</th>
-                                    <th>Status</th>
-                                    <th>Enviado em</th>
-                                    <th>Mensagem</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($client->whatsappMessages->sortByDesc('created_at') as $message)
-                                    <tr>
-                                        <td>{{ $message->formatted_phone ?? $message->phone }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $message->type === 'sent' ? 'primary' : 'info' }}">
-                                                {{ $message->type_label }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 
-                                                $message->status === 'sent' ? 'success' :
-                                                ($message->status === 'pending' ? 'warning' :
-                                                ($message->status === 'failed' ? 'danger' : 'info'))
-                                            }}">
-                                                {{ $message->status_label }}
-                                            </span>
-                                        </td>
-                                        <td>{{ $message->sent_at ? $message->sent_at->format('d/m/Y H:i') : '-' }}</td>
-                                        <td>
-                                            <small>{{ Str::limit($message->message, 50) }}</small>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </div>
+
+<!-- Incluir Modais -->
+@include('clients.modals.email')
+@include('clients.modals.phone')
+@include('clients.modals.company')
+@endsection
+
+@section('scripts')
+<script>
+// Funções globais para abrir modais
+function abrirModalEmail() {
+    $('#modalEmail').modal('show');
+}
+
+function abrirModalTelefone() {
+    $('#modalTelefone').modal('show');
+}
+
+function abrirModalEmpresa() {
+    $('#modalEmpresa').modal('show');
+}
+
+// Função global para excluir registros
+function excluirRegistro(tipo, id) {
+    if (confirm('Tem certeza que deseja excluir este registro?')) {
+        const routes = {
+            'email': `/client-emails/${id}`,
+            'phone': `/client-phones/${id}`,
+            'company': `/client-companies/${id}`
+        };
+
+        fetch(routes[tipo], {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Simplificado por enquanto
+            } else {
+                alert('Erro ao excluir registro: ' + (data.message || 'Erro desconhecido'));
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao excluir registro');
+        });
+    }
+}
+
+// Função para definir como principal
+function definirComoPrincipal(tipo, id) {
+    const routes = {
+        'email': `/client-emails/${id}/set-primary`,
+        'phone': `/client-phones/${id}/set-primary`,
+        'company': `/client-companies/${id}/set-main`
+    };
+
+    fetch(routes[tipo], {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Simplificado por enquanto
+        } else {
+            alert('Erro: ' + (data.message || 'Erro desconhecido'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao definir como principal');
+    });
+}
+
+// Funções utilitárias globais
+function mostrarMensagemSucesso(mensagem) {
+    const alert = $(`
+        <div class="alert alert-success alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${mensagem}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(alert);
+    
+    setTimeout(() => {
+        alert.alert('close');
+    }, 3000);
+}
+</script>
 @endsection

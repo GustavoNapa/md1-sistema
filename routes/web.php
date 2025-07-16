@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientEmailController;
+use App\Http\Controllers\ClientPhoneController;
+use App\Http\Controllers\ClientCompanyController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\ImportController;
@@ -31,6 +34,28 @@ Route::middleware('auth')->group(function () {
     
     // Rotas de Clientes
     Route::resource('clients', ClientController::class);
+    
+    // Rotas para E-mails dos Clientes
+    Route::post('/client-emails', [ClientEmailController::class, 'store'])->name('client-emails.store');
+    Route::get('/client-emails/{clientEmail}', [ClientEmailController::class, 'show'])->name('client-emails.show');
+    Route::put('/client-emails/{clientEmail}', [ClientEmailController::class, 'update'])->name('client-emails.update');
+    Route::delete('/client-emails/{clientEmail}', [ClientEmailController::class, 'destroy'])->name('client-emails.destroy');
+    Route::post('/client-emails/{clientEmail}/set-primary', [ClientEmailController::class, 'setPrimary'])->name('client-emails.set-primary');
+    Route::post('/client-emails/{clientEmail}/verify', [ClientEmailController::class, 'verify'])->name('client-emails.verify');
+    
+    // Rotas para Telefones dos Clientes
+    Route::post('/client-phones', [ClientPhoneController::class, 'store'])->name('client-phones.store');
+    Route::get('/client-phones/{clientPhone}', [ClientPhoneController::class, 'show'])->name('client-phones.show');
+    Route::put('/client-phones/{clientPhone}', [ClientPhoneController::class, 'update'])->name('client-phones.update');
+    Route::delete('/client-phones/{clientPhone}', [ClientPhoneController::class, 'destroy'])->name('client-phones.destroy');
+    Route::post('/client-phones/{clientPhone}/set-primary', [ClientPhoneController::class, 'setPrimary'])->name('client-phones.set-primary');
+    
+    // Rotas para Empresas dos Clientes
+    Route::post('/client-companies', [ClientCompanyController::class, 'store'])->name('client-companies.store');
+    Route::get('/client-companies/{clientCompany}', [ClientCompanyController::class, 'show'])->name('client-companies.show');
+    Route::put('/client-companies/{clientCompany}', [ClientCompanyController::class, 'update'])->name('client-companies.update');
+    Route::delete('/client-companies/{clientCompany}', [ClientCompanyController::class, 'destroy'])->name('client-companies.destroy');
+    Route::post('/client-companies/{clientCompany}/set-main', [ClientCompanyController::class, 'setMain'])->name('client-companies.set-main');
     
     // Rotas de Produtos
     Route::resource('products', ProductController::class);
