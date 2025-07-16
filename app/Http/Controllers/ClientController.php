@@ -75,7 +75,17 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        $client->load(['inscriptions.vendor', 'whatsappMessages']);
+        $client->load([
+            'inscriptions.vendor', 
+            'inscriptions.product',
+            'inscriptions.preceptorRecords',
+            'inscriptions.payments',
+            'inscriptions.sessions',
+            'inscriptions.diagnostics',
+            'inscriptions.achievements',
+            'inscriptions.followUps',
+            'whatsappMessages'
+        ]);
         return view('clients.show', compact('client'));
     }
 

@@ -52,7 +52,7 @@
                         <td>{{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}</td>
                         <td>
                             @php
-                                $totalItems = $inscription->preceptors->count() + 
+                                $totalItems = $inscription->preceptorRecords->count() + 
                                              $inscription->payments->count() + 
                                              $inscription->sessions->count() + 
                                              $inscription->diagnostics->count() + 
