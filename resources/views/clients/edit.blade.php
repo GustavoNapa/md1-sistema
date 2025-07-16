@@ -102,6 +102,24 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="doctoralia" class="form-label">Doctoralia</label>
+                                    <input type="url" class="form-control @error('doctoralia') is-invalid @enderror" 
+                                           id="doctoralia" name="doctoralia" 
+                                           value="{{ old('doctoralia', $client->doctoralia) }}"
+                                           placeholder="https://www.doctoralia.com.br/medico/...">
+                                    <div class="form-text">Link do perfil no Doctoralia (opcional)</div>
+                                    @error('doctoralia')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="birth_date" class="form-label">Data de Nascimento</label>

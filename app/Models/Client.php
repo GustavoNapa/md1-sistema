@@ -15,6 +15,7 @@ class Client extends Model
         'email',
         'sexo',
         'media_faturamento',
+        'doctoralia',
         'birth_date',
         'specialty',
         'service_city',

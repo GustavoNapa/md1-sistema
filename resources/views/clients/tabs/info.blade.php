@@ -36,6 +36,16 @@
                 <td>{{ $client->formatted_media_faturamento }}</td>
             </tr>
             @endif
+            @if($client->doctoralia)
+            <tr>
+                <td><strong>Doctoralia:</strong></td>
+                <td>
+                    <a href="{{ $client->doctoralia }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt"></i> Ver Perfil
+                    </a>
+                </td>
+            </tr>
+            @endif
             <tr>
                 <td><strong>Status:</strong></td>
                 <td>
