@@ -129,9 +129,13 @@
                                         <label class="form-label">Campo do Sistema</label>
                                         <select class="form-select" name="mappings[0][system_field]">
                                             <option value="">Selecione um campo</option>
-                                            @foreach($systemFields as $key => $field)
-                                                <option value="{{ $key }}">{{ $field }}</option>
-                                            @endforeach
+                                            @if(isset($systemFields) && is_array($systemFields))
+                                                @foreach($systemFields as $key => $field)
+                                                    <option value="{{ $key }}">{{ $field }}</option>
+                                                @endforeach
+                                            @else
+                                                <option value="" disabled>Erro: Campos do sistema não carregados</option>
+                                            @endif
                                         </select>
                                         <div class="form-text">Campo do sistema que será usado</div>
                                     </div>
@@ -177,6 +181,24 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let mappingIndex = 1;
+    
+    // Definir campos do sistema disponíveis
+    const systemFields = @json($systemFields ?? []);
+    
+    // Função para gerar options dos campos do sistema
+    function generateSystemFieldOptions() {
+        let options = '<option value="">Selecione um campo</option>';
+        
+        if (systemFields && typeof systemFields === 'object') {
+            Object.keys(systemFields).forEach(key => {
+                options += `<option value="${key}">${systemFields[key]}</option>`;
+            });
+        } else {
+            options += '<option value="" disabled>Erro: Campos do sistema não carregados</option>';
+        }
+        
+        return options;
+    }
     
     // Buscar campos do template ZapSign
     document.getElementById('load-template-fields').addEventListener('click', function() {
@@ -283,10 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-4">
                     <label class="form-label">Campo do Sistema</label>
                     <select class="form-select" name="mappings[${index}][system_field]">
-                        <option value="">Selecione um campo</option>
-                        @foreach($systemFields as $key => $field)
-                            <option value="{{ $key }}">{{ $field }}</option>
-                        @endforeach
+                        ${generateSystemFieldOptions()}
                     </select>
                     <div class="form-text">Campo do sistema que será usado</div>
                 </div>
@@ -347,10 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-4">
                     <label class="form-label">Campo do Sistema</label>
                     <select class="form-select" name="mappings[${index}][system_field]">
-                        <option value="">Selecione um campo</option>
-                        @foreach($systemFields as $key => $field)
-                            <option value="{{ $key }}">{{ $field }}</option>
-                        @endforeach
+                        ${generateSystemFieldOptions()}
                     </select>
                     <div class="form-text">Campo do sistema que será usado</div>
                 </div>
