@@ -117,14 +117,14 @@ class InscriptionDocument extends Model
         if ($this->type === 'link') {
             return $this->external_url;
         }
-        
+
         if ($this->type === 'upload' && $this->file_path) {
             return route('documents.download', [
                 'inscription' => $this->inscription_id,
-                'document' => $this->id
+                'mediaId' => $this->id // Corrigido para 'mediaId'
             ]);
         }
-        
+
         return null;
     }
 
