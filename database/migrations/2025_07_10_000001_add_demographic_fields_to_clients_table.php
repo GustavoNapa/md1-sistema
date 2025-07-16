@@ -12,15 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('clients', function (Blueprint $table) {
-            $table->enum('sexo', ['masculino', 'feminino', 'outro', 'nao_informado'])
-                  ->nullable()
-                  ->after('email')
-                  ->comment('Sexo do cliente para estudos demográficos');
-            
-            $table->decimal('media_faturamento', 15, 2)
-                  ->nullable()
-                  ->after('sexo')
-                  ->comment('Média de faturamento mensal do cliente');
+            if (!\Schema::hasColumn('clients', 'sexo')) {
+                $table->enum('sexo', ['masculino', 'feminino', 'outro', 'nao_informado'])
+                      ->nullable()
+                      ->after('email')
+                      ->comment('Sexo do cliente para estudos demográficos');
+            }
+            if (!\Schema::hasColumn('clients', 'media_faturamento')) {
+                $table->decimal('media_faturamento', 15, 2)
+                      ->nullable()
+                      ->after('sexo')
+                      ->comment('Média de faturamento mensal do cliente');
+            }
         });
     }
 
