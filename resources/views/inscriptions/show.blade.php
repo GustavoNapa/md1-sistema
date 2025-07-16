@@ -527,10 +527,7 @@
 
 @section('scripts')
 <script>
-function abrirModalPreceptor() {
-    $('#modalPreceptor').modal('show');
-}
-
+// Funções globais para abrir modais
 function abrirModalPagamento() {
     $('#modalPagamento').modal('show');
 }
@@ -551,6 +548,7 @@ function abrirModalFollowUp() {
     $('#modalFollowUp').modal('show');
 }
 
+// Função global para excluir registros
 function excluirRegistro(tipo, id) {
     if (confirm('Tem certeza que deseja excluir este registro?')) {
         const routes = {
@@ -573,8 +571,7 @@ function excluirRegistro(tipo, id) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Atualizar apenas a aba específica ao invés de recarregar a página
-                atualizarAbaDepoisDaExclusao(tipo);
+                location.reload(); // Simplificado por enquanto
             } else {
                 alert('Erro ao excluir registro');
             }
@@ -586,94 +583,7 @@ function excluirRegistro(tipo, id) {
     }
 }
 
-// Submissão dos formulários via AJAX
-$(document).ready(function() {
-    console.log('Script carregado - procurando forms com classe .form-modal');
-    console.log('Forms encontrados:', $('.form-modal').length);
-    
-    // Usar delegação de eventos para garantir que funcione com elementos carregados dinamicamente
-    $(document).on('submit', '.form-modal', function(e) {
-        console.log('Form submit interceptado!');
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const form = $(this);
-        const formData = new FormData(this);
-        const url = form.attr('action');
-        
-        console.log('URL da requisição:', url);
-        console.log('Form data:', Object.fromEntries(formData));
-        
-        // Desabilitar botão de submit para evitar múltiplos cliques
-        const submitBtn = form.find('button[type="submit"]');
-        const textoOriginal = submitBtn.text();
-        submitBtn.prop('disabled', true).text('Salvando...');
-        
-        fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Resposta recebida:', data);
-            
-            // Reabilitar botão
-            submitBtn.prop('disabled', false).text(textoOriginal);
-            
-            if (data.success) {
-                // Fechar modal e atualizar aba específica
-                form.closest('.modal').modal('hide');
-                form[0].reset(); // Limpar formulário
-                
-                // Determinar qual aba atualizar baseado na URL
-                const url = form.attr('action');
-                if (url.includes('preceptor-records')) {
-                    atualizarAbaPreceptores(data.data);
-                } else if (url.includes('payments')) {
-                    atualizarAbaPagamentos(data.data);
-                } else if (url.includes('sessions')) {
-                    atualizarAbaSessoes(data.data);
-                } else if (url.includes('diagnostics')) {
-                    atualizarAbaDiagnosticos(data.data);
-                } else if (url.includes('achievements')) {
-                    atualizarAbaConquistas(data.data);
-                } else if (url.includes('follow-ups')) {
-                    atualizarAbaFollowUps(data.data);
-                }
-                
-                // Mostrar mensagem de sucesso
-                mostrarMensagemSucesso(data.message);
-            } else {
-                // Mostrar erros de validação
-                $('.is-invalid').removeClass('is-invalid');
-                $('.invalid-feedback').remove();
-                
-                if (data.errors) {
-                    Object.keys(data.errors).forEach(field => {
-                        const input = form.find(`[name="${field}"]`);
-                        input.addClass('is-invalid');
-                        input.after(`<div class="invalid-feedback">${data.errors[field][0]}</div>`);
-                    });
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Erro na requisição:', error);
-            
-            // Reabilitar botão
-            submitBtn.prop('disabled', false).text(textoOriginal);
-            
-            alert('Erro ao salvar registro');
-        });
-    });
-});
-
-// Funções para atualizar abas específicas
+// Funções globais para atualizar abas (usadas pelos modais)
 function atualizarAbaPreceptores(novoRegistro) {
     const tabela = $('#preceptores tbody');
     const contadorBadge = $('#preceptores-tab .badge');
@@ -727,36 +637,7 @@ function atualizarAbaPreceptores(novoRegistro) {
     contadorBadge.text(novoCount);
 }
 
-function atualizarAbaPagamentos(novoRegistro) {
-    // Similar para pagamentos
-    location.reload(); // Temporário - implementar depois
-}
-
-function atualizarAbaSessoes(novoRegistro) {
-    // Similar para sessões
-    location.reload(); // Temporário - implementar depois
-}
-
-function atualizarAbaDiagnosticos(novoRegistro) {
-    // Similar para diagnósticos
-    location.reload(); // Temporário - implementar depois
-}
-
-function atualizarAbaConquistas(novoRegistro) {
-    // Similar para conquistas
-    location.reload(); // Temporário - implementar depois
-}
-
-function atualizarAbaFollowUps(novoRegistro) {
-    // Similar para follow-ups
-    location.reload(); // Temporário - implementar depois
-}
-
-function atualizarAbaDepoisDaExclusao(tipo) {
-    // Para exclusão, vamos recarregar por enquanto para simplificar
-    location.reload();
-}
-
+// Funções utilitárias globais
 function formatarData(dataString) {
     if (!dataString) return 'N/A';
     const data = new Date(dataString);
@@ -781,3 +662,4 @@ function mostrarMensagemSucesso(mensagem) {
     }, 3000);
 }
 </script>
+@endsection
