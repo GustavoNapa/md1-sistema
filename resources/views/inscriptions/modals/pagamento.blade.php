@@ -29,8 +29,8 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
-                                <select class="form-select" name="forma_pagamento">
+                                <label for="metodo_pagamento" class="form-label">Método de Pagamento</label>
+                                <select class="form-select" name="metodo_pagamento">
                                     <option value="">Selecione</option>
                                     <option value="cartao_credito">Cartão de Crédito</option>
                                     <option value="cartao_debito">Cartão de Débito</option>
