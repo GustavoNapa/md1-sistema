@@ -18,11 +18,10 @@
 - [x] Criar interface para gestão de usuários
 - [x] Implementar funcionalidades CRUD AJAX
 
-### Fase 4: Ajustar menu e navegação ✅
-- [x] Adicionar opções no submenu do usuário
-- [x] Separar seção de gestão com HR
-- [x] Implementar controle de visibilidade por permissãover registro público e ajustar redirecionamentos
-- [ ] Tornar registro privado apenas para administradores
-- [ ] Corrigir redirecionamento de /home para /
-- [ ] Ajustar middleware de autenticação
+## Fase 5: Remover registro público e ajustar redirecionamentos ✅
+- [x] Tornar registro privado apenas para administradores
+- [x] Corrigir redirecionamento de /home para /
+- [x] Ajustar middleware de autenticação
+- [x] Criar seeders para dados iniciais
+- [x] Configurar usuário administrador padrão
 
