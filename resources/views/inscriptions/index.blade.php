@@ -40,7 +40,7 @@
                                             <strong>{{ $inscription->client->name }}</strong><br>
                                             <small class="text-muted">{{ $inscription->client->email }}</small>
                                         </td>
-                                        <td>{{ $inscription->product }}</td>
+                                        <td>{{ $inscription->product->name ?? '-' }}</td>
                                         <td>{{ $inscription->class_group ?? '-' }}</td>
                                         <td>
                                             <span class="badge {{ $inscription->status_badge_class }}">

@@ -15,7 +15,7 @@ class InscriptionController extends Controller
      */
     public function index()
     {
-        $inscriptions = Inscription::with(['client', 'vendor'])
+        $inscriptions = Inscription::with(['client', 'vendor', 'product'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -92,6 +92,7 @@ class InscriptionController extends Controller
         $inscription->load([
             'client', 
             'vendor', 
+            'product',
             'preceptorRecords', 
             'payments', 
             'sessions', 
