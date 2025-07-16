@@ -25,6 +25,7 @@ return [
     'Send Password Reset Link' => 'Enviar Link de Redefinição',
     'Name' => 'Nome',
     'Logout' => 'Sair',
+    'logout' => 'Sair',
     'Verify Your Email Address' => 'Verifique seu Endereço de E-mail',
     'A fresh verification link has been sent to your email address.' => 'Um novo link de verificação foi enviado para seu endereço de e-mail.',
     'Before proceeding, please check your email for a verification link.' => 'Antes de prosseguir, verifique seu e-mail para um link de verificação.',

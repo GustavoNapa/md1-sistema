@@ -18,11 +18,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    
     <!-- Custom Fonts CSS -->
     <link href="{{ asset('css/custom-fonts.css') }}" rel="stylesheet">
+    
+    <!-- Scripts -->
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body>
     <div id="app">
@@ -139,7 +139,7 @@
         </main>
     </div>
 
-    <!-- jQuery -->
+    <!-- jQuery deve vir antes de qualquer script que o utilize -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- Bootstrap JavaScript Bundle -->
@@ -149,18 +149,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
     <script>
-        // Ativar tooltips do Bootstrap
+        // Aguardar o carregamento completo do DOM e do Bootstrap
         document.addEventListener('DOMContentLoaded', function() {
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
+            // Garantir que jQuery está disponível globalmente
+            if (typeof window.$ === 'undefined' && typeof window.jQuery !== 'undefined') {
+                window.$ = window.jQuery;
+            }
             
-            // Inicializar dropdowns do Bootstrap
-            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                return new bootstrap.Dropdown(dropdownToggleEl);
-            });
+            // Aguardar um pouco mais para garantir que o Bootstrap foi carregado
+            setTimeout(function() {
+                // Verificar se Bootstrap está disponível
+                if (typeof bootstrap !== 'undefined') {
+                    // Ativar tooltips do Bootstrap
+                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                    
+                    // Inicializar dropdowns do Bootstrap manualmente
+                    var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+                    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                        return new bootstrap.Dropdown(dropdownToggleEl);
+                    });
+                    
+                    // Debug: verificar se os dropdowns foram inicializados
+                    console.log('Dropdowns inicializados:', dropdownList.length);
+                    console.log('Bootstrap carregado:', typeof bootstrap !== 'undefined');
+                    console.log('jQuery carregado:', typeof $ !== 'undefined');
+                } else {
+                    console.error('Bootstrap não foi carregado corretamente');
+                }
+            }, 100);
+        });
+        
+        // Fallback: tentar inicializar novamente quando a página estiver totalmente carregada
+        window.addEventListener('load', function() {
+            if (typeof bootstrap !== 'undefined') {
+                // Re-inicializar dropdowns caso não tenham funcionado
+                document.querySelectorAll('.dropdown-toggle').forEach(function(dropdownToggle) {
+                    if (!bootstrap.Dropdown.getInstance(dropdownToggle)) {
+                        new bootstrap.Dropdown(dropdownToggle);
+                    }
+                });
+            }
         });
     </script>
     

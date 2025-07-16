@@ -1,4 +1,4 @@
-import 'bootstrap';
+// Removido import 'bootstrap'; para evitar conflitos com CDN
 
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
