@@ -21,21 +21,40 @@ class InscriptionDocumentController extends Controller
      */
     public function store(Request $request, Inscription $inscription)
     {
-        $validator = Validator::make($request->all(), [
+        // Validação básica primeiro
+        $basicValidator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'type' => 'required|in:upload,link',
             'category' => 'required|in:contrato,documento_pessoal,certificado,comprovante_pagamento,material_curso,outros',
             'description' => 'nullable|string|max:1000',
             'is_required' => 'boolean',
-            'file' => 'required_if:type,upload|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif,zip,rar|max:10240', // 10MB
-            'external_url' => 'required_if:type,link|url|max:500',
         ]);
 
-        if ($validator->fails()) {
+        if ($basicValidator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $basicValidator->errors()
             ], 422);
+        }
+
+        // Validação condicional baseada no tipo
+        $conditionalRules = [];
+        
+        if ($request->type === 'upload') {
+            $conditionalRules['file'] = 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif,zip,rar|max:10240'; // 10MB
+        } elseif ($request->type === 'link') {
+            $conditionalRules['external_url'] = 'required|url|max:500';
+        }
+
+        if (!empty($conditionalRules)) {
+            $conditionalValidator = Validator::make($request->all(), $conditionalRules);
+            
+            if ($conditionalValidator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $conditionalValidator->errors()
+                ], 422);
+            }
         }
 
         try {
