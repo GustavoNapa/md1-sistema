@@ -52,6 +52,25 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{mediaId}', [DocumentController::class, 'destroy'])->name('destroy');
     });
     
+    // Rotas para registros relacionados às inscrições
+    Route::post('/preceptor-records', [App\Http\Controllers\PreceptorRecordController::class, 'store'])->name('preceptor-records.store');
+    Route::delete('/preceptor-records/{preceptorRecord}', [App\Http\Controllers\PreceptorRecordController::class, 'destroy'])->name('preceptor-records.destroy');
+    
+    Route::post('/payments', [App\Http\Controllers\PaymentController::class, 'store'])->name('payments.store');
+    Route::delete('/payments/{payment}', [App\Http\Controllers\PaymentController::class, 'destroy'])->name('payments.destroy');
+    
+    Route::post('/sessions', [App\Http\Controllers\SessionController::class, 'store'])->name('sessions.store');
+    Route::delete('/sessions/{session}', [App\Http\Controllers\SessionController::class, 'destroy'])->name('sessions.destroy');
+    
+    Route::post('/diagnostics', [App\Http\Controllers\DiagnosticController::class, 'store'])->name('diagnostics.store');
+    Route::delete('/diagnostics/{diagnostic}', [App\Http\Controllers\DiagnosticController::class, 'destroy'])->name('diagnostics.destroy');
+    
+    Route::post('/achievements', [App\Http\Controllers\AchievementController::class, 'store'])->name('achievements.store');
+    Route::delete('/achievements/{achievement}', [App\Http\Controllers\AchievementController::class, 'destroy'])->name('achievements.destroy');
+    
+    Route::post('/follow-ups', [App\Http\Controllers\FollowUpController::class, 'store'])->name('follow-ups.store');
+    Route::delete('/follow-ups/{followUp}', [App\Http\Controllers\FollowUpController::class, 'destroy'])->name('follow-ups.destroy');
+    
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');
