@@ -12,19 +12,30 @@ class PreceptorRecordController extends Controller
         $validated = $request->validate([
             'inscription_id' => 'required|exists:inscriptions,id',
             'nome_preceptor' => 'required|string|max:255',
-            'crm' => 'nullable|string|max:20',
-            'especialidade' => 'nullable|string|max:255',
-            'hospital' => 'nullable|string|max:255',
-            'observacoes' => 'nullable|string'
+            'historico_preceptor' => 'nullable|string',
+            'data_preceptor_informado' => 'nullable|date',
+            'data_preceptor_contato' => 'nullable|date',
+            'nome_secretaria' => 'nullable|string|max:255',
+            'email_clinica' => 'nullable|email|max:255',
+            'whatsapp_clinica' => 'nullable|string|max:20',
+            'usm' => 'boolean',
+            'acesso_vitrine_gmc' => 'boolean',
+            'medico_celebridade' => 'boolean'
         ]);
 
         $preceptorRecord = PreceptorRecord::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Registro de preceptor criado com sucesso!',
-            'data' => $preceptorRecord
-        ]);
+        // Garantir que sempre retorna JSON para requisições AJAX
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Registro de preceptor criado com sucesso!',
+                'data' => $preceptorRecord
+            ]);
+        }
+        
+        // Fallback para requisições normais (não deveria acontecer)
+        return redirect()->back()->with('success', 'Registro de preceptor criado com sucesso!');
     }
 
     public function destroy(PreceptorRecord $preceptorRecord)

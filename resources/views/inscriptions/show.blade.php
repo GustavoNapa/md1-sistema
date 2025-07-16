@@ -216,42 +216,9 @@
                                 </div>
                             </div>
                         </div>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="pagamentos-tab" data-bs-toggle="tab" data-bs-target="#pagamentos" type="button" role="tab">
-                                        Pagamentos 
-                                        <span class="badge bg-success rounded-pill ms-1">{{ $inscription->payments->count() }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="sessoes-tab" data-bs-toggle="tab" data-bs-target="#sessoes" type="button" role="tab">
-                                        Sessões 
-                                        <span class="badge bg-info rounded-pill ms-1">{{ $inscription->sessions->count() }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="diagnosticos-tab" data-bs-toggle="tab" data-bs-target="#diagnosticos" type="button" role="tab">
-                                        Diagnósticos 
-                                        <span class="badge bg-warning rounded-pill ms-1">{{ $inscription->diagnostics->count() }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="conquistas-tab" data-bs-toggle="tab" data-bs-target="#conquistas" type="button" role="tab">
-                                        Conquistas 
-                                        <span class="badge bg-success rounded-pill ms-1">{{ $inscription->achievements->count() }}</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups" type="button" role="tab">
-                                        Follow-ups 
-                                        <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->followUps->count() }}</span>
-                                    </button>
-                                </li>
-                            </ul>
 
-                            <!-- Tab panes -->
-                            <div class="tab-content mt-3" id="registrosTabContent">
-                                <!-- Preceptores Tab -->
-                                <div class="tab-pane fade show active" id="preceptores" role="tabpanel">
+                        <!-- Preceptores Tab -->
+                        <div class="tab-pane fade" id="preceptores" role="tabpanel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6 class="mb-0">Registros de Preceptores</h6>
                                         <button class="btn btn-sm btn-primary" onclick="abrirModalPreceptor()">
@@ -261,13 +228,15 @@
                                     
                                     @if($inscription->preceptorRecords->count() > 0)
                                         <div class="table-responsive">
-                                            <table class="table table-sm">
+                                            <table class="table table-sm" id="tabelaPreceptores">
+                                                <thead>
                                                 <thead>
                                                     <tr>
                                                         <th>Nome</th>
-                                                        <th>CRM</th>
-                                                        <th>Especialidade</th>
-                                                        <th>Data</th>
+                                                        <th>Data Informado</th>
+                                                        <th>Data Contato</th>
+                                                        <th>Secretária</th>
+                                                        <th>Status</th>
                                                         <th>Ações</th>
                                                     </tr>
                                                 </thead>
@@ -275,9 +244,20 @@
                                                     @foreach($inscription->preceptorRecords as $record)
                                                     <tr>
                                                         <td>{{ $record->nome_preceptor ?? 'N/A' }}</td>
-                                                        <td>{{ $record->crm ?? 'N/A' }}</td>
-                                                        <td>{{ $record->especialidade ?? 'N/A' }}</td>
-                                                        <td>{{ $record->created_at->format('d/m/Y') }}</td>
+                                                        <td>{{ $record->data_preceptor_informado ? $record->data_preceptor_informado->format('d/m/Y') : 'N/A' }}</td>
+                                                        <td>{{ $record->data_preceptor_contato ? $record->data_preceptor_contato->format('d/m/Y') : 'N/A' }}</td>
+                                                        <td>{{ $record->nome_secretaria ?? 'N/A' }}</td>
+                                                        <td>
+                                                            @if($record->usm)
+                                                                <span class="badge bg-primary">USM</span>
+                                                            @endif
+                                                            @if($record->acesso_vitrine_gmc)
+                                                                <span class="badge bg-success">Vitrine GMC</span>
+                                                            @endif
+                                                            @if($record->medico_celebridade)
+                                                                <span class="badge bg-warning">Celebridade</span>
+                                                            @endif
+                                                        </td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-danger" onclick="excluirRegistro('preceptor', {{ $record->id }})">
                                                                 <i class="fas fa-trash"></i>
@@ -593,7 +573,8 @@ function excluirRegistro(tipo, id) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                // Atualizar apenas a aba específica ao invés de recarregar a página
+                atualizarAbaDepoisDaExclusao(tipo);
             } else {
                 alert('Erro ao excluir registro');
             }
@@ -607,25 +588,66 @@ function excluirRegistro(tipo, id) {
 
 // Submissão dos formulários via AJAX
 $(document).ready(function() {
-    $('.form-modal').on('submit', function(e) {
+    console.log('Script carregado - procurando forms com classe .form-modal');
+    console.log('Forms encontrados:', $('.form-modal').length);
+    
+    // Usar delegação de eventos para garantir que funcione com elementos carregados dinamicamente
+    $(document).on('submit', '.form-modal', function(e) {
+        console.log('Form submit interceptado!');
         e.preventDefault();
+        e.stopPropagation();
         
         const form = $(this);
         const formData = new FormData(this);
         const url = form.attr('action');
+        
+        console.log('URL da requisição:', url);
+        console.log('Form data:', Object.fromEntries(formData));
+        
+        // Desabilitar botão de submit para evitar múltiplos cliques
+        const submitBtn = form.find('button[type="submit"]');
+        const textoOriginal = submitBtn.text();
+        submitBtn.prop('disabled', true).text('Salvando...');
         
         fetch(url, {
             method: 'POST',
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Resposta recebida:', data);
+            
+            // Reabilitar botão
+            submitBtn.prop('disabled', false).text(textoOriginal);
+            
             if (data.success) {
-                location.reload();
+                // Fechar modal e atualizar aba específica
+                form.closest('.modal').modal('hide');
+                form[0].reset(); // Limpar formulário
+                
+                // Determinar qual aba atualizar baseado na URL
+                const url = form.attr('action');
+                if (url.includes('preceptor-records')) {
+                    atualizarAbaPreceptores(data.data);
+                } else if (url.includes('payments')) {
+                    atualizarAbaPagamentos(data.data);
+                } else if (url.includes('sessions')) {
+                    atualizarAbaSessoes(data.data);
+                } else if (url.includes('diagnostics')) {
+                    atualizarAbaDiagnosticos(data.data);
+                } else if (url.includes('achievements')) {
+                    atualizarAbaConquistas(data.data);
+                } else if (url.includes('follow-ups')) {
+                    atualizarAbaFollowUps(data.data);
+                }
+                
+                // Mostrar mensagem de sucesso
+                mostrarMensagemSucesso(data.message);
             } else {
                 // Mostrar erros de validação
                 $('.is-invalid').removeClass('is-invalid');
@@ -641,9 +663,121 @@ $(document).ready(function() {
             }
         })
         .catch(error => {
-            console.error('Erro:', error);
+            console.error('Erro na requisição:', error);
+            
+            // Reabilitar botão
+            submitBtn.prop('disabled', false).text(textoOriginal);
+            
             alert('Erro ao salvar registro');
         });
     });
 });
+
+// Funções para atualizar abas específicas
+function atualizarAbaPreceptores(novoRegistro) {
+    const tabela = $('#preceptores tbody');
+    const contadorBadge = $('#preceptores-tab .badge');
+    
+    // Adicionar nova linha na tabela
+    const novaLinha = `
+        <tr>
+            <td>${novoRegistro.nome_preceptor || 'N/A'}</td>
+            <td>${novoRegistro.data_preceptor_informado ? formatarData(novoRegistro.data_preceptor_informado) : 'N/A'}</td>
+            <td>${novoRegistro.data_preceptor_contato ? formatarData(novoRegistro.data_preceptor_contato) : 'N/A'}</td>
+            <td>${novoRegistro.nome_secretaria || 'N/A'}</td>
+            <td>
+                ${novoRegistro.usm ? '<span class="badge bg-primary">USM</span>' : ''}
+                ${novoRegistro.acesso_vitrine_gmc ? '<span class="badge bg-success">Vitrine GMC</span>' : ''}
+                ${novoRegistro.medico_celebridade ? '<span class="badge bg-warning">Celebridade</span>' : ''}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="excluirRegistro('preceptor', ${novoRegistro.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+    
+    // Se não há registros, remover mensagem de "nenhum registro"
+    const mensagemVazia = $('#preceptores .text-center.py-4');
+    if (mensagemVazia.length) {
+        mensagemVazia.parent().html(`
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data Informado</th>
+                            <th>Data Contato</th>
+                            <th>Secretária</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>${novaLinha}</tbody>
+                </table>
+            </div>
+        `);
+    } else {
+        tabela.append(novaLinha);
+    }
+    
+    // Atualizar contador na badge
+    const novoCount = parseInt(contadorBadge.text()) + 1;
+    contadorBadge.text(novoCount);
+}
+
+function atualizarAbaPagamentos(novoRegistro) {
+    // Similar para pagamentos
+    location.reload(); // Temporário - implementar depois
+}
+
+function atualizarAbaSessoes(novoRegistro) {
+    // Similar para sessões
+    location.reload(); // Temporário - implementar depois
+}
+
+function atualizarAbaDiagnosticos(novoRegistro) {
+    // Similar para diagnósticos
+    location.reload(); // Temporário - implementar depois
+}
+
+function atualizarAbaConquistas(novoRegistro) {
+    // Similar para conquistas
+    location.reload(); // Temporário - implementar depois
+}
+
+function atualizarAbaFollowUps(novoRegistro) {
+    // Similar para follow-ups
+    location.reload(); // Temporário - implementar depois
+}
+
+function atualizarAbaDepoisDaExclusao(tipo) {
+    // Para exclusão, vamos recarregar por enquanto para simplificar
+    location.reload();
+}
+
+function formatarData(dataString) {
+    if (!dataString) return 'N/A';
+    const data = new Date(dataString);
+    return data.toLocaleDateString('pt-BR');
+}
+
+function mostrarMensagemSucesso(mensagem) {
+    // Criar um toast ou alert temporário
+    const alert = $(`
+        <div class="alert alert-success alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;">
+            ${mensagem}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `);
+    
+    $('body').append(alert);
+    
+    // Remover automaticamente após 3 segundos
+    setTimeout(() => {
+        alert.alert('close');
+    }, 3000);
+}
 </script>
