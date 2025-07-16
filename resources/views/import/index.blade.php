@@ -13,7 +13,7 @@
                         <h5>Importar Clientes</h5>
                         <p class="text-muted">Faça upload de um arquivo CSV, XLS ou XLSX com os dados dos clientes.</p>
                         
-                        <form action="{{ route('import.clients') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('import.process') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="mb-3">
                                 <label for="file" class="form-label">Arquivo de Clientes</label>

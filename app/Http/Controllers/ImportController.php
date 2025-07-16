@@ -18,7 +18,7 @@ class ImportController extends Controller
         return view('import.index');
     }
 
-    public function clients(Request $request)
+    public function import(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240', // 10MB max
