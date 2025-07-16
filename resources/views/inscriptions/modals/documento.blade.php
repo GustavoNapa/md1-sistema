@@ -234,7 +234,7 @@ function editarDocumento(documentoId) {
         })
         .catch(error => {
             console.error('Erro ao buscar documento:', error);
-            showToast('Erro ao carregar dados do documento', 'error');
+            alert('Erro ao carregar dados do documento');
         });
 }
 
@@ -272,7 +272,7 @@ document.getElementById('documentoForm').addEventListener('submit', function(e) 
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message, 'success');
+            alert(data.message);
             bootstrap.Modal.getInstance(document.getElementById('documentoModal')).hide();
             atualizarAbaDocumentos();
         } else {
@@ -289,13 +289,13 @@ document.getElementById('documentoForm').addEventListener('submit', function(e) 
                     }
                 });
             } else {
-                showToast(data.message || 'Erro ao salvar documento', 'error');
+                alert(data.message || 'Erro ao salvar documento');
             }
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        showToast('Erro ao salvar documento', 'error');
+        alert('Erro ao salvar documento');
     })
     .finally(() => {
         submitBtn.disabled = false;
@@ -319,15 +319,15 @@ function excluirDocumento(documentoId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message, 'success');
+            alert(data.message);
             atualizarAbaDocumentos();
         } else {
-            showToast(data.message || 'Erro ao excluir documento', 'error');
+            alert(data.message || 'Erro ao excluir documento');
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        showToast('Erro ao excluir documento', 'error');
+        alert('Erro ao excluir documento');
     });
 }
 
@@ -343,15 +343,15 @@ function toggleVerificacao(documentoId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast(data.message, 'success');
+            alert(data.message);
             atualizarAbaDocumentos();
         } else {
-            showToast(data.message || 'Erro ao alterar verificação', 'error');
+            alert(data.message || 'Erro ao alterar verificação');
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        showToast('Erro ao alterar verificação', 'error');
+        alert('Erro ao alterar verificação');
     });
 }
 

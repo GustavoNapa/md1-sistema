@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('type', ['upload', 'link']); // Tipo: arquivo ou link
             $table->string('file_path')->nullable(); // Caminho do arquivo (se upload)
             $table->string('file_name')->nullable(); // Nome original do arquivo
-            $table->string('file_size')->nullable(); // Tamanho do arquivo em bytes
+            $table->bigInteger('file_size')->nullable(); // Tamanho do arquivo em bytes
             $table->string('mime_type')->nullable(); // Tipo MIME do arquivo
             $table->text('external_url')->nullable(); // URL externa (se link)
             $table->enum('category', [
