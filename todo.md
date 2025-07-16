@@ -1,12 +1,12 @@
 # Sistema de Autenticação e Permissões - TODO
 
 ## Fase 1: Traduzir páginas de autenticação ✅
-- [ ] Traduzir página de login
-- [ ] Traduzir página de registro
-- [ ] Traduzir página "Esqueci minha senha"
-- [ ] Traduzir validações de recuperação de senha
-- [ ] Traduzir e-mail de recuperação de senha
-- [ ] Traduzir outras páginas relacionadas
+- [x] Traduzir página de login
+- [x] Traduzir página de registro
+- [x] Traduzir página "Esqueci minha senha"
+- [x] Traduzir validações de recuperação de senha
+- [x] Traduzir e-mail de recuperação de senha
+- [x] Traduzir outras páginas relacionadas
 
 ## Fase 2: Implementar sistema de permissões e cargos
 - [ ] Criar migrations para permissões, cargos e relacionamentos
