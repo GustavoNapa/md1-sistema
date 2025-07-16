@@ -132,6 +132,31 @@ Route::middleware('auth')->group(function () {
         Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
     });
     
+    // Rotas de Integrações
+    Route::middleware('permission:manage-integrations')->group(function () {
+        Route::get('/integrations', [IntegrationController::class, 'index'])->name('integrations.index');
+        
+        // ZapSign
+        Route::get('/integrations/zapsign', [IntegrationController::class, 'zapsign'])->name('integrations.zapsign');
+        Route::post('/integrations/zapsign/settings', [IntegrationController::class, 'updateZapsignSettings'])->name('integrations.zapsign.settings');
+        Route::post('/integrations/zapsign/test', [IntegrationController::class, 'testZapsignConnection'])->name('integrations.zapsign.test');
+        Route::get('/integrations/zapsign/templates', [IntegrationController::class, 'getZapsignTemplates'])->name('integrations.zapsign.templates');
+        
+        // Template Mappings
+        Route::get('/integrations/zapsign/template-mappings', [ZapsignController::class, 'templateMappings'])->name('integrations.zapsign.template-mappings');
+        Route::get('/integrations/zapsign/template-mappings/create', [ZapsignController::class, 'createTemplateMapping'])->name('integrations.zapsign.template-mappings.create');
+        Route::post('/integrations/zapsign/template-mappings', [ZapsignController::class, 'storeTemplateMapping'])->name('integrations.zapsign.template-mappings.store');
+        Route::get('/integrations/zapsign/template-mappings/{mapping}/edit', [ZapsignController::class, 'editTemplateMapping'])->name('integrations.zapsign.template-mappings.edit');
+        Route::put('/integrations/zapsign/template-mappings/{mapping}', [ZapsignController::class, 'updateTemplateMapping'])->name('integrations.zapsign.template-mappings.update');
+        Route::delete('/integrations/zapsign/template-mappings/{mapping}', [ZapsignController::class, 'destroyTemplateMapping'])->name('integrations.zapsign.template-mappings.destroy');
+        
+        // Document Creation
+        Route::post('/integrations/zapsign/create-document/{inscription}', [ZapsignController::class, 'createDocumentFromInscription'])->name('integrations.zapsign.create-document');
+    });
+    
+    // Webhook público (sem autenticação)
+    Route::post('/webhook/zapsign', [ZapsignController::class, 'webhook'])->name('webhook.zapsign');
+    
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');

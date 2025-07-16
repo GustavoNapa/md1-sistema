@@ -94,6 +94,13 @@
                                         <hr class="dropdown-divider">
                                     @endif
                                     
+                                    @if(Auth::user()->hasPermission('manage-integrations'))
+                                        <a class="dropdown-item" href="{{ route('integrations.index') }}">
+                                            <i class="fas fa-plug me-2"></i>Integrações
+                                        </a>
+                                        <hr class="dropdown-divider">
+                                    @endif
+                                    
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">

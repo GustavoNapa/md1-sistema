@@ -45,6 +45,10 @@ class PermissionSeeder extends Seeder
                 'slug' => 'import-data',
                 'name' => 'Importar Dados',
             ],
+            [
+                'slug' => 'manage-integrations',
+                'name' => 'Gerenciar Integrações',
+            ],
         ];
 
         foreach ($permissions as $permission) {
