@@ -51,7 +51,8 @@
                                 <div class="mb-3">
                                     <label for="phone" class="form-label">Telefone</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                                           id="phone" name="phone" value="{{ old('phone', $client->phone) }}">
+                                           id="phone" name="phone" value="{{ old('phone', $client->phone) }}"
+                                           placeholder="(11) 99999-9999" maxlength="15">
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -73,8 +74,15 @@
                             <div class="col-md-8">
                                 <div class="mb-3">
                                     <label for="specialty" class="form-label">Especialidade</label>
-                                    <input type="text" class="form-control @error('specialty') is-invalid @enderror" 
-                                           id="specialty" name="specialty" value="{{ old('specialty', $client->specialty) }}">
+                                    <select class="form-select @error('specialty') is-invalid @enderror" 
+                                            id="specialty" name="specialty">
+                                        <option value="">Selecione uma especialidade</option>
+                                        @foreach($specialties as $value => $label)
+                                            <option value="{{ $value }}" {{ old('specialty', $client->specialty) == $value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     @error('specialty')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -87,7 +95,8 @@
                                 <div class="mb-3">
                                     <label for="service_city" class="form-label">Cidade de Atendimento</label>
                                     <input type="text" class="form-control @error('service_city') is-invalid @enderror" 
-                                           id="service_city" name="service_city" value="{{ old('service_city', $client->service_city) }}">
+                                           id="service_city" name="service_city" value="{{ old('service_city', $client->service_city) }}"
+                                           pattern="^(?!^\d+$).+" title="A cidade não pode conter apenas números">
                                     @error('service_city')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -96,8 +105,37 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="state" class="form-label">Estado</label>
-                                    <input type="text" class="form-control @error('state') is-invalid @enderror" 
-                                           id="state" name="state" value="{{ old('state', $client->state) }}" maxlength="2">
+                                    <select class="form-select @error('state') is-invalid @enderror" 
+                                            id="state" name="state">
+                                        <option value="">UF</option>
+                                        <option value="AC" {{ old('state', $client->state) == 'AC' ? 'selected' : '' }}>AC</option>
+                                        <option value="AL" {{ old('state', $client->state) == 'AL' ? 'selected' : '' }}>AL</option>
+                                        <option value="AP" {{ old('state', $client->state) == 'AP' ? 'selected' : '' }}>AP</option>
+                                        <option value="AM" {{ old('state', $client->state) == 'AM' ? 'selected' : '' }}>AM</option>
+                                        <option value="BA" {{ old('state', $client->state) == 'BA' ? 'selected' : '' }}>BA</option>
+                                        <option value="CE" {{ old('state', $client->state) == 'CE' ? 'selected' : '' }}>CE</option>
+                                        <option value="DF" {{ old('state', $client->state) == 'DF' ? 'selected' : '' }}>DF</option>
+                                        <option value="ES" {{ old('state', $client->state) == 'ES' ? 'selected' : '' }}>ES</option>
+                                        <option value="GO" {{ old('state', $client->state) == 'GO' ? 'selected' : '' }}>GO</option>
+                                        <option value="MA" {{ old('state', $client->state) == 'MA' ? 'selected' : '' }}>MA</option>
+                                        <option value="MT" {{ old('state', $client->state) == 'MT' ? 'selected' : '' }}>MT</option>
+                                        <option value="MS" {{ old('state', $client->state) == 'MS' ? 'selected' : '' }}>MS</option>
+                                        <option value="MG" {{ old('state', $client->state) == 'MG' ? 'selected' : '' }}>MG</option>
+                                        <option value="PA" {{ old('state', $client->state) == 'PA' ? 'selected' : '' }}>PA</option>
+                                        <option value="PB" {{ old('state', $client->state) == 'PB' ? 'selected' : '' }}>PB</option>
+                                        <option value="PR" {{ old('state', $client->state) == 'PR' ? 'selected' : '' }}>PR</option>
+                                        <option value="PE" {{ old('state', $client->state) == 'PE' ? 'selected' : '' }}>PE</option>
+                                        <option value="PI" {{ old('state', $client->state) == 'PI' ? 'selected' : '' }}>PI</option>
+                                        <option value="RJ" {{ old('state', $client->state) == 'RJ' ? 'selected' : '' }}>RJ</option>
+                                        <option value="RN" {{ old('state', $client->state) == 'RN' ? 'selected' : '' }}>RN</option>
+                                        <option value="RS" {{ old('state', $client->state) == 'RS' ? 'selected' : '' }}>RS</option>
+                                        <option value="RO" {{ old('state', $client->state) == 'RO' ? 'selected' : '' }}>RO</option>
+                                        <option value="RR" {{ old('state', $client->state) == 'RR' ? 'selected' : '' }}>RR</option>
+                                        <option value="SC" {{ old('state', $client->state) == 'SC' ? 'selected' : '' }}>SC</option>
+                                        <option value="SP" {{ old('state', $client->state) == 'SP' ? 'selected' : '' }}>SP</option>
+                                        <option value="SE" {{ old('state', $client->state) == 'SE' ? 'selected' : '' }}>SE</option>
+                                        <option value="TO" {{ old('state', $client->state) == 'TO' ? 'selected' : '' }}>TO</option>
+                                    </select>
                                     @error('state')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -106,8 +144,15 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="region" class="form-label">Região</label>
-                                    <input type="text" class="form-control @error('region') is-invalid @enderror" 
-                                           id="region" name="region" value="{{ old('region', $client->region) }}">
+                                    <select class="form-select @error('region') is-invalid @enderror" 
+                                            id="region" name="region">
+                                        <option value="">Selecione uma região</option>
+                                        <option value="Norte" {{ old('region', $client->region) == 'Norte' ? 'selected' : '' }}>Norte</option>
+                                        <option value="Nordeste" {{ old('region', $client->region) == 'Nordeste' ? 'selected' : '' }}>Nordeste</option>
+                                        <option value="Centro-Oeste" {{ old('region', $client->region) == 'Centro-Oeste' ? 'selected' : '' }}>Centro-Oeste</option>
+                                        <option value="Sudeste" {{ old('region', $client->region) == 'Sudeste' ? 'selected' : '' }}>Sudeste</option>
+                                        <option value="Sul" {{ old('region', $client->region) == 'Sul' ? 'selected' : '' }}>Sul</option>
+                                    </select>
                                     @error('region')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -163,4 +208,74 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Máscara para telefone
+    const phoneInput = document.getElementById('phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let x = e.target.value.replace(/\D/g, '');
+            let formattedPhone = '';
+            
+            if (x.length > 0) {
+                if (x.length <= 2) {
+                    formattedPhone = `(${x}`;
+                } else if (x.length <= 7) {
+                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2)}`;
+                } else if (x.length <= 11) {
+                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2, 7)}-${x.substring(7)}`;
+                } else {
+                    formattedPhone = `(${x.substring(0, 2)}) ${x.substring(2, 7)}-${x.substring(7, 11)}`;
+                }
+            }
+            
+            e.target.value = formattedPhone;
+        });
+        
+        // Validação para não aceitar apenas texto
+        phoneInput.addEventListener('blur', function(e) {
+            const value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0 && value.length < 10) {
+                e.target.setCustomValidity('O telefone deve ter pelo menos 10 dígitos');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+    }
+    
+    // Validação para cidade não aceitar apenas números
+    const cityInput = document.getElementById('service_city');
+    if (cityInput) {
+        cityInput.addEventListener('input', function(e) {
+            const value = e.target.value.trim();
+            if (/^\d+$/.test(value)) {
+                e.target.setCustomValidity('A cidade não pode conter apenas números');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+    }
+    
+    // Validação de data de nascimento
+    const birthDateInput = document.getElementById('birth_date');
+    if (birthDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        birthDateInput.setAttribute('max', today);
+        
+        birthDateInput.addEventListener('change', function(e) {
+            const selectedDate = new Date(e.target.value);
+            const todayDate = new Date();
+            
+            if (selectedDate > todayDate) {
+                e.target.setCustomValidity('A data de nascimento não pode ser no futuro');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
 @endsection
