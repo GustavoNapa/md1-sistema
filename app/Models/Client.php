@@ -13,6 +13,8 @@ class Client extends Model
         'name',
         'cpf',
         'email',
+        'sexo',
+        'media_faturamento',
         'birth_date',
         'specialty',
         'service_city',
@@ -25,7 +27,8 @@ class Client extends Model
 
     protected $casts = [
         'birth_date' => 'date',
-        'active' => 'boolean'
+        'active' => 'boolean',
+        'media_faturamento' => 'decimal:2'
     ];
 
     // Relacionamentos
@@ -58,5 +61,26 @@ class Client extends Model
     public function getStatusLabelAttribute()
     {
         return $this->active ? 'Ativo' : 'Inativo';
+    }
+
+    public function getSexoLabelAttribute()
+    {
+        $labels = [
+            'masculino' => 'Masculino',
+            'feminino' => 'Feminino',
+            'outro' => 'Outro',
+            'nao_informado' => 'Não Informado'
+        ];
+
+        return $labels[$this->sexo] ?? 'Não Informado';
+    }
+
+    public function getFormattedMediaFaturamentoAttribute()
+    {
+        if (!$this->media_faturamento) {
+            return 'Não informado';
+        }
+
+        return 'R$ ' . number_format($this->media_faturamento, 2, ',', '.');
     }
 }

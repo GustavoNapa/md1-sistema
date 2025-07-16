@@ -258,6 +258,78 @@
                             </div>
                         </div>
 
+                        <!-- Campos Demográficos para Estudos -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="problemas_desafios" class="form-label">Problemas ou Desafios</label>
+                                    <textarea class="form-control @error('problemas_desafios') is-invalid @enderror" 
+                                              id="problemas_desafios" name="problemas_desafios" rows="4" 
+                                              placeholder="Descreva os principais problemas ou desafios enfrentados pelo aluno...">{{ old('problemas_desafios') }}</textarea>
+                                    <div class="form-text">Campo para estudos demográficos - descreva os desafios que motivaram a inscrição</div>
+                                    @error('problemas_desafios')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Histórico de Faturamento Mensal</label>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="form-text mb-3">
+                                                <i class="fas fa-info-circle"></i> 
+                                                Registre o faturamento mensal para acompanhar a evolução durante a mentoria
+                                            </div>
+                                            <div id="historico-faturamento-container">
+                                                <div class="row historico-item mb-2">
+                                                    <div class="col-md-3">
+                                                        <select class="form-select" name="historico_mes[]">
+                                                            <option value="">Mês</option>
+                                                            <option value="1">Janeiro</option>
+                                                            <option value="2">Fevereiro</option>
+                                                            <option value="3">Março</option>
+                                                            <option value="4">Abril</option>
+                                                            <option value="5">Maio</option>
+                                                            <option value="6">Junho</option>
+                                                            <option value="7">Julho</option>
+                                                            <option value="8">Agosto</option>
+                                                            <option value="9">Setembro</option>
+                                                            <option value="10">Outubro</option>
+                                                            <option value="11">Novembro</option>
+                                                            <option value="12">Dezembro</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <input type="number" class="form-control" name="historico_ano[]" 
+                                                               placeholder="Ano" min="2020" max="{{ date('Y') + 1 }}">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">R$</span>
+                                                            <input type="text" class="form-control money-mask" name="historico_valor[]" 
+                                                                   placeholder="0,00">
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm remove-historico" style="display: none;">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-historico">
+                                                <i class="fas fa-plus"></i> Adicionar Mês
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('inscriptions.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Voltar

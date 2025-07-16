@@ -63,6 +63,42 @@
                             </div>
                         </div>
 
+                        <!-- Campos Demográficos -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="sexo" class="form-label">Sexo</label>
+                                    <select class="form-select @error('sexo') is-invalid @enderror" 
+                                            id="sexo" name="sexo">
+                                        <option value="">Selecione o sexo</option>
+                                        <option value="masculino" {{ old('sexo') == 'masculino' ? 'selected' : '' }}>Masculino</option>
+                                        <option value="feminino" {{ old('sexo') == 'feminino' ? 'selected' : '' }}>Feminino</option>
+                                        <option value="outro" {{ old('sexo') == 'outro' ? 'selected' : '' }}>Outro</option>
+                                        <option value="nao_informado" {{ old('sexo') == 'nao_informado' ? 'selected' : '' }}>Não informado</option>
+                                    </select>
+                                    <div class="form-text">Campo para estudos demográficos</div>
+                                    @error('sexo')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="media_faturamento" class="form-label">Média de Faturamento Mensal</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="text" class="form-control @error('media_faturamento') is-invalid @enderror" 
+                                               id="media_faturamento" name="media_faturamento" value="{{ old('media_faturamento') }}"
+                                               placeholder="0,00">
+                                    </div>
+                                    <div class="form-text">Valor médio de faturamento mensal do cliente</div>
+                                    @error('media_faturamento')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
@@ -206,6 +242,12 @@ $(document).ready(function() {
     
     $('#cpf').mask('000.000.000-00', {
         placeholder: '000.000.000-00'
+    });
+    
+    // Máscara para valor monetário
+    $('#media_faturamento').mask('#.##0,00', {
+        reverse: true,
+        placeholder: '0,00'
     });
     
     // Validação de telefone em tempo real

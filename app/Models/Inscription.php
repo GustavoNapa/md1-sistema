@@ -27,7 +27,9 @@ class Inscription extends Model
         'amount_paid',
         'payment_method',
         'commercial_notes',
-        'general_notes'
+        'general_notes',
+        'problemas_desafios',
+        'historico_faturamento'
     ];
 
     protected $casts = [
@@ -36,7 +38,8 @@ class Inscription extends Model
         'actual_end_date' => 'date',
         'platform_release_date' => 'date',
         'has_medboss' => 'boolean',
-        'amount_paid' => 'decimal:2'
+        'amount_paid' => 'decimal:2',
+        'historico_faturamento' => 'array'
     ];
 
     // Relacionamentos
@@ -143,6 +146,55 @@ class Inscription extends Model
     public function getMedbossLabelAttribute()
     {
         return $this->has_medboss ? 'Sim' : 'Não';
+    }
+
+    public function getHistoricoFaturamentoFormattedAttribute()
+    {
+        if (!$this->historico_faturamento || !is_array($this->historico_faturamento)) {
+            return [];
+        }
+
+        return collect($this->historico_faturamento)->map(function ($item) {
+            return [
+                'mes' => $item['mes'] ?? '',
+                'ano' => $item['ano'] ?? '',
+                'valor' => isset($item['valor']) ? 'R$ ' . number_format($item['valor'], 2, ',', '.') : 'R$ 0,00',
+                'valor_raw' => $item['valor'] ?? 0
+            ];
+        })->toArray();
+    }
+
+    public function addFaturamentoMensal(int $mes, int $ano, float $valor): void
+    {
+        $historico = $this->historico_faturamento ?? [];
+        
+        // Verificar se já existe registro para este mês/ano
+        $index = collect($historico)->search(function ($item) use ($mes, $ano) {
+            return $item['mes'] == $mes && $item['ano'] == $ano;
+        });
+
+        if ($index !== false) {
+            // Atualizar registro existente
+            $historico[$index]['valor'] = $valor;
+        } else {
+            // Adicionar novo registro
+            $historico[] = [
+                'mes' => $mes,
+                'ano' => $ano,
+                'valor' => $valor
+            ];
+        }
+
+        // Ordenar por ano e mês
+        usort($historico, function ($a, $b) {
+            if ($a['ano'] == $b['ano']) {
+                return $a['mes'] <=> $b['mes'];
+            }
+            return $a['ano'] <=> $b['ano'];
+        });
+
+        $this->historico_faturamento = $historico;
+        $this->save();
     }
 
     // Scopes
