@@ -84,10 +84,34 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    @if(Auth::user()->hasPermission('manage-permissions') || Auth::user()->hasPermission('manage-roles') || Auth::user()->hasPermission('manage-users'))
+                                        <h6 class="dropdown-header">Gestão de Acessos</h6>
+                                        
+                                        @if(Auth::user()->hasPermission('manage-permissions'))
+                                            <a class="dropdown-item" href="{{ route('permissions.index') }}">
+                                                <i class="fas fa-shield-alt me-2"></i>Permissões
+                                            </a>
+                                        @endif
+                                        
+                                        @if(Auth::user()->hasPermission('manage-roles'))
+                                            <a class="dropdown-item" href="{{ route('roles.index') }}">
+                                                <i class="fas fa-user-tag me-2"></i>Cargos
+                                            </a>
+                                        @endif
+                                        
+                                        @if(Auth::user()->hasPermission('manage-users'))
+                                            <a class="dropdown-item" href="{{ route('users.index') }}">
+                                                <i class="fas fa-users me-2"></i>Usuários
+                                            </a>
+                                        @endif
+                                        
+                                        <hr class="dropdown-divider">
+                                    @endif
+                                    
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                        <i class="fas fa-sign-out-alt me-2"></i>{{ __('app.logout') }}
                                     </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

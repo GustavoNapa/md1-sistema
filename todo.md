@@ -12,13 +12,11 @@
 - [x] Criar migrations para permissões, cargos e relacionamentos
 - [x] Criar models Permission, Role e relacionamentos
 - [x] Criar controllers para gestão de permissões e cargos
-- [x] Implementar middleware de autorização
-
-## Fase 3: Criar telas de gestão de acessos
-- [ ] Criar interface para gestão de permissões
-- [ ] Criar interface para gestão de cargos
-- [ ] Criar interface para gestão de usuários
-- [ ] Implementar CRUD completo com AJAX
+- [x] Implementar middleware de autorizaçã## Fase 3: Criar telas de gestão de acessos ✅
+- [x] Criar interface para gestão de permissões
+- [x] Criar interface para gestão de cargos
+- [x] Criar interface para gestão de usuários
+- [x] Implementar funcionalidades CRUD AJAX
 
 ## Fase 4: Ajustar menu e navegação
 - [ ] Adicionar opções no submenu do usuário
