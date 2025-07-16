@@ -24,7 +24,7 @@
 
             <!-- Navegação por Abas -->
             <div class="card">
-                <div class="card-header p-0">
+                <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="clientTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="info-tab" data-bs-toggle="tab" 

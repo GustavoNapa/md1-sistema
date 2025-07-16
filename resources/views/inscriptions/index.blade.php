@@ -65,12 +65,13 @@
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('inscriptions.destroy', $inscription) }}" 
-                                                      method="POST" class="d-inline"
+                                                      method="POST" 
+                                                      style="display: inline;"
                                                       onsubmit="return confirm('Tem certeza que deseja excluir esta inscrição? Esta ação não pode ser desfeita.')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="btn btn-danger" 
+                                                            class="btn btn-danger btn-sm" 
                                                             title="Excluir inscrição"
                                                             data-bs-toggle="tooltip">
                                                         <i class="fas fa-trash-alt"></i>

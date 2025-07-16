@@ -66,12 +66,13 @@
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('clients.destroy', $client) }}" 
-                                                      method="POST" class="d-inline"
+                                                      method="POST" 
+                                                      style="display: inline;"
                                                       onsubmit="return confirm('Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="btn btn-danger" 
+                                                            class="btn btn-danger btn-sm" 
                                                             title="Excluir cliente"
                                                             data-bs-toggle="tooltip">
                                                         <i class="fas fa-trash-alt"></i>
