@@ -221,37 +221,17 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadPermissions() {
-    fetch('/permissions')
-        .then(response => response.text())
-        .then(html => {
-            // This is a simplified version - in a real app, you'd have an API endpoint
-            // For now, we'll create a basic permissions list
-            const permissionsList = document.getElementById('permissions-list');
-            permissionsList.innerHTML = `
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="permissions[]" value="1" id="permission1">
-                    <label class="form-check-label" for="permission1">
-                        Gerenciar Usuários
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="permissions[]" value="2" id="permission2">
-                    <label class="form-check-label" for="permission2">
-                        Gerenciar Clientes
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="permissions[]" value="3" id="permission3">
-                    <label class="form-check-label" for="permission3">
-                        Gerenciar Produtos
-                    </label>
-                </div>
-            `;
-        })
-        .catch(error => {
-            console.error('Erro ao carregar permissões:', error);
-            document.getElementById('permissions-list').innerHTML = '<div class="text-danger">Erro ao carregar permissões</div>';
-        });
+    const permissionsList = document.getElementById('permissions-list');
+    permissionsList.innerHTML = `
+        @foreach($permissions as $permission)
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="permission{{ $permission->id }}">
+            <label class="form-check-label" for="permission{{ $permission->id }}">
+                {{ $permission->name }}
+            </label>
+        </div>
+        @endforeach
+    `;
 }
 
 function editRole(id) {
