@@ -255,7 +255,15 @@ function loadPermissions() {
 }
 
 function editRole(id) {
-    fetch(`/roles/${id}`)
+    fetch(`/roles/${id}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
