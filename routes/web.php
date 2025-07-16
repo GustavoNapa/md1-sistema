@@ -26,14 +26,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->route('home');
+    }
     return view('welcome');
 });
 
-// Authentication Routes
-Auth::routes();
+// Authentication Routes (sem registro público)
+Auth::routes(['register' => false]);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     
     // Rotas de Clientes
     Route::resource('clients', ClientController::class);
@@ -123,6 +126,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserManagementController::class);
         Route::post('/users/{user}/assign-role', [UserManagementController::class, 'assignRole'])->name('users.assign-role');
         Route::post('/users/{user}/remove-role', [UserManagementController::class, 'removeRole'])->name('users.remove-role');
+        
+        // Rota de registro apenas para administradores
+        Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+        Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
     });
     
     // Rota para dashboard principal
