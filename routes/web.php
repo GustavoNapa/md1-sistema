@@ -156,11 +156,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/integrations/zapsign/create-document/{inscription}', [ZapsignController::class, 'createDocumentFromInscription'])->name('integrations.zapsign.create-document');
     });
     
-    // Webhook público (sem autenticação)
-    Route::post('/webhook/zapsign', [ZapsignController::class, 'webhook'])->name('webhook.zapsign');
-    
     // Rota para dashboard principal
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');
     })->name('dashboard');
 });
+
+// Webhook público (sem autenticação)
+Route::post('/webhook/zapsign', [ZapsignController::class, 'webhook'])->name('webhook.zapsign');
