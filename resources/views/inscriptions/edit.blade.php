@@ -274,6 +274,25 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="entry_channel" class="form-label">Canal de Entrada</label>
+                                    <select class="form-select @error('entry_channel') is-invalid @enderror" id="entry_channel" name="entry_channel">
+                                        <option value="">Selecione um canal</option>
+                                        @foreach($entryChannels as $entryChannel)
+                                            <option value="{{ $entryChannel->id }}" {{ old('entry_channel', $inscription->entry_channel) == $entryChannel->id ? 'selected' : '' }}>
+                                                {{ $entryChannel->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('entry_channel')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('inscriptions.index') }}" class="btn btn-secondary">
                                 Cancelar

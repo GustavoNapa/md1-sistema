@@ -30,8 +30,9 @@ class InscriptionController extends Controller
         $clients = Client::where('active', true)->orderBy('name')->get();
         $vendors = Vendor::where('active', true)->orderBy('name')->get();
         $products = Product::where('is_active', true)->orderBy('name')->get();
+        $entryChannels = \App\Models\EntryChannel::all();
         
-        return view('inscriptions.create', compact('clients', 'vendors', 'products'));
+        return view('inscriptions.create', compact('clients', 'vendors', 'products', 'entryChannels'));
     }
 
     /**
@@ -58,6 +59,7 @@ class InscriptionController extends Controller
             'payment_method' => 'nullable|string|max:255',
             'commercial_notes' => 'nullable|string',
             'general_notes' => 'nullable|string',
+            'entry_channel' => 'nullable|exists:entry_channels,id',
         ], [
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',
@@ -114,8 +116,9 @@ class InscriptionController extends Controller
         $clients = Client::where('active', true)->orderBy('name')->get();
         $vendors = Vendor::where('active', true)->orderBy('name')->get();
         $products = Product::where('is_active', true)->orderBy('name')->get();
+        $entryChannels = \App\Models\EntryChannel::all();
         
-        return view('inscriptions.edit', compact('inscription', 'clients', 'vendors', 'products'));
+        return view('inscriptions.edit', compact('inscription', 'clients', 'vendors', 'products', 'entryChannels'));
     }
 
     /**
@@ -142,6 +145,7 @@ class InscriptionController extends Controller
             'payment_method' => 'nullable|string|max:255',
             'commercial_notes' => 'nullable|string',
             'general_notes' => 'nullable|string',
+            'entry_channel' => 'nullable|exists:entry_channels,id',
         ], [
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',

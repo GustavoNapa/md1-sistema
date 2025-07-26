@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('client_phones', function (Blueprint $table) {
+        if (!Schema::hasTable('client_phones')) {
+            Schema::create('client_phones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->constrained()->onDelete('cascade');
             $table->string('phone');
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->index(['client_id', 'is_primary']);
             $table->index(['client_id', 'is_whatsapp']);
         });
+        }
     }
 
     /**

@@ -29,7 +29,8 @@ class Inscription extends Model
         'commercial_notes',
         'general_notes',
         'problemas_desafios',
-        'historico_faturamento'
+        'historico_faturamento',
+        'entry_channel'
     ];
 
     protected $casts = [
@@ -96,6 +97,11 @@ class Inscription extends Model
     public function documents()
     {
         return $this->hasMany(InscriptionDocument::class);
+    }
+
+    public function entryChannel()
+    {
+        return $this->belongsTo(EntryChannel::class, 'entry_channel');
     }
 
     // Accessors
