@@ -13,7 +13,8 @@ class Achievement extends Model
         'inscription_id',
         'title',
         'description',
-        'achieved_at'
+        'achieved_at',
+        'achievement_type_id'
     ];
 
     protected $casts = [
@@ -23,5 +24,9 @@ class Achievement extends Model
     public function inscription()
     {
         return $this->belongsTo(Inscription::class);
+    }
+    public function achievementType()
+    {
+        return $this->belongsTo(AchievementType::class, 'achievement_type_id');
     }
 }

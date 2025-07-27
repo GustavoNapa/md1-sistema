@@ -14,6 +14,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\ZapsignController;
 use App\Http\Controllers\EntryChannelController;
+use App\Http\Controllers\AchievementTypeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -161,6 +162,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return redirect()->route('clients.index');
     })->name('dashboard');
+    
+    // Rotas de Tipos de Conquista
+    Route::resource('achievement_types', AchievementTypeController::class);
 });
 
 // Rota de teste para template fields (temporária)

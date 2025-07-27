@@ -25,6 +25,16 @@
                         <label for="achieved_at" class="form-label">Data da Conquista</label>
                         <input type="date" class="form-control" name="achieved_at" value="{{ date('Y-m-d') }}">
                     </div>
+                    
+                    <div class="mb-3">
+                        <label for="achievement_type_id" class="form-label">Tipo de Conquista</label>
+                        <select class="form-select" name="achievement_type_id">
+                            <option value="">Selecione o tipo</option>
+                            @foreach($achievementTypes as $type)
+                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="modal-footer">
