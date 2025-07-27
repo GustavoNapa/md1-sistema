@@ -30,3 +30,10 @@ Route::prefix('webhooks')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     // Aqui podem ser adicionadas outras rotas de API que precisam de autenticação
 });
+
+
+use App\Http\Controllers\Api\BonusController;
+
+Route::post("/subscriptions/{subscription}/bonuses", [BonusController::class, "store"]);
+
+
