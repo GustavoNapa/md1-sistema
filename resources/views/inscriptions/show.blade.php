@@ -66,6 +66,12 @@
                                 <span class="badge bg-secondary rounded-pill ms-1">{{ $inscription->documents->count() }}</span>
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="bonus-tab" data-bs-toggle="tab" data-bs-target="#bonus" type="button" role="tab">
+                                Bônus 
+                                <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->bonuses->count() }}</span>
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -814,3 +820,177 @@ function mostrarMensagemSucesso(mensagem) {
 }
 </script>
 @endsection
+
+
+                        <!-- Bônus Tab -->
+                        <div class="tab-pane fade" id="bonus" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Bônus</h6>
+                                <button class="btn btn-sm btn-primary" onclick="abrirModalBonus()">
+                                    <i class="fas fa-plus"></i> Novo Bônus
+                                </button>
+                            </div>
+                            @if($inscription->bonuses->count() > 0)
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Descrição</th>
+                                                <th>Data de Liberação</th>
+                                                <th>Data de Expiração</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($inscription->bonuses as $bonus)
+                                                <tr>
+                                                    <td>{{ $bonus->description }}</td>
+                                                    <td>{{ $bonus->release_date->format("d/m/Y") }}</td>
+                                                    <td>{{ $bonus->expiration_date ? $bonus->expiration_date->format("d/m/Y") : "N/A" }}</td>
+                                                    <td>
+                                                        <!-- Ações para editar/excluir bônus -->
+                                                        <button class="btn btn-sm btn-info" onclick="editarBonus({{ $bonus->id }})">Editar</button>
+                                                        <button class="btn btn-sm btn-danger" onclick="excluirBonus({{ $bonus->id }})">Excluir</button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <p>Nenhum bônus cadastrado para esta inscrição.</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modais (exemplo, você precisará criar os modais reais) -->
+<div class="modal fade" id="modalBonus" tabindex="-1" aria-labelledby="modalBonusLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBonusLabel">Adicionar/Editar Bônus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulário para adicionar/editar bônus -->
+                <form id="formBonus">
+                    <input type="hidden" id="bonusId" name="id">
+                    <div class="mb-3">
+                        <label for="bonusDescription" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="bonusDescription" name="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bonusReleaseDate" class="form-label">Data de Liberação</label>
+                        <input type="date" class="form-control" id="bonusReleaseDate" name="release_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bonusExpirationDate" class="form-label">Data de Expiração (Opcional)</label>
+                        <input type="date" class="form-control" id="bonusExpirationDate" name="expiration_date">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Salvar Bônus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push("scripts")
+<script>
+    function abrirModalBonus(bonus = null) {
+        const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
+        const form = document.getElementById("formBonus");
+        form.reset();
+
+        if (bonus) {
+            document.getElementById("bonusId").value = bonus.id;
+            document.getElementById("bonusDescription").value = bonus.description;
+            document.getElementById("bonusReleaseDate").value = bonus.release_date;
+            document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
+        } else {
+            document.getElementById("bonusId").value = "";
+        }
+
+        modal.show();
+    }
+
+    document.getElementById("formBonus").addEventListener("submit", function(event) {
+        event.preventDefault();
+        const bonusId = document.getElementById("bonusId").value;
+        const url = bonusId 
+            ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
+            : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
+        const method = bonusId ? "PUT" : "POST";
+
+        fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                description: document.getElementById("bonusDescription").value,
+                release_date: document.getElementById("bonusReleaseDate").value,
+                expiration_date: document.getElementById("bonusExpirationDate").value || null,
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || "Erro ao salvar bônus.");
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("Bônus salvo com sucesso!");
+            location.reload();
+        })
+        .catch(error => {
+            alert("Erro: " + error.message);
+            console.error("Erro ao salvar bônus:", error);
+        });
+    });
+
+    function editarBonus(bonusId) {
+        fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
+            .then(response => response.json())
+            .then(data => {
+                abrirModalBonus(data);
+            })
+            .catch(error => console.error("Erro ao buscar bônus para edição:", error));
+    }
+
+    function excluirBonus(bonusId) {
+        if (confirm("Tem certeza que deseja excluir este bônus?")) {
+            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || "Erro ao excluir bônus.");
+                    });
+                }
+                alert("Bônus excluído com sucesso!");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Erro: " + error.message);
+                console.error("Erro ao excluir bônus:", error);
+            });
+        }
+    }
+</script>
+@endpush
+
+

@@ -37,3 +37,10 @@ use App\Http\Controllers\Api\BonusController;
 Route::post("/subscriptions/{subscription}/bonuses", [BonusController::class, "store"]);
 
 
+
+
+use App\Http\Controllers\Api\AchievementTypeController;
+
+Route::apiResource("achievement-types", AchievementTypeController::class);
+
+
