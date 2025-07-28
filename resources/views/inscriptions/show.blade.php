@@ -1,3 +1,23 @@
+                            <!-- Contrato Assinado e Contrato na Pasta -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h5 class="border-bottom pb-2">Contrato</h5>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Contrato Assinado:</strong> 
+                                        <span class="badge {{ $inscription->contrato_assinado ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ $inscription->contrato_assinado ? 'Sim' : 'Não' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Contrato na Pasta:</strong> 
+                                        <span class="badge {{ $inscription->contrato_na_pasta ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ $inscription->contrato_na_pasta ? 'Sim' : 'Não' }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
 
 @php
     use Carbon\Carbon;

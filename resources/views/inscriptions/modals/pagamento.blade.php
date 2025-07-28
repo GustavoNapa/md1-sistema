@@ -53,24 +53,7 @@
                         </div>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="contrato_assinado" value="1">
-                                    <label class="form-check-label">Contrato Assinado</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="contrato_na_pasta" value="1">
-                                    <label class="form-check-label">Contrato na Pasta</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
                     
                     <div class="mb-3">
                         <label for="observacoes" class="form-label">Observações</label>
