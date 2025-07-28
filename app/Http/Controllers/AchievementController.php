@@ -18,11 +18,17 @@ class AchievementController extends Controller
 
         $achievement = Achievement::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Conquista registrada com sucesso!',
-            'data' => $achievement
-        ]);
+        // Se for AJAX, retorna JSON. Se for formulário normal, redireciona para inscrição.
+        if ($request->expectsJson() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Conquista registrada com sucesso!',
+                'data' => $achievement
+            ]);
+        }
+
+        return redirect()->route('inscriptions.show', $validated['inscription_id'])
+            ->with('success', 'Conquista registrada com sucesso!');
     }
 
     public function destroy(Achievement $achievement)
