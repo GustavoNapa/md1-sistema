@@ -11,17 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('inscriptions', function (Blueprint $table) {
-            if (!Schema::hasColumn('inscriptions', 'entry_channel')) {
-                $table->unsignedBigInteger('entry_channel')->nullable();
-            }
-        });
-        Schema::table('inscriptions', function (Blueprint $table) {
-            if (Schema::hasColumn('inscriptions', 'entry_channel')) {
-                $table->unsignedBigInteger('entry_channel')->nullable()->change();
-                $table->foreign('entry_channel')->references('id')->on('entry_channels')->onDelete('set null');
-            }
-        });
+        // Schema::table("inscriptions", function (Blueprint $table) {
+        //     $table->unsignedBigInteger("entry_channel")->nullable()->change();
+        //     $table->foreign("entry_channel")->references("id")->on("entry_channels")->onDelete("set null");
+        // });
     }
 
     /**
@@ -29,9 +22,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('inscriptions', function (Blueprint $table) {
-            $table->dropForeign(['entry_channel']);
-            $table->dropColumn('entry_channel');
-        });
+        // Schema::table("inscriptions", function (Blueprint $table) {
+        //     $table->dropForeign(["entry_channel"]);
+        //     $table->dropColumn("entry_channel");
+        // });
     }
 };
+
+
