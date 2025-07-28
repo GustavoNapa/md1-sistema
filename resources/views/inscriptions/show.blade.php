@@ -4,7 +4,7 @@
 @push('scripts')
 <script>
     // Funções JavaScript para o modal de bônus
-    document.addEventListener('DOMContentLoaded', function() {
+    
         window.abrirModalBonus = function(bonus = null) {
             const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
             const form = document.getElementById("formBonus");
@@ -980,7 +980,7 @@ function mostrarMensagemSucesso(mensagem) {
 @push("scripts")
 <script>
     // Funções JavaScript para o modal de bônus
-    document.addEventListener('DOMContentLoaded', function() {
+    
         window.abrirModalBonus = function(bonus = null) {
             const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
             const form = document.getElementById("formBonus");
