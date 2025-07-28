@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create("bonuses", function (Blueprint $table) {
             $table->id();
-            $table->foreignId("subscription_id")->constrained()->onDelete("cascade");
+            $table->foreignId("subscription_id")->constrained('inscriptions')->onDelete("cascade");
             $table->string("description");
             $table->date("release_date");
             $table->date("expiration_date")->nullable();

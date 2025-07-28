@@ -99,6 +99,12 @@ class Inscription extends Model
         return $this->hasMany(InscriptionDocument::class);
     }
 
+
+    public function bonuses()
+    {
+        return $this->hasMany(\App\Models\Bonus::class, 'subscription_id', 'id');
+    }
+
     public function entryChannel()
     {
         return $this->belongsTo(EntryChannel::class, 'entry_channel');
