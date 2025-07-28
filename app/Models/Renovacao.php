@@ -9,6 +9,8 @@ class Renovacao extends Model
 {
     use HasFactory;
 
+    protected $table = 'renovacoes';
+
     protected $fillable = [
         'inscription_id',
         'data_inicio',
