@@ -60,6 +60,8 @@ class InscriptionController extends Controller
             'commercial_notes' => 'nullable|string',
             'general_notes' => 'nullable|string',
             'entry_channel' => 'nullable|exists:entry_channels,id',
+            'contrato_assinado' => 'boolean',
+            'contrato_na_pasta' => 'boolean',
         ], [
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',
@@ -146,6 +148,8 @@ class InscriptionController extends Controller
             'commercial_notes' => 'nullable|string',
             'general_notes' => 'nullable|string',
             'entry_channel' => 'nullable|exists:entry_channels,id',
+            'contrato_assinado' => 'boolean',
+            'contrato_na_pasta' => 'boolean',
         ], [
             'client_id.required' => 'Selecione um cliente.',
             'client_id.exists' => 'Cliente não encontrado.',

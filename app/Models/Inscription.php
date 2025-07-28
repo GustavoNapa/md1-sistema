@@ -30,7 +30,9 @@ class Inscription extends Model
         'general_notes',
         'problemas_desafios',
         'historico_faturamento',
-        'entry_channel'
+        'entry_channel',
+        'contrato_assinado',
+        'contrato_na_pasta'
     ];
 
     protected $casts = [

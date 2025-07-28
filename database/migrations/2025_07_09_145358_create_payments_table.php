@@ -21,9 +21,7 @@ return new class extends Migration
             $table->string('forma_pagamento')->nullable(); // cartão, boleto, pix, etc
             $table->string('status')->default('pendente'); // pendente, pago, cancelado
             
-            // Controle de contratos
-            $table->boolean('contrato_assinado')->default(false);
-            $table->boolean('contrato_na_pasta')->default(false);
+
             
             // Observações
             $table->text('observacoes')->nullable();

@@ -48,6 +48,16 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('inscriptions.index') }}">Inscrições</a>
                             </li>
+                            <li class="nav-item dropdown">
+                                <a id="navbarDropdownCadastros" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    Cadastros
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownCadastros">
+                                    <a class="dropdown-item" href="{{ route('achievement_types.index') }}">Tipos de Conquistas</a>
+                                    <a class="dropdown-item" href="{{ route('clients.index') }}">Clientes</a>
+                                    <a class="dropdown-item" href="{{ route('products.index') }}">Produtos</a>
+                                </div>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('import.index') }}">Importação</a>
                             </li>

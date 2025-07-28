@@ -34,7 +34,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
 use App\Http\Controllers\Api\BonusController;
 
-Route::post("/subscriptions/{subscription}/bonuses", [BonusController::class, "store"]);
+// Rotas protegidas por autenticação
+Route::middleware('auth:sanctum')->group(function () {
+    // Aqui podem ser adicionadas outras rotas de API que precisam de autenticação
+});
+
+// Rotas de bônus para inscrições (temporariamente sem auth para teste)
+Route::post("/inscriptions/{inscription}/bonuses", [BonusController::class, "store"]);
+Route::get("/inscriptions/{inscription}/bonuses/{bonus}", [BonusController::class, "show"]);
+Route::put("/inscriptions/{inscription}/bonuses/{bonus}", [BonusController::class, "update"]);
+Route::delete("/inscriptions/{inscription}/bonuses/{bonus}", [BonusController::class, "destroy"]);
 
 
 
