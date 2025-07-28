@@ -1,24 +1,3 @@
-                            <!-- Contrato Assinado e Contrato na Pasta -->
-                            <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <h5 class="border-bottom pb-2">Contrato</h5>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Contrato Assinado:</strong> 
-                                        <span class="badge {{ $inscription->contrato_assinado ? 'bg-success' : 'bg-secondary' }}">
-                                            {{ $inscription->contrato_assinado ? 'Sim' : 'Não' }}
-                                        </span>
-                                    </p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Contrato na Pasta:</strong> 
-                                        <span class="badge {{ $inscription->contrato_na_pasta ? 'bg-success' : 'bg-secondary' }}">
-                                            {{ $inscription->contrato_na_pasta ? 'Sim' : 'Não' }}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-
 @php
     use Carbon\Carbon;
 @endphp
@@ -184,23 +163,60 @@
                                 </div>
                             </div>
 
+                            <!-- Contrato Assinado e Contrato na Pasta -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h5 class="border-bottom pb-2">Contrato</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Contrato Assinado:</strong> 
+                                        <span class="badge {{ $inscription->contrato_assinado ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ $inscription->contrato_assinado ? 'Sim' : 'Não' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Contrato na Pasta:</strong> 
+                                        <span class="badge {{ $inscription->contrato_na_pasta ? 'bg-success' : 'bg-secondary' }}">
+                                            {{ $inscription->contrato_na_pasta ? 'Sim' : 'Não' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p><strong>Link da Pasta do Contrato:</strong>
+                                        @if($inscription->contract_folder_link)
+                                            <a href="{{ $inscription->contract_folder_link }}" target="_blank" rel="noopener noreferrer">Abrir Pasta</a>
+                                        @else
+                                            <span class="text-muted">Não informado</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+
                             <!-- Semanas e Pagamento -->
                             <div class="row mb-4">
                                 <div class="col-md-12">
-                                    <h5 class="border-bottom pb-2">Semanas e Pagamento</h5>
+                                    <h5 class="border-bottom pb-2">Semanas</h5>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-6">
                                     <p><strong>Semana Calendário:</strong> {{ $inscription->calendar_week ?? 'N/A' }}</p>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-6">
                                     <p><strong>Semana Atual:</strong> {{ $inscription->current_week ?? 'N/A' }}</p>
                                 </div>
-                                <div class="col-md-3">
+                            </div>
+
+                            <!-- Semanas e Pagamento -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h5 class="border-bottom pb-2">Pagamento</h5>
+                                </div>
+                                <div class="col-md-5">
                                     <p><strong>Valor Pago:</strong> 
                                         {{ $inscription->amount_paid ? 'R$ ' . number_format($inscription->amount_paid, 2, ',', '.') : 'Não informado' }}
                                     </p>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-5">
                                     <p><strong>Método Pagamento:</strong> 
                                         {{ $inscription->payment_method ? AppHttpControllersInscriptionController::getPaymentMethodOptions()[$inscription->payment_method] ?? $inscription->payment_method : 'Não informado' }}
                                     </p>

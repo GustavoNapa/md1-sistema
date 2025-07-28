@@ -32,7 +32,8 @@ class Inscription extends Model
         'historico_faturamento',
         'entry_channel',
         'contrato_assinado',
-        'contrato_na_pasta'
+        'contrato_na_pasta',
+        'contract_folder_link'
     ];
 
     protected $casts = [
