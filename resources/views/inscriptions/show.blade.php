@@ -638,6 +638,53 @@
                                         @endif
                                     </div>
                                 </div>
+
+                                <!-- Bônus Tab -->
+                                <div class="tab-pane fade" id="bonus" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Bônus</h6>
+                                        <button class="btn btn-sm btn-primary" onclick="abrirModalBonus()">
+                                            <i class="fas fa-plus"></i> Novo Bônus
+                                        </button>
+                                    </div>
+                                    
+                                    @if($inscription->bonuses && $inscription->bonuses->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Descrição</th>
+                                                        <th>Data de Liberação</th>
+                                                        <th>Data de Expiração</th>
+                                                        <th>Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($inscription->bonuses as $bonus)
+                                                        <tr>
+                                                            <td>{{ $bonus->description }}</td>
+                                                            <td>{{ $bonus->release_date ? \Carbon\Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->expiration_date ? \Carbon\Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-outline-secondary" onclick="editarBonus({{ $bonus->id }})">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                                <button class="btn btn-sm btn-outline-danger" onclick="excluirBonus({{ $bonus->id }})">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-gift fa-3x mb-3"></i>
+                                            <p>Nenhum bônus cadastrado para esta inscrição.</p>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -823,49 +870,6 @@ function mostrarMensagemSucesso(mensagem) {
 
 
 
-<!-- Bônus Tab (dentro do container/tab-content) -->
-<div class="tab-pane fade" id="bonus" role="tabpanel">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">Bônus</h6>
-            <button class="btn btn-sm btn-primary" onclick="abrirModalBonus()">
-                <i class="fas fa-plus"></i> Novo Bônus
-            </button>
-        </div>
-        @if($inscription->bonuses && $inscription->bonuses->count() > 0)
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Descrição</th>
-                            <th>Data de Liberação</th>
-                            <th>Data de Expiração</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($inscription->bonuses as $bonus)
-                            <tr>
-                                <td>{{ $bonus->description }}</td>
-                                <td>{{ $bonus->release_date ? \Carbon\Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
-                                <td>{{ $bonus->expiration_date ? \Carbon\Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-info" onclick="editarBonus({{ $bonus->id }})">Editar</button>
-                                    <button class="btn btn-sm btn-danger" onclick="excluirBonus({{ $bonus->id }})">Excluir</button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="text-center py-4 text-muted">
-                <i class="fas fa-gift fa-3x mb-3"></i>
-                <p>Nenhum bônus cadastrado para esta inscrição.</p>
-            </div>
-        @endif
-    </div>
-</div>
                     </div>
                 </div>
             </div>
