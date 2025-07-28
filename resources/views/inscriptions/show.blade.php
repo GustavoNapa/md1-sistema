@@ -168,6 +168,16 @@
                                 <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->bonuses->count() }}</span>
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="faturamento-tab" data-bs-toggle="tab" data-bs-target="#faturamento" type="button" role="tab">
+                                Faturamento Mês a Mês
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="renovacao-tab" data-bs-toggle="tab" data-bs-target="#renovacao" type="button" role="tab">
+                                Renovação
+                            </button>
+                        </li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -1083,4 +1093,282 @@ function mostrarMensagemSucesso(mensagem) {
             });
         }
     });
+
+
+
+                        <!-- Faturamento Mês a Mês Tab -->
+                        <div class="tab-pane fade" id="faturamento" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Faturamento Mês a Mês</h5>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalFaturamento()">
+                                    Novo Faturamento
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Mês/Ano</th>
+                                            <th>Valor Faturado</th>
+                                            <th>Data de Vencimento</th>
+                                            <th>Status</th>
+                                            <th>Observações</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Aqui serão listados os faturamentos -->
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                Nenhum faturamento cadastrado ainda.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Renovação Tab -->
+                        <div class="tab-pane fade" id="renovacao" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Renovação</h5>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="abrirModalRenovacao()">
+                                    Nova Renovação
+                                </button>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="border-bottom pb-2">Status da Renovação</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Status Atual:</strong> 
+                                        <span class="badge bg-warning">Pendente</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Data de Vencimento:</strong> 
+                                        {{ $inscription->actual_end_date ? $inscription->actual_end_date->format('d/m/Y') : 'Não definida' }}
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Dias para Vencimento:</strong> 
+                                        @if($inscription->actual_end_date)
+                                            {{ $inscription->actual_end_date->diffInDays(now(), false) > 0 ? 'Vencido há ' . $inscription->actual_end_date->diffInDays(now()) . ' dias' : $inscription->actual_end_date->diffInDays(now()) . ' dias' }}
+                                        @else
+                                            Não definido
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="col-md-3">
+                                    <p><strong>Valor Renovação:</strong> 
+                                        {{ $inscription->product ? 'R$ ' . number_format($inscription->product->price, 2, ',', '.') : 'Não definido' }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Data da Renovação</th>
+                                            <th>Período</th>
+                                            <th>Valor</th>
+                                            <th>Status</th>
+                                            <th>Observações</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Aqui serão listadas as renovações -->
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                Nenhuma renovação cadastrada ainda.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+
+<!-- Modal Faturamento -->
+<div class="modal fade" id="modalFaturamento" tabindex="-1" aria-labelledby="modalFaturamentoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFaturamentoLabel">Novo Faturamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formFaturamento">
+                <div class="modal-body">
+                    <input type="hidden" id="faturamentoId" name="id">
+                    
+                    <div class="mb-3">
+                        <label for="faturamentoMesAno" class="form-label">Mês/Ano</label>
+                        <input type="month" class="form-control" id="faturamentoMesAno" name="mes_ano" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="faturamentoValor" class="form-label">Valor Faturado</label>
+                        <input type="number" step="0.01" class="form-control" id="faturamentoValor" name="valor" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="faturamentoVencimento" class="form-label">Data de Vencimento</label>
+                        <input type="date" class="form-control" id="faturamentoVencimento" name="data_vencimento" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="faturamentoStatus" class="form-label">Status</label>
+                        <select class="form-control" id="faturamentoStatus" name="status" required>
+                            <option value="">Selecione...</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="pago">Pago</option>
+                            <option value="vencido">Vencido</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="faturamentoObservacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="faturamentoObservacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Renovação -->
+<div class="modal fade" id="modalRenovacao" tabindex="-1" aria-labelledby="modalRenovacaoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRenovacaoLabel">Nova Renovação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formRenovacao">
+                <div class="modal-body">
+                    <input type="hidden" id="renovacaoId" name="id">
+                    
+                    <div class="mb-3">
+                        <label for="renovacaoDataInicio" class="form-label">Data de Início</label>
+                        <input type="date" class="form-control" id="renovacaoDataInicio" name="data_inicio" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="renovacaoDataFim" class="form-label">Data de Fim</label>
+                        <input type="date" class="form-control" id="renovacaoDataFim" name="data_fim" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="renovacaoValor" class="form-label">Valor da Renovação</label>
+                        <input type="number" step="0.01" class="form-control" id="renovacaoValor" name="valor" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="renovacaoStatus" class="form-label">Status</label>
+                        <select class="form-control" id="renovacaoStatus" name="status" required>
+                            <option value="">Selecione...</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="aprovada">Aprovada</option>
+                            <option value="rejeitada">Rejeitada</option>
+                            <option value="cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="renovacaoObservacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="renovacaoObservacoes" name="observacoes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Funções para o modal de Faturamento
+    window.abrirModalFaturamento = function(faturamento = null) {
+        const modal = new bootstrap.Modal(document.getElementById("modalFaturamento"));
+        const form = document.getElementById("formFaturamento");
+        form.reset();
+
+        if (faturamento) {
+            document.getElementById("faturamentoId").value = faturamento.id;
+            document.getElementById("faturamentoMesAno").value = faturamento.mes_ano;
+            document.getElementById("faturamentoValor").value = faturamento.valor;
+            document.getElementById("faturamentoVencimento").value = faturamento.data_vencimento;
+            document.getElementById("faturamentoStatus").value = faturamento.status;
+            document.getElementById("faturamentoObservacoes").value = faturamento.observacoes;
+        } else {
+            document.getElementById("faturamentoId").value = "";
+        }
+
+        modal.show();
+    };
+
+    // Funções para o modal de Renovação
+    window.abrirModalRenovacao = function(renovacao = null) {
+        const modal = new bootstrap.Modal(document.getElementById("modalRenovacao"));
+        const form = document.getElementById("formRenovacao");
+        form.reset();
+
+        if (renovacao) {
+            document.getElementById("renovacaoId").value = renovacao.id;
+            document.getElementById("renovacaoDataInicio").value = renovacao.data_inicio;
+            document.getElementById("renovacaoDataFim").value = renovacao.data_fim;
+            document.getElementById("renovacaoValor").value = renovacao.valor;
+            document.getElementById("renovacaoStatus").value = renovacao.status;
+            document.getElementById("renovacaoObservacoes").value = renovacao.observacoes;
+        } else {
+            document.getElementById("renovacaoId").value = "";
+        }
+
+        modal.show();
+    };
+
+    // Event listeners para os formulários
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form de Faturamento
+        document.getElementById("formFaturamento").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const faturamentoId = document.getElementById("faturamentoId").value;
+            
+            // Aqui você pode implementar a lógica para salvar o faturamento
+            alert("Funcionalidade de salvar faturamento será implementada em breve!");
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalFaturamento"));
+            modal.hide();
+        });
+
+        // Form de Renovação
+        document.getElementById("formRenovacao").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const renovacaoId = document.getElementById("renovacaoId").value;
+            
+            // Aqui você pode implementar a lógica para salvar a renovação
+            alert("Funcionalidade de salvar renovação será implementada em breve!");
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalRenovacao"));
+            modal.hide();
+        });
+    });
+</script>
 
