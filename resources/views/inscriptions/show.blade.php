@@ -1,59 +1,60 @@
-@section(\'content\')
+@extends('layouts.app')
 
-@push(\'scripts\')
+
+@push('scripts')
 <script>
     function abrirModalBonus(bonus = null) {
-        const modal = new bootstrap.Modal(document.getElementById(\"modalBonus\"));
-        const form = document.getElementById(\"formBonus\");
+        const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
+        const form = document.getElementById("formBonus");
         form.reset();
 
         if (bonus) {
-            document.getElementById(\"bonusId\").value = bonus.id;
-            document.getElementById(\"bonusDescription\").value = bonus.description;
-            document.getElementById(\"bonusReleaseDate\").value = bonus.release_date;
-            document.getElementById(\"bonusExpirationDate\").value = bonus.expiration_date;
+            document.getElementById("bonusId").value = bonus.id;
+            document.getElementById("bonusDescription").value = bonus.description;
+            document.getElementById("bonusReleaseDate").value = bonus.release_date;
+            document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
         } else {
-            document.getElementById(\"bonusId\").value = \"\";
+            document.getElementById("bonusId").value = "";
         }
 
         modal.show();
     }
 
-    document.getElementById(\"formBonus\").addEventListener(\"submit\", function(event) {
+    document.getElementById("formBonus").addEventListener("submit", function(event) {
         event.preventDefault();
-        const bonusId = document.getElementById(\"bonusId\").value;
+        const bonusId = document.getElementById("bonusId").value;
         const url = bonusId 
             ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
             : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
-        const method = bonusId ? \"PUT\" : \"POST\";
+        const method = bonusId ? "PUT" : "POST";
 
         fetch(url, {
             method: method,
             headers: {
-                \"Content-Type\": \"application/json\",
-                \"X-CSRF-TOKEN\": \"{{ csrf_token() }}\"
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
             },
             body: JSON.stringify({
-                description: document.getElementById(\"bonusDescription\").value,
-                release_date: document.getElementById(\"bonusReleaseDate\").value,
-                expiration_date: document.getElementById(\"bonusExpirationDate\").value || null,
+                description: document.getElementById("bonusDescription").value,
+                release_date: document.getElementById("bonusReleaseDate").value,
+                expiration_date: document.getElementById("bonusExpirationDate").value || null,
             })
         })
         .then(response => {
             if (!response.ok) {
                 return response.json().then(errorData => {
-                    throw new Error(errorData.message || \"Erro ao salvar bônus.\");
+                    throw new Error(errorData.message || "Erro ao salvar bônus.");
                 });
             }
             return response.json();
         })
         .then(data => {
-            alert(\"Bônus salvo com sucesso!\");
+            alert("Bônus salvo com sucesso!");
             location.reload();
         })
         .catch(error => {
-            alert(\"Erro: \" + error.message);
-            console.error(\"Erro ao salvar bônus:\", error);
+            alert("Erro: " + error.message);
+            console.error("Erro ao salvar bônus:", error);
         });
     });
 
@@ -63,36 +64,37 @@
             .then(data => {
                 abrirModalBonus(data);
             })
-            .catch(error => console.error(\"Erro ao buscar bônus para edição:\", error));
+            .catch(error => console.error("Erro ao buscar bônus para edição:", error));
     }
 
     function excluirBonus(bonusId) {
-        if (confirm(\"Tem certeza que deseja excluir este bônus?\")) {
+        if (confirm("Tem certeza que deseja excluir este bônus?")) {
             fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-                method: \"DELETE\",
+                method: "DELETE",
                 headers: {
-                    \"X-CSRF-TOKEN\": \"{{ csrf_token() }}\"
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 }
             })
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(errorData => {
-                        throw new Error(errorData.message || \"Erro ao excluir bônus.\");
+                        throw new Error(errorData.message || "Erro ao excluir bônus.");
                     });
                 }
-                alert(\"Bônus excluído com sucesso!\");
+                alert("Bônus excluído com sucesso!");
                 location.reload();
             })
             .catch(error => {
-                alert(\"Erro: \" + error.message);
-                console.error(\"Erro ao excluir bônus:\", error);
+                alert("Erro: " + error.message);
+                console.error("Erro ao excluir bônus:", error);
             });
         }
     }
 </script>
 @endpush
 
-<div class=\"container\">
+@section('content')
+<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
@@ -269,7 +271,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <p><strong>Método Pagamento:</strong> 
-                                        {{ $inscription->payment_method ? \App\Http\Controllers\InscriptionController::getPaymentMethodOptions()[$inscription->payment_method] ?? $inscription->payment_method : 'Não informado' }}
+                                        {{ $inscription->payment_method ? AppHttpControllersInscriptionController::getPaymentMethodOptions()[$inscription->payment_method] ?? $inscription->payment_method : 'Não informado' }}
                                     </p>
                                 </div>
                                 <div class="col-md-2">
@@ -389,7 +391,7 @@
                                             @foreach($inscription->payments as $payment)
                                                 <tr>
                                                     <td>R$ {{ number_format($payment->amount, 2, ',', '.') }}</td>
-                                                    <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                                    <td>{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y') : 'N/A' }}</td>
                                                     <td>{{ $payment->method }}</td>
                                                     <td>
                                                         <span class="badge {{ $payment->status === 'paid' ? 'bg-success' : 'bg-warning' }}">
@@ -523,7 +525,7 @@
                                         <tbody>
                                             @foreach($inscription->achievements as $achievement)
                                                 <tr>
-                                                    <td>{{ $achievement->achievement_date->format('d/m/Y') }}</td>
+                                                    <td>{{ $achievement->achievement_date ? $achievement->achievement_date->format('d/m/Y') : 'N/A' }}</td>
                                                     <td>{{ $achievement->description }}</td>
                                                     <td>
                                                         <button class="btn btn-sm btn-info" onclick="editarConquista({{ $achievement->id }})">
@@ -564,7 +566,7 @@
                                         <tbody>
                                             @foreach($inscription->followUps as $followUp)
                                                 <tr>
-                                                    <td>{{ $followUp->followup_date->format('d/m/Y') }}</td>
+                                                    <td>{{ $followUp->followup_date ? $followUp->followup_date->format('d/m/Y') : 'N/A' }}</td>
                                                     <td>{{ $followUp->description }}</td>
                                                     <td>
                                                         <button class="btn btn-sm btn-info" onclick="editarFollowUp({{ $followUp->id }})">
@@ -727,8 +729,8 @@
                                                     @foreach($inscription->bonuses as $bonus)
                                                         <tr>
                                                             <td>{{ $bonus->description }}</td>
-                                                            <td>{{ $bonus->release_date ? \Carbon\Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
-                                                            <td>{{ $bonus->expiration_date ? \Carbon\Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->release_date ? CarbonCarbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->expiration_date ? CarbonCarbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
                                                             <td>
                                                                 <button class="btn btn-sm btn-outline-secondary" onclick="editarBonus({{ $bonus->id }})">
                                                                     <i class="fas fa-edit"></i>
@@ -757,6 +759,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 <!-- Modais para cadastro -->
 @include('inscriptions.modals.preceptor')
@@ -766,9 +769,8 @@
 @include('inscriptions.modals.conquista')
 @include('inscriptions.modals.followup')
 @include('inscriptions.modals.documento')
-@endsection
 
-@section('scripts')
+@push('scripts')
 <script>
 // Funções globais para abrir modais
 function abrirModalPagamento() {
@@ -812,7 +814,7 @@ function excluirRegistro(tipo, id) {
             }
         })
         .then(response => response.json())
-        .then(data => {
+        .then data => {
             if (data.success) {
                 location.reload(); // Simplificado por enquanto
             } else {
@@ -930,7 +932,7 @@ function mostrarMensagemSucesso(mensagem) {
     }, 3000);
 }
 </script>
-@endsection
+@endpush
 
 
 
