@@ -4,93 +4,95 @@
 @push('scripts')
 <script>
     // Funções JavaScript para o modal de bônus
-    window.abrirModalBonus = function(bonus = null) {
-        const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
-        const form = document.getElementById("formBonus");
-        form.reset();
+    document.addEventListener('DOMContentLoaded', function() {
+        window.abrirModalBonus = function(bonus = null) {
+            const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
+            const form = document.getElementById("formBonus");
+            form.reset();
 
-        if (bonus) {
-            document.getElementById("bonusId").value = bonus.id;
-            document.getElementById("bonusDescription").value = bonus.description;
-            document.getElementById("bonusReleaseDate").value = bonus.release_date;
-            document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
-        } else {
-            document.getElementById("bonusId").value = "";
-        }
-
-        modal.show();
-    };
-
-    document.getElementById("formBonus").addEventListener("submit", function(event) {
-        event.preventDefault();
-        const bonusId = document.getElementById("bonusId").value;
-        const url = bonusId 
-            ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
-            : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
-        const method = bonusId ? "PUT" : "POST";
-
-        fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                description: document.getElementById("bonusDescription").value,
-                release_date: document.getElementById("bonusReleaseDate").value,
-                expiration_date: document.getElementById("bonusExpirationDate").value || null,
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || "Erro ao salvar bônus.");
-                });
+            if (bonus) {
+                document.getElementById("bonusId").value = bonus.id;
+                document.getElementById("bonusDescription").value = bonus.description;
+                document.getElementById("bonusReleaseDate").value = bonus.release_date;
+                document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
+            } else {
+                document.getElementById("bonusId").value = "";
             }
-            return response.json();
-        })
-        .then(data => {
-            alert("Bônus salvo com sucesso!");
-            location.reload();
-        })
-        .catch(error => {
-            alert("Erro: " + error.message);
-            console.error("Erro ao salvar bônus:", error);
-        });
-    });
 
-    window.editarBonus = function(bonusId) {
-        fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
-            .then(response => response.json())
-            .then(data => {
-                abrirModalBonus(data);
-            })
-            .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-    };
+            modal.show();
+        };
 
-    window.excluirBonus = function(bonusId) {
-        if (confirm("Tem certeza que deseja excluir este bônus?")) {
-            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-                method: "DELETE",
+        document.getElementById("formBonus").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const bonusId = document.getElementById("bonusId").value;
+            const url = bonusId 
+                ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
+                : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
+            const method = bonusId ? "PUT" : "POST";
+
+            fetch(url, {
+                method: method,
                 headers: {
+                    "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                }
+                },
+                body: JSON.stringify({
+                    description: document.getElementById("bonusDescription").value,
+                    release_date: document.getElementById("bonusReleaseDate").value,
+                    expiration_date: document.getElementById("bonusExpirationDate").value || null,
+                })
             })
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao excluir bônus.");
+                        throw new Error(errorData.message || "Erro ao salvar bônus.");
                     });
                 }
-                alert("Bônus excluído com sucesso!");
+                return response.json();
+            })
+            .then(data => {
+                alert("Bônus salvo com sucesso!");
                 location.reload();
             })
             .catch(error => {
                 alert("Erro: " + error.message);
-                console.error("Erro ao excluir bônus:", error);
+                console.error("Erro ao salvar bônus:", error);
             });
-        }
-    };
+        });
+
+        window.editarBonus = function(bonusId) {
+            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
+                .then(response => response.json())
+                .then(data => {
+                    abrirModalBonus(data);
+                })
+                .catch(error => console.error("Erro ao buscar bônus para edição:", error));
+        };
+
+        window.excluirBonus = function(bonusId) {
+            if (confirm("Tem certeza que deseja excluir este bônus?")) {
+                fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || "Erro ao excluir bônus.");
+                        });
+                    }
+                    alert("Bônus excluído com sucesso!");
+                    location.reload();
+                })
+                .catch(error => {
+                    alert("Erro: " + error.message);
+                    console.error("Erro ao excluir bônus:", error);
+                });
+            }
+        };
+    });
 </script>
 @endpush
 
@@ -710,7 +712,7 @@
                                 <div class="tab-pane fade" id="bonus" role="tabpanel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6 class="mb-0">Bônus</h6>
-                                        <button class="btn btn-sm btn-primary" onclick="abrirModalBonus()">
+                                        <button class="btn btn-sm btn-primary" id="btnNovoBonus">
                                             <i class="fas fa-plus"></i> Novo Bônus
                                         </button>
                                     </div>
@@ -978,94 +980,107 @@ function mostrarMensagemSucesso(mensagem) {
 @push("scripts")
 <script>
     // Funções JavaScript para o modal de bônus
-    window.abrirModalBonus = function(bonus = null) {
-        const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
-        const form = document.getElementById("formBonus");
-        form.reset();
+    document.addEventListener('DOMContentLoaded', function() {
+        window.abrirModalBonus = function(bonus = null) {
+            const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
+            const form = document.getElementById("formBonus");
+            form.reset();
 
-        if (bonus) {
-            document.getElementById("bonusId").value = bonus.id;
-            document.getElementById("bonusDescription").value = bonus.description;
-            document.getElementById("bonusReleaseDate").value = bonus.release_date;
-            document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
-        } else {
-            document.getElementById("bonusId").value = "";
-        }
-
-        modal.show();
-    };
-
-    document.getElementById("formBonus").addEventListener("submit", function(event) {
-        event.preventDefault();
-        const bonusId = document.getElementById("bonusId").value;
-        const url = bonusId 
-            ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
-            : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
-        const method = bonusId ? "PUT" : "POST";
-
-        fetch(url, {
-            method: method,
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-                description: document.getElementById("bonusDescription").value,
-                release_date: document.getElementById("bonusReleaseDate").value,
-                expiration_date: document.getElementById("bonusExpirationDate").value || null,
-            })
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || "Erro ao salvar bônus.");
-                });
+            if (bonus) {
+                document.getElementById("bonusId").value = bonus.id;
+                document.getElementById("bonusDescription").value = bonus.description;
+                document.getElementById("bonusReleaseDate").value = bonus.release_date;
+                document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
+            } else {
+                document.getElementById("bonusId").value = "";
             }
-            return response.json();
-        })
-        .then(data => {
-            alert("Bônus salvo com sucesso!");
-            location.reload();
-        })
-        .catch(error => {
-            alert("Erro: " + error.message);
-            console.error("Erro ao salvar bônus:", error);
-        });
-    });
 
-    window.editarBonus = function(bonusId) {
-        fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
-            .then(response => response.json())
-            .then(data => {
-                abrirModalBonus(data);
-            })
-            .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-    };
+            modal.show();
+        };
 
-    window.excluirBonus = function(bonusId) {
-        if (confirm("Tem certeza que deseja excluir este bônus?")) {
-            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-                method: "DELETE",
+        document.getElementById("formBonus").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const bonusId = document.getElementById("bonusId").value;
+            const url = bonusId 
+                ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
+                : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
+            const method = bonusId ? "PUT" : "POST";
+
+            fetch(url, {
+                method: method,
                 headers: {
+                    "Content-Type": "application/json",
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                }
+                },
+                body: JSON.stringify({
+                    description: document.getElementById("bonusDescription").value,
+                    release_date: document.getElementById("bonusReleaseDate").value,
+                    expiration_date: document.getElementById("bonusExpirationDate").value || null,
+                })
             })
             .then(response => {
                 if (!response.ok) {
                     return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao excluir bônus.");
+                        throw new Error(errorData.message || "Erro ao salvar bônus.");
                     });
                 }
-                alert("Bônus excluído com sucesso!");
+                return response.json();
+            })
+            .then(data => {
+                alert("Bônus salvo com sucesso!");
                 location.reload();
             })
             .catch(error => {
                 alert("Erro: " + error.message);
-                console.error("Erro ao excluir bônus:", error);
+                console.error("Erro ao salvar bônus:", error);
             });
-        }
-    };
+        });
+
+        window.editarBonus = function(bonusId) {
+            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
+                .then(response => response.json())
+                .then(data => {
+                    abrirModalBonus(data);
+                })
+                .catch(error => console.error("Erro ao buscar bônus para edição:", error));
+        };
+
+        window.excluirBonus = function(bonusId) {
+            if (confirm("Tem certeza que deseja excluir este bônus?")) {
+                fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || "Erro ao excluir bônus.");
+                        });
+                    }
+                    alert("Bônus excluído com sucesso!");
+                    location.reload();
+                })
+                .catch(error => {
+                    alert("Erro: " + error.message);
+                    console.error("Erro ao excluir bônus:", error);
+                });
+            }
+        };
+    });
 </script>
 @endpush
 
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const btnNovoBonus = document.getElementById("btnNovoBonus");
+        if (btnNovoBonus) {
+            btnNovoBonus.addEventListener("click", function() {
+                abrirModalBonus();
+            });
+        }
+    });
 
