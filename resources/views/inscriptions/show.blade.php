@@ -1,3 +1,7 @@
+
+@php
+    use Carbon\Carbon;
+@endphp
 @extends('layouts.app')
 
 
@@ -732,8 +736,8 @@
                                                     @foreach($inscription->bonuses as $bonus)
                                                         <tr>
                                                             <td>{{ $bonus->description }}</td>
-                                                            <td>{{ $bonus->release_date ? CarbonCarbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
-                                                            <td>{{ $bonus->expiration_date ? CarbonCarbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->release_date ? \Carbon\Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->expiration_date ? \Carbon\Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
                                                             <td>
                                                                 <button class="btn btn-sm btn-outline-secondary" onclick="editarBonus({{ $bonus->id }})">
                                                                     <i class="fas fa-edit"></i>
