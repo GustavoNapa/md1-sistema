@@ -3,7 +3,8 @@
 
 @push('scripts')
 <script>
-    function abrirModalBonus(bonus = null) {
+    // Funções JavaScript para o modal de bônus
+    window.abrirModalBonus = function(bonus = null) {
         const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
         const form = document.getElementById("formBonus");
         form.reset();
@@ -18,7 +19,7 @@
         }
 
         modal.show();
-    }
+    };
 
     document.getElementById("formBonus").addEventListener("submit", function(event) {
         event.preventDefault();
@@ -58,16 +59,16 @@
         });
     });
 
-    function editarBonus(bonusId) {
+    window.editarBonus = function(bonusId) {
         fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
             .then(response => response.json())
             .then(data => {
                 abrirModalBonus(data);
             })
             .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-    }
+    };
 
-    function excluirBonus(bonusId) {
+    window.excluirBonus = function(bonusId) {
         if (confirm("Tem certeza que deseja excluir este bônus?")) {
             fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
                 method: "DELETE",
@@ -89,7 +90,7 @@
                 console.error("Erro ao excluir bônus:", error);
             });
         }
-    }
+    };
 </script>
 @endpush
 
@@ -976,7 +977,8 @@ function mostrarMensagemSucesso(mensagem) {
 
 @push("scripts")
 <script>
-    function abrirModalBonus(bonus = null) {
+    // Funções JavaScript para o modal de bônus
+    window.abrirModalBonus = function(bonus = null) {
         const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
         const form = document.getElementById("formBonus");
         form.reset();
@@ -991,7 +993,7 @@ function mostrarMensagemSucesso(mensagem) {
         }
 
         modal.show();
-    }
+    };
 
     document.getElementById("formBonus").addEventListener("submit", function(event) {
         event.preventDefault();
@@ -1031,16 +1033,16 @@ function mostrarMensagemSucesso(mensagem) {
         });
     });
 
-    function editarBonus(bonusId) {
+    window.editarBonus = function(bonusId) {
         fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
             .then(response => response.json())
             .then(data => {
                 abrirModalBonus(data);
             })
             .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-    }
+    };
 
-    function excluirBonus(bonusId) {
+    window.excluirBonus = function(bonusId) {
         if (confirm("Tem certeza que deseja excluir este bônus?")) {
             fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
                 method: "DELETE",
@@ -1062,7 +1064,7 @@ function mostrarMensagemSucesso(mensagem) {
                 console.error("Erro ao excluir bônus:", error);
             });
         }
-    }
+    };
 </script>
 @endpush
 
