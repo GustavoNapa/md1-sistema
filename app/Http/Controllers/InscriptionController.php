@@ -104,8 +104,8 @@ class InscriptionController extends Controller
             'followUps',
             'documents'
         ]);
-
-        return view('inscriptions.show', compact('inscription'));
+        $achievementTypes = \App\Models\AchievementType::all();
+        return view('inscriptions.show', compact('inscription', 'achievementTypes'));
     }
 
     /**
