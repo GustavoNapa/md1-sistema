@@ -116,6 +116,24 @@ Route::middleware('auth')->group(function () {
         Route::post('/{document}/toggle-verification', [App\Http\Controllers\InscriptionDocumentController::class, 'toggleVerification'])->name('documents.toggle-verification');
     });
     
+    // Rotas para faturamentos das inscrições
+    Route::prefix('inscriptions/{inscription}/faturamentos')->name('faturamentos.')->group(function () {
+        Route::get('/', [App\Http\Controllers\FaturamentoController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\FaturamentoController::class, 'store'])->name('store');
+        Route::get('/{faturamento}', [App\Http\Controllers\FaturamentoController::class, 'show'])->name('show');
+        Route::put('/{faturamento}', [App\Http\Controllers\FaturamentoController::class, 'update'])->name('update');
+        Route::delete('/{faturamento}', [App\Http\Controllers\FaturamentoController::class, 'destroy'])->name('destroy');
+    });
+    
+    // Rotas para renovações das inscrições
+    Route::prefix('inscriptions/{inscription}/renovacoes')->name('renovacoes.')->group(function () {
+        Route::get('/', [App\Http\Controllers\RenovacaoController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\RenovacaoController::class, 'store'])->name('store');
+        Route::get('/{renovacao}', [App\Http\Controllers\RenovacaoController::class, 'show'])->name('show');
+        Route::put('/{renovacao}', [App\Http\Controllers\RenovacaoController::class, 'update'])->name('update');
+        Route::delete('/{renovacao}', [App\Http\Controllers\RenovacaoController::class, 'destroy'])->name('destroy');
+    });
+    
     // Rotas de Gestão de Acessos (protegidas por permissão)
     Route::middleware('permission:manage-permissions')->group(function () {
         Route::resource('permissions', PermissionController::class);

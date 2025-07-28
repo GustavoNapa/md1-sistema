@@ -721,7 +721,7 @@
                             </div>
                             
                             <div class="table-responsive">
-                                <table class="table table-striped">
+                                <table class="table table-striped" id="tabelaFaturamentos">
                                     <thead>
                                         <tr>
                                             <th>Mês/Ano</th>
@@ -733,12 +733,37 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Aqui serão listados os faturamentos -->
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted">
-                                                Nenhum faturamento cadastrado ainda.
-                                            </td>
-                                        </tr>
+                                        @if($inscription->faturamentos->count() > 0)
+                                            @foreach($inscription->faturamentos as $faturamento)
+                                                <tr>
+                                                    <td>{{ $faturamento->mes_ano }}</td>
+                                                    <td>R$ {{ number_format($faturamento->valor, 2, ',', '.') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($faturamento->data_vencimento)->format('d/m/Y') }}</td>
+                                                    <td>
+                                                        <span class="badge {{ $faturamento->status === 'pago' ? 'bg-success' : 
+                                                            ($faturamento->status === 'pendente' ? 'bg-warning' : 
+                                                            ($faturamento->status === 'vencido' ? 'bg-danger' : 'bg-secondary')) }}">
+                                                            {{ ucfirst($faturamento->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ $faturamento->observacoes ?? '-' }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarFaturamento({{ $faturamento->id }})">
+                                                            Editar
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirFaturamento({{ $faturamento->id }})">
+                                                            Excluir
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">
+                                                    Nenhum faturamento cadastrado ainda.
+                                                </td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -759,7 +784,18 @@
                                 </div>
                                 <div class="col-md-3">
                                     <p><strong>Status Atual:</strong> 
-                                        <span class="badge bg-warning">Pendente</span>
+                                        @php
+                                            $ultimaRenovacao = $inscription->renovacoes()->latest()->first();
+                                        @endphp
+                                        @if($ultimaRenovacao)
+                                            <span class="badge {{ $ultimaRenovacao->status === 'aprovada' ? 'bg-success' : 
+                                                ($ultimaRenovacao->status === 'pendente' ? 'bg-warning' : 
+                                                ($ultimaRenovacao->status === 'rejeitada' ? 'bg-danger' : 'bg-secondary')) }}">
+                                                {{ ucfirst($ultimaRenovacao->status) }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning">Pendente</span>
+                                        @endif
                                     </p>
                                 </div>
                                 <div class="col-md-3">
@@ -770,7 +806,14 @@
                                 <div class="col-md-3">
                                     <p><strong>Dias para Vencimento:</strong> 
                                         @if($inscription->actual_end_date)
-                                            {{ $inscription->actual_end_date->diffInDays(now(), false) > 0 ? 'Vencido há ' . $inscription->actual_end_date->diffInDays(now()) . ' dias' : $inscription->actual_end_date->diffInDays(now()) . ' dias' }}
+                                            @php
+                                                $diasDiferenca = $inscription->actual_end_date->diffInDays(now(), false);
+                                            @endphp
+                                            @if($diasDiferenca > 0)
+                                                <span class="text-danger">Vencido há {{ $diasDiferenca }} dias</span>
+                                            @else
+                                                <span class="text-success">{{ abs($diasDiferenca) }} dias</span>
+                                            @endif
                                         @else
                                             Não definido
                                         @endif
@@ -784,7 +827,7 @@
                             </div>
                             
                             <div class="table-responsive">
-                                <table class="table table-striped">
+                                <table class="table table-striped" id="tabelaRenovacoes">
                                     <thead>
                                         <tr>
                                             <th>Data da Renovação</th>
@@ -796,12 +839,37 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <!-- Aqui serão listadas as renovações -->
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted">
-                                                Nenhuma renovação cadastrada ainda.
-                                            </td>
-                                        </tr>
+                                        @if($inscription->renovacoes->count() > 0)
+                                            @foreach($inscription->renovacoes as $renovacao)
+                                                <tr>
+                                                    <td>{{ \Carbon\Carbon::parse($renovacao->data_inicio)->format('d/m/Y') }}</td>
+                                                    <td>{{ \Carbon\Carbon::parse($renovacao->data_inicio)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($renovacao->data_fim)->format('d/m/Y') }}</td>
+                                                    <td>R$ {{ number_format($renovacao->valor, 2, ',', '.') }}</td>
+                                                    <td>
+                                                        <span class="badge {{ $renovacao->status === 'aprovada' ? 'bg-success' : 
+                                                            ($renovacao->status === 'pendente' ? 'bg-warning' : 
+                                                            ($renovacao->status === 'rejeitada' ? 'bg-danger' : 'bg-secondary')) }}">
+                                                            {{ ucfirst($renovacao->status) }}
+                                                        </span>
+                                                    </td>
+                                                    <td>{{ $renovacao->observacoes ?? '-' }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editarRenovacao({{ $renovacao->id }})">
+                                                            Editar
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="excluirRenovacao({{ $renovacao->id }})">
+                                                            Excluir
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted">
+                                                    Nenhuma renovação cadastrada ainda.
+                                                </td>
+                                            </tr>
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>
@@ -1454,13 +1522,43 @@ document.addEventListener('DOMContentLoaded', function() {
         formFaturamento.addEventListener("submit", function(event) {
             event.preventDefault();
             const faturamentoId = document.getElementById("faturamentoId").value;
-            
-            // Aqui você pode implementar a lógica para salvar o faturamento
-            alert("Funcionalidade de salvar faturamento será implementada em breve!");
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById("modalFaturamento"));
-            modal.hide();
+            const url = faturamentoId 
+                ? `/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}` 
+                : `/inscriptions/{{ $inscription->id }}/faturamentos`;
+            const method = faturamentoId ? "PUT" : "POST";
+
+            const formData = {
+                mes_ano: document.getElementById("faturamentoMesAno").value,
+                valor: document.getElementById("faturamentoValor").value,
+                data_vencimento: document.getElementById("faturamentoVencimento").value,
+                status: document.getElementById("faturamentoStatus").value,
+                observacoes: document.getElementById("faturamentoObservacoes").value || null,
+            };
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || "Erro ao salvar faturamento.");
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("Faturamento salvo com sucesso!");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Erro: " + error.message);
+                console.error("Erro ao salvar faturamento:", error);
+            });
         });
     }
 
@@ -1469,15 +1567,113 @@ document.addEventListener('DOMContentLoaded', function() {
         formRenovacao.addEventListener("submit", function(event) {
             event.preventDefault();
             const renovacaoId = document.getElementById("renovacaoId").value;
-            
-            // Aqui você pode implementar a lógica para salvar a renovação
-            alert("Funcionalidade de salvar renovação será implementada em breve!");
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById("modalRenovacao"));
-            modal.hide();
+            const url = renovacaoId 
+                ? `/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}` 
+                : `/inscriptions/{{ $inscription->id }}/renovacoes`;
+            const method = renovacaoId ? "PUT" : "POST";
+
+            const formData = {
+                data_inicio: document.getElementById("renovacaoDataInicio").value,
+                data_fim: document.getElementById("renovacaoDataFim").value,
+                valor: document.getElementById("renovacaoValor").value,
+                status: document.getElementById("renovacaoStatus").value,
+                observacoes: document.getElementById("renovacaoObservacoes").value || null,
+            };
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || "Erro ao salvar renovação.");
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert("Renovação salva com sucesso!");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Erro: " + error.message);
+                console.error("Erro ao salvar renovação:", error);
+            });
         });
     }
+
+    // Funções para editar e excluir faturamentos
+    window.editarFaturamento = function(faturamentoId) {
+        fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`)
+            .then(response => response.json())
+            .then(data => {
+                abrirModalFaturamento(data);
+            })
+            .catch(error => console.error("Erro ao buscar faturamento para edição:", error));
+    };
+
+    window.excluirFaturamento = function(faturamentoId) {
+        if (confirm("Tem certeza que deseja excluir este faturamento?")) {
+            fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || "Erro ao excluir faturamento.");
+                    });
+                }
+                alert("Faturamento excluído com sucesso!");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Erro: " + error.message);
+                console.error("Erro ao excluir faturamento:", error);
+            });
+        }
+    };
+
+    // Funções para editar e excluir renovações
+    window.editarRenovacao = function(renovacaoId) {
+        fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`)
+            .then(response => response.json())
+            .then(data => {
+                abrirModalRenovacao(data);
+            })
+            .catch(error => console.error("Erro ao buscar renovação para edição:", error));
+    };
+
+    window.excluirRenovacao = function(renovacaoId) {
+        if (confirm("Tem certeza que deseja excluir esta renovação?")) {
+            fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || "Erro ao excluir renovação.");
+                    });
+                }
+                alert("Renovação excluída com sucesso!");
+                location.reload();
+            })
+            .catch(error => {
+                alert("Erro: " + error.message);
+                console.error("Erro ao excluir renovação:", error);
+            });
+        }
+    };
 });
 </script>
 @endpush
