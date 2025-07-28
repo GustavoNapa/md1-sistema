@@ -19,19 +19,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Custom Fonts CSS -->
-    <link href="{{ asset('css/custom-fonts.css') }}" rel="stylesheet">
-    
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <link href="{{ asset("css/custom-fonts.css") }}" rel="stylesheet">
 </head>
 <body>
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-                    <img src="{{ asset('images/logo-simbolo-semfundo.png') }}" alt="MD1 Academy" height="40">
+                <a class="navbar-brand d-flex align-items-center" href="{{ url("/") }}">
+                    <img src="{{ asset("images/logo-simbolo-semfundo.png") }}" alt="MD1 Academy" height="40">
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __("Toggle navigation") }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -40,26 +37,26 @@
                     <ul class="navbar-nav me-auto">
                         @auth
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('clients.index') }}">Clientes</a>
+                                <a class="nav-link" href="{{ route("clients.index") }}">Clientes</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('products.index') }}">Produtos</a>
+                                <a class="nav-link" href="{{ route("products.index") }}">Produtos</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('inscriptions.index') }}">Inscrições</a>
+                                <a class="nav-link" href="{{ route("inscriptions.index") }}">Inscrições</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdownCadastros" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     Cadastros
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownCadastros">
-                                    <a class="dropdown-item" href="{{ route('achievement_types.index') }}">Tipos de Conquistas</a>
-                                    <a class="dropdown-item" href="{{ route('clients.index') }}">Clientes</a>
-                                    <a class="dropdown-item" href="{{ route('products.index') }}">Produtos</a>
+                                    <a class="dropdown-item" href="{{ route("achievement_types.index") }}">Tipos de Conquistas</a>
+                                    <a class="dropdown-item" href="{{ route("clients.index") }}">Clientes</a>
+                                    <a class="dropdown-item" href="{{ route("products.index") }}">Produtos</a>
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('import.index') }}">Importação</a>
+                                <a class="nav-link" href="{{ route("import.index") }}">Importação</a>
                             </li>
                         @endauth
                     </ul>
@@ -68,9 +65,9 @@
                     <ul class="navbar-nav ms-auto">
                         <!-- Authentication Links -->
                         @guest
-                            @if (Route::has('login'))
+                            @if (Route::has("login"))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('app.login') }}</a>
+                                    <a class="nav-link" href="{{ route("login") }}">{{ __("app.login") }}</a>
                                 </li>
                             @endif
                         @else
@@ -80,23 +77,23 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    @if(Auth::user()->hasPermission('manage-permissions') || Auth::user()->hasPermission('manage-roles') || Auth::user()->hasPermission('manage-users'))
+                                    @if(Auth::user()->hasPermission("manage-permissions") || Auth::user()->hasPermission("manage-roles") || Auth::user()->hasPermission("manage-users"))
                                         <h6 class="dropdown-header">Gestão de Acessos</h6>
                                         
-                                        @if(Auth::user()->hasPermission('manage-permissions'))
-                                            <a class="dropdown-item" href="{{ route('permissions.index') }}">
+                                        @if(Auth::user()->hasPermission("manage-permissions"))
+                                            <a class="dropdown-item" href="{{ route("permissions.index") }}">
                                                 <i class="fas fa-shield-alt me-2"></i>Permissões
                                             </a>
                                         @endif
                                         
-                                        @if(Auth::user()->hasPermission('manage-roles'))
-                                            <a class="dropdown-item" href="{{ route('roles.index') }}">
+                                        @if(Auth::user()->hasPermission("manage-roles"))
+                                            <a class="dropdown-item" href="{{ route("roles.index") }}">
                                                 <i class="fas fa-user-tag me-2"></i>Cargos
                                             </a>
                                         @endif
                                         
-                                        @if(Auth::user()->hasPermission('manage-users'))
-                                            <a class="dropdown-item" href="{{ route('users.index') }}">
+                                        @if(Auth::user()->hasPermission("manage-users"))
+                                            <a class="dropdown-item" href="{{ route("users.index") }}">
                                                 <i class="fas fa-users me-2"></i>Usuários
                                             </a>
                                         @endif
@@ -104,20 +101,20 @@
                                         <hr class="dropdown-divider">
                                     @endif
                                     
-                                    @if(Auth::user()->hasPermission('manage-integrations'))
-                                        <a class="dropdown-item" href="{{ route('integrations.index') }}">
+                                    @if(Auth::user()->hasPermission("manage-integrations"))
+                                        <a class="dropdown-item" href="{{ route("integrations.index") }}">
                                             <i class="fas fa-plug me-2"></i>Integrações
                                         </a>
                                         <hr class="dropdown-divider">
                                     @endif
                                     
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                    <a class="dropdown-item" href="{{ route("logout") }}"
                                        onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        <i class="fas fa-sign-out-alt me-2"></i>{{ __('app.logout') }}
+                                                     document.getElementById("logout-form").submit();">
+                                        <i class="fas fa-sign-out-alt me-2"></i>{{ __("app.logout") }}
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                    <form id="logout-form" action="{{ route("logout") }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
                                 </div>
@@ -130,21 +127,21 @@
 
         <main class="py-4">
             <div class="container">
-                @if (session('success'))
+                @if (session("success"))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
+                        {{ session("success") }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
-                @if (session('error'))
+                @if (session("error"))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ session('error') }}
+                        {{ session("error") }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
 
-                @yield('content')
+                @yield("content")
             </div>
         </main>
     </div>
@@ -157,55 +154,10 @@
     
     <!-- jQuery Mask Plugin -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-    <script>
-        // Aguardar o carregamento completo do DOM e do Bootstrap
-        document.addEventListener('DOMContentLoaded', function() {
-            // Garantir que jQuery está disponível globalmente
-            if (typeof window.$ === 'undefined' && typeof window.jQuery !== 'undefined') {
-                window.$ = window.jQuery;
-            }
-            
-            // Aguardar um pouco mais para garantir que o Bootstrap foi carregado
-            setTimeout(function() {
-                // Verificar se Bootstrap está disponível
-                if (typeof bootstrap !== 'undefined') {
-                    // Ativar tooltips do Bootstrap
-                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                        return new bootstrap.Tooltip(tooltipTriggerEl);
-                    });
-                    
-                    // Inicializar dropdowns do Bootstrap manualmente
-                    var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-                    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-                        return new bootstrap.Dropdown(dropdownToggleEl);
-                    });
-                    
-                    // Debug: verificar se os dropdowns foram inicializados
-                    console.log('Dropdowns inicializados:', dropdownList.length);
-                    console.log('Bootstrap carregado:', typeof bootstrap !== 'undefined');
-                    console.log('jQuery carregado:', typeof $ !== 'undefined');
-                } else {
-                    console.error('Bootstrap não foi carregado corretamente');
-                }
-            }, 100);
-        });
-        
-        // Fallback: tentar inicializar novamente quando a página estiver totalmente carregada
-        window.addEventListener('load', function() {
-            if (typeof bootstrap !== 'undefined') {
-                // Re-inicializar dropdowns caso não tenham funcionado
-                document.querySelectorAll('.dropdown-toggle').forEach(function(dropdownToggle) {
-                    if (!bootstrap.Dropdown.getInstance(dropdownToggle)) {
-                        new bootstrap.Dropdown(dropdownToggle);
-                    }
-                });
-            }
-        });
-    </script>
     
-    @yield('scripts')
+    @yield("scripts")
+    <!-- Scripts -->
+    @vite(["resources/sass/app.scss", "resources/js/app.js"])
 </body>
 </html>
 
