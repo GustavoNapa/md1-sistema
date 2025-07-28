@@ -1,11 +1,9 @@
-- [ ] Inscrições
-    - [x] Adicionar aba para os bônus
-    - [x] Criar campo canal de entrada nos dados básicos
-    - [x] conquistas - ter o campo tipo de conquista
-    - [ ] Separar sessão semana de pagamento
-    - [ ] Adicionar campo do link para a Pasta
-    - [ ] Aba de faturamento mês a mês
-    - [ ] Aba de renovação
-- [ ] Chat + CRM (Whatsapp, Evolution API)
-
+- [ ] Fazer pull das últimas alterações
+- [ ] Reproduzir o bug e registrar o log
+- [ ] Diagnosticar a causa raiz dos erros JavaScript
+- [ ] Aplicar as correções no código
+- [ ] Implementar teste de interface com Laravel Dusk
+- [ ] Rodar testes e corrigir até passar
+- [ ] Commit e push das correções
+- [ ] Validar próxima tarefa do backlog
 
