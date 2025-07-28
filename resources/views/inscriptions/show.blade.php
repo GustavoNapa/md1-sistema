@@ -4,102 +4,6 @@
 @endphp
 @extends('layouts.app')
 
-
-@push('scripts')
-<script>
-    // Funções JavaScript para o modal de bônus
-    
-        window.abrirModalBonus = function(bonus = null) {
-            const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
-            const form = document.getElementById("formBonus");
-            form.reset();
-
-            if (bonus) {
-                document.getElementById("bonusId").value = bonus.id;
-                document.getElementById("bonusDescription").value = bonus.description;
-                document.getElementById("bonusReleaseDate").value = bonus.release_date;
-                document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
-            } else {
-                document.getElementById("bonusId").value = "";
-            }
-
-            modal.show();
-        };
-
-        document.getElementById("formBonus").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const bonusId = document.getElementById("bonusId").value;
-            const url = bonusId 
-                ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
-                : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
-            const method = bonusId ? "PUT" : "POST";
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify({
-                    description: document.getElementById("bonusDescription").value,
-                    release_date: document.getElementById("bonusReleaseDate").value,
-                    expiration_date: document.getElementById("bonusExpirationDate").value || null,
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao salvar bônus.");
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert("Bônus salvo com sucesso!");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao salvar bônus:", error);
-            });
-        });
-
-        window.editarBonus = function(bonusId) {
-            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
-                .then(response => response.json())
-                .then(data => {
-                    abrirModalBonus(data);
-                })
-                .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-        };
-
-        window.excluirBonus = function(bonusId) {
-            if (confirm("Tem certeza que deseja excluir este bônus?")) {
-                fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-                    method: "DELETE",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || "Erro ao excluir bônus.");
-                        });
-                    }
-                    alert("Bônus excluído com sucesso!");
-                    location.reload();
-                })
-                .catch(error => {
-                    alert("Erro: " + error.message);
-                    console.error("Erro ao excluir bônus:", error);
-                });
-            }
-        };
-    });
-</script>
-@endpush
-
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -716,7 +620,7 @@
                                 <div class="tab-pane fade" id="bonus" role="tabpanel">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h6 class="mb-0">Bônus</h6>
-                                        <button class="btn btn-sm btn-primary" id="btnNovoBonus">
+                                        <button type="button" class="btn btn-sm btn-primary" id="btnNovoBonus">
                                             <i class="fas fa-plus"></i> Novo Bônus
                                         </button>
                                     </div>
@@ -736,13 +640,13 @@
                                                     @foreach($inscription->bonuses as $bonus)
                                                         <tr>
                                                             <td>{{ $bonus->description }}</td>
-                                                            <td>{{ $bonus->release_date ? \Carbon\Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
-                                                            <td>{{ $bonus->expiration_date ? \Carbon\Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->release_date ? Carbon::parse($bonus->release_date)->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $bonus->expiration_date ? Carbon::parse($bonus->expiration_date)->format('d/m/Y') : 'N/A' }}</td>
                                                             <td>
-                                                                <button class="btn btn-sm btn-outline-secondary" onclick="editarBonus({{ $bonus->id }})">
+                                                                <button class="btn btn-sm btn-outline-secondary btn-editar-bonus" data-bonus-id="{{ $bonus->id }}">
                                                                     <i class="fas fa-edit"></i>
                                                                 </button>
-                                                                <button class="btn btn-sm btn-outline-danger" onclick="excluirBonus({{ $bonus->id }})">
+                                                                <button class="btn btn-sm btn-outline-danger btn-excluir-bonus" data-bonus-id="{{ $bonus->id }}">
                                                                     <i class="fas fa-trash"></i>
                                                                 </button>
                                                             </td>
@@ -950,7 +854,7 @@ function mostrarMensagemSucesso(mensagem) {
     </div>
 </div>
 
-<!-- Modais (exemplo, você precisará criar os modais reais) -->
+<!-- Modal de Bônus -->
 <div class="modal fade" id="modalBonus" tabindex="-1" aria-labelledby="modalBonusLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -959,7 +863,6 @@ function mostrarMensagemSucesso(mensagem) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Formulário para adicionar/editar bônus -->
                 <form id="formBonus">
                     <input type="hidden" id="bonusId" name="id">
                     <div class="mb-3">
@@ -968,7 +871,7 @@ function mostrarMensagemSucesso(mensagem) {
                     </div>
                     <div class="mb-3">
                         <label for="bonusReleaseDate" class="form-label">Data de Liberação</label>
-                        <input type="date" class="form-control" id="bonusReleaseDate" name="release_date" required>
+                        <input type="date" class="form-control" id="bonusReleaseDate" name="release_date">
                     </div>
                     <div class="mb-3">
                         <label for="bonusExpirationDate" class="form-label">Data de Expiração (Opcional)</label>
@@ -981,110 +884,388 @@ function mostrarMensagemSucesso(mensagem) {
     </div>
 </div>
 
-@push("scripts")
+<style>
+/* Fallback CSS para garantir que o modal apareça */
+.modal.show {
+    display: block !important;
+    z-index: 1055 !important;
+}
+.modal-backdrop.show {
+    opacity: 0.5;
+    z-index: 1050 !important;
+}
+
+/* Garantir que o modal de bônus tenha prioridade */
+#modalBonus {
+    z-index: 1060 !important;
+}
+
+#modalBonus.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Override para qualquer CSS conflitante */
+.modal-open {
+    overflow: hidden !important;
+}
+
+/* Debug: adicionar bordas temporárias */
+#modalBonus {
+    border: 3px solid red !important;
+}
+
+#modalBonus .modal-content {
+    border: 2px solid blue !important;
+}
+</style>
+
+@push('scripts')
 <script>
-    // Funções JavaScript para o modal de bônus
+// Scripts para o modal de bônus
+window.formatDateForInput = function(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().slice(0, 10);
+};
+
+window.abrirModalBonus = function(bonus = null) {
+    console.log('=== INICIANDO ABERTURA DO MODAL DE BÔNUS ===');
+    const modalElement = document.getElementById('modalBonus');
     
-        window.abrirModalBonus = function(bonus = null) {
-            const modal = new bootstrap.Modal(document.getElementById("modalBonus"));
-            const form = document.getElementById("formBonus");
-            form.reset();
-
-            if (bonus) {
-                document.getElementById("bonusId").value = bonus.id;
-                document.getElementById("bonusDescription").value = bonus.description;
-                document.getElementById("bonusReleaseDate").value = bonus.release_date;
-                document.getElementById("bonusExpirationDate").value = bonus.expiration_date;
-            } else {
-                document.getElementById("bonusId").value = "";
+    if (!modalElement) {
+        console.error('❌ Modal não encontrado no DOM');
+        alert('Erro: Modal não encontrado no DOM');
+        return;
+    }
+    
+    console.log('✅ Modal encontrado:', modalElement);
+    
+    const form = document.getElementById('formBonus');
+    if (!form) {
+        console.error('❌ Formulário não encontrado');
+        alert('Erro: Formulário não encontrado');
+        return;
+    }
+    
+    // Resetar formulário primeiro
+    form.reset();
+    document.getElementById('bonusId').value = '';
+    document.getElementById('bonusDescription').value = '';
+    document.getElementById('bonusReleaseDate').value = '';
+    document.getElementById('bonusExpirationDate').value = '';
+    
+    console.log('✅ Formulário resetado');
+    
+    // Método 1: jQuery
+    let tentativas = 0;
+    let modalAberto = false;
+    
+    if (typeof $ !== 'undefined') {
+        console.log('🔄 Tentativa 1: jQuery');
+        try {
+            $('#modalBonus').modal('show');
+            // Verificar se abriu
+            setTimeout(() => {
+                if (modalElement.classList.contains('show')) {
+                    console.log('✅ Modal aberto com jQuery');
+                    modalAberto = true;
+                } else {
+                    console.log('❌ jQuery falhou, tentando Bootstrap nativo');
+                    tentarBootstrapNativo();
+                }
+            }, 100);
+        } catch (e) {
+            console.error('❌ Erro com jQuery:', e);
+            tentarBootstrapNativo();
+        }
+    } else {
+        tentarBootstrapNativo();
+    }
+    
+    function tentarBootstrapNativo() {
+        if (modalAberto) return;
+        
+        console.log('🔄 Tentativa 2: Bootstrap nativo');
+        if (typeof bootstrap !== 'undefined') {
+            try {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                
+                setTimeout(() => {
+                    if (modalElement.classList.contains('show')) {
+                        console.log('✅ Modal aberto com Bootstrap nativo');
+                        modalAberto = true;
+                    } else {
+                        console.log('❌ Bootstrap nativo falhou, forçando manualmente');
+                        forcarModalManual();
+                    }
+                }, 100);
+            } catch (e) {
+                console.error('❌ Erro com Bootstrap nativo:', e);
+                forcarModalManual();
             }
+        } else {
+            forcarModalManual();
+        }
+    }
+    
+    function forcarModalManual() {
+        if (modalAberto) return;
+        
+        console.log('🔄 Tentativa 3: Forçando manualmente');
+        try {
+            // Remover aria-hidden e adicionar classes necessárias
+            modalElement.style.display = 'block';
+            modalElement.classList.add('show');
+            modalElement.setAttribute('aria-hidden', 'false');
+            modalElement.setAttribute('aria-modal', 'true');
+            
+            // Adicionar backdrop
+            let backdrop = document.querySelector('.modal-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+            
+            // Adicionar classe ao body
+            document.body.classList.add('modal-open');
+            
+            console.log('✅ Modal forçado manualmente');
+            modalAberto = true;
+            
+            // Listener para fechar com backdrop
+            backdrop.addEventListener('click', function() {
+                fecharModal();
+            });
+            
+        } catch (e) {
+            console.error('❌ Erro ao forçar modal:', e);
+            alert('Erro crítico: Não foi possível abrir o modal de bônus');
+        }
+    }
+    
+    function fecharModal() {
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+        
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+        
+        document.body.classList.remove('modal-open');
+    }
 
-            modal.show();
-        };
+    if (bonus) {
+        document.getElementById('bonusId').value = bonus.id;
+        document.getElementById('bonusDescription').value = bonus.description || '';
+        document.getElementById('bonusReleaseDate').value = formatDateForInput(bonus.release_date);
+        document.getElementById('bonusExpirationDate').value = formatDateForInput(bonus.expiration_date);
+    }
+};
 
-        document.getElementById("formBonus").addEventListener("submit", function(event) {
+// Função de teste para ser chamada pelo console
+window.testarModalBonus = function() {
+    console.log('=== TESTE DO MODAL DE BÔNUS ===');
+    console.log('DOM carregado:', document.readyState);
+    console.log('jQuery disponível:', typeof $ !== 'undefined');
+    console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
+    
+    const modal = document.getElementById('modalBonus');
+    console.log('Modal encontrado:', !!modal);
+    
+    if (modal) {
+        console.log('Classes do modal:', modal.className);
+        console.log('Display do modal:', getComputedStyle(modal).display);
+        console.log('Z-index do modal:', getComputedStyle(modal).zIndex);
+    }
+    
+    const btnNovoBonus = document.getElementById('btnNovoBonus');
+    console.log('Botão encontrado:', !!btnNovoBonus);
+    
+    if (btnNovoBonus) {
+        console.log('Forçando clique no botão...');
+        btnNovoBonus.click();
+    }
+    
+    return {
+        dom: document.readyState,
+        jquery: typeof $ !== 'undefined',
+        bootstrap: typeof bootstrap !== 'undefined',
+        modal: !!modal,
+        botao: !!btnNovoBonus
+    };
+};
+
+// Função para forçar modal via console
+window.forceShowModal = function() {
+    console.log('=== FORÇANDO MODAL VIA CONSOLE ===');
+    const modal = document.getElementById('modalBonus');
+    if (!modal) {
+        console.error('Modal não encontrado');
+        return;
+    }
+    
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    
+    let backdrop = document.querySelector('.modal-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        document.body.appendChild(backdrop);
+    }
+    
+    console.log('Modal forçado com sucesso!');
+};
+
+window.editarBonus = function(bonusId) {
+    console.log('Editando bônus', bonusId);
+    fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
+        .then(response => response.json())
+        .then(data => {
+            window.abrirModalBonus(data);
+        })
+        .catch(error => {
+            console.error('Erro ao buscar bônus para edição:', error);
+            alert('Erro ao buscar dados do bônus');
+        });
+};
+
+window.excluirBonus = function(bonusId) {
+    if (confirm('Tem certeza que deseja excluir este bônus?')) {
+        fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Bônus excluído com sucesso!');
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Erro ao excluir bônus:', error);
+            alert('Erro ao excluir bônus');
+        });
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM carregado, configurando eventos para modal de bônus');
+    
+    // Debug: verificar se todos os elementos estão disponíveis
+    const btnNovoBonus = document.getElementById('btnNovoBonus');
+    const modalBonus = document.getElementById('modalBonus');
+    const formBonus = document.getElementById('formBonus');
+    
+    console.log('Botão Novo Bônus encontrado:', !!btnNovoBonus);
+    console.log('Modal Bônus encontrado:', !!modalBonus);
+    console.log('Form Bônus encontrado:', !!formBonus);
+    console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
+    console.log('jQuery disponível:', typeof $ !== 'undefined');
+    
+    // Listener para o botão Novo Bônus
+    if (btnNovoBonus) {
+        console.log('Configurando evento do botão Novo Bônus');
+        btnNovoBonus.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Clique no botão Novo Bônus - chamando abrirModalBonus');
+            window.abrirModalBonus();
+        });
+    } else {
+        console.error('Botão Novo Bônus não encontrado');
+    }
+
+    // Listeners para botões de editar bônus
+    document.querySelectorAll('.btn-editar-bonus').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bonusId = this.getAttribute('data-bonus-id');
+            console.log('Editando bônus:', bonusId);
+            window.editarBonus(bonusId);
+        });
+    });
+
+    // Listeners para botões de excluir bônus
+    document.querySelectorAll('.btn-excluir-bonus').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const bonusId = this.getAttribute('data-bonus-id');
+            console.log('Excluindo bônus:', bonusId);
+            window.excluirBonus(bonusId);
+        });
+    });
+
+    // Submit do formulário de bônus
+    if (formBonus) {
+        formBonus.addEventListener('submit', function(event) {
             event.preventDefault();
-            const bonusId = document.getElementById("bonusId").value;
-            const url = bonusId 
-                ? `/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}` 
-                : `/api/subscriptions/{{ $inscription->id }}/bonuses`;
-            const method = bonusId ? "PUT" : "POST";
+            const bonusId = document.getElementById('bonusId').value;
+            const url = bonusId
+                ? `/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`
+                : `/api/inscriptions/{{ $inscription->id }}/bonuses`;
+            const method = bonusId ? 'PUT' : 'POST';
 
             fetch(url, {
                 method: method,
                 headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    description: document.getElementById("bonusDescription").value,
-                    release_date: document.getElementById("bonusReleaseDate").value,
-                    expiration_date: document.getElementById("bonusExpirationDate").value || null,
+                    description: document.getElementById('bonusDescription').value,
+                    release_date: document.getElementById('bonusReleaseDate').value || null,
+                    expiration_date: document.getElementById('bonusExpirationDate').value || null
                 })
             })
             .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao salvar bônus.");
-                    });
-                }
+                if (!response.ok) throw new Error('Erro ao salvar bônus');
                 return response.json();
             })
             .then(data => {
-                alert("Bônus salvo com sucesso!");
+                alert('Bônus salvo com sucesso!');
                 location.reload();
             })
             .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao salvar bônus:", error);
+                alert('Erro: ' + error.message);
+                console.error('Erro ao salvar bônus:', error);
             });
         });
-
-        window.editarBonus = function(bonusId) {
-            fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
-                .then(response => response.json())
-                .then(data => {
-                    abrirModalBonus(data);
-                })
-                .catch(error => console.error("Erro ao buscar bônus para edição:", error));
-        };
-
-        window.excluirBonus = function(bonusId) {
-            if (confirm("Tem certeza que deseja excluir este bônus?")) {
-                fetch(`/api/subscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-                    method: "DELETE",
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            throw new Error(errorData.message || "Erro ao excluir bônus.");
-                        });
-                    }
-                    alert("Bônus excluído com sucesso!");
-                    location.reload();
-                })
-                .catch(error => {
-                    alert("Erro: " + error.message);
-                    console.error("Erro ao excluir bônus:", error);
-                });
+    } else {
+        console.error('Formulário de bônus não encontrado');
+    }
+    
+    // Fallback: tentar abrir modal manualmente usando CSS se necessário
+    window.forceShowModal = function() {
+        const modal = document.getElementById('modalBonus');
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            
+            // Criar backdrop se não existir
+            if (!document.querySelector('.modal-backdrop')) {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
             }
-        };
-    });
+        }
+    };
+});
 </script>
 @endpush
-
-
-
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const btnNovoBonus = document.getElementById("btnNovoBonus");
-        if (btnNovoBonus) {
-            btnNovoBonus.addEventListener("click", function() {
-                abrirModalBonus();
-            });
-        }
-    });
 
