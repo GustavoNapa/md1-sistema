@@ -6,6 +6,8 @@ use App\Models\Inscription;
 use App\Models\Client;
 use App\Models\Vendor;
 use App\Models\Product;
+use App\Events\InscriptionCreated;
+use App\Events\InscriptionUpdated;
 use Illuminate\Http\Request;
 
 class InscriptionController extends Controller
