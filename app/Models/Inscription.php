@@ -123,6 +123,27 @@ class Inscription extends Model
         return $this->belongsTo(EntryChannel::class, 'entry_channel');
     }
 
+    /**
+     * Obtém a faixa de faturamento baseada no valor pago
+     */
+    public function getFaixaFaturamento()
+    {
+        if (!$this->amount_paid) {
+            return null;
+        }
+        
+        return FaixaFaturamento::findByValue($this->amount_paid);
+    }
+
+    /**
+     * Accessor para obter o label da faixa de faturamento
+     */
+    public function getFaixaFaturamentoLabelAttribute()
+    {
+        $faixa = $this->getFaixaFaturamento();
+        return $faixa ? $faixa->label : 'Não definida';
+    }
+
     // Accessors
     public function getStatusLabelAttribute()
     {

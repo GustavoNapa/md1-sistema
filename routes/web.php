@@ -183,6 +183,10 @@ Route::middleware('auth')->group(function () {
     
     // Rotas de Tipos de Conquista
     Route::resource('achievement_types', AchievementTypeController::class);
+    
+    // Rotas de Faixa de Faturamento
+    Route::resource('faixa-faturamentos', App\Http\Controllers\FaixaFaturamentoController::class);
+    Route::get('/api/faixa-faturamentos', [App\Http\Controllers\FaixaFaturamentoController::class, 'api'])->name('faixa-faturamentos.api');
 });
 
 // Rota de teste para template fields (temporária)
