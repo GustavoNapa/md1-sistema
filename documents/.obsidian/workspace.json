@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "user-historyes/01-3-disparo-condicional-por-status.md.md",
+                "file": "Propmt - Fase 2 - Manus.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "01-3-disparo-condicional-por-status.md"
+              "title": "Propmt - Fase 2 - Manus"
             }
           },
           {
@@ -108,7 +108,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "user-historyes/01-3-disparo-condicional-por-status.md.md",
+                "file": "Propmt - Fase 2 - Manus.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Links inversos para 01-3-disparo-condicional-por-status.md"
+              "title": "Links inversos para Propmt - Fase 2 - Manus"
             }
           },
           {
@@ -127,12 +127,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "user-historyes/01-3-disparo-condicional-por-status.md.md",
+                "file": "Propmt - Fase 2 - Manus.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Links de saída para 01-3-disparo-condicional-por-status.md"
+              "title": "Links de saída para Propmt - Fase 2 - Manus"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "user-historyes/01-3-disparo-condicional-por-status.md.md",
+                "file": "Propmt - Fase 2 - Manus.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Sumário de 01-3-disparo-condicional-por-status.md"
+              "title": "Sumário de Propmt - Fase 2 - Manus"
             }
           }
         ]
@@ -184,8 +184,10 @@
   },
   "active": "726ff76a911a36ee",
   "lastOpenFiles": [
-    "Todo - Fase 2.md",
+    "todos/HEAD_CS_2025-07.md",
     "user-historyes/01-3-disparo-condicional-por-status.md.md",
+    "Propmt - Fase 2 - Manus.md",
+    "Todo - Fase 2.md",
     "user-historyes/01-2-2-incluir-mapping-tabela-equivalencia.md.md",
     "user-historyes/01-2-1-enviar-campos-cliente-inscricao.md.md",
     "user-historyes/01-2-disparo-post-json-inscricao.md.md",
