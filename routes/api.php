@@ -70,3 +70,8 @@ Route::prefix("whatsapp")->group(function () {
 });
 
 
+
+
+Route::post("inscriptions/{inscription}/move", [App\Http\Controllers\InscriptionController::class, "move"]);
+
+
