@@ -40,6 +40,7 @@ class ProcessInscriptionWebhook implements ShouldQueue
             'event' => 'inscription_updated',
             'client' => $this->inscription->client->toArray(),
             'inscription' => $this->inscription->toArray(),
+            'mapping' => config('webhook_mapping'),
         ];
 
         try {

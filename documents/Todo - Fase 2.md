@@ -11,7 +11,7 @@
   - [x] **01.1** Criar tela para cadastrar a **URL do webhook** no CRUD **Produto**
   - [ ] **01.2** Disparar **POST JSON** ao criar/atualizar **Inscrição**
     - [x] **01.2.1** Enviar todos os campos de **Cliente** + **Inscrição**
-    - [ ] **01.2.2** Incluir objeto **mapping** conforme tabela de equivalência
+    - [x] **01.2.2** Incluir objeto **mapping** conforme tabela de equivalência
   - [ ] **01.3** Executar disparo **somente** quando o **status** da Inscrição corresponder às regras
 
 - [x] **02 Kanban de Inscrições** ([user story](../user-historyes/02-kanban-inscricoes.md))
