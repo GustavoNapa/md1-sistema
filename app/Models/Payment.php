@@ -11,9 +11,10 @@ class Payment extends Model
 
     protected $fillable = [
         'inscription_id',
+        'tipo',
         'valor',
-        'metodo_pagamento',
         'data_pagamento',
+        'forma_pagamento',
         'status',
         'observacoes'
     ];

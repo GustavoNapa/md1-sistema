@@ -58,6 +58,11 @@ class Client extends Model
         return $this->hasMany(ClientCompany::class);
     }
 
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
     // Accessors para exibição
     public function getFormattedCpfAttribute()
     {

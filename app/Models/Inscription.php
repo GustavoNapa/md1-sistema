@@ -35,7 +35,16 @@ class Inscription extends Model
         'entry_channel',
         'contrato_assinado',
         'contrato_na_pasta',
-        'contract_folder_link'
+        'contract_folder_link',
+        'natureza_juridica',
+        'cpf_cnpj',
+        'valor_total',
+        'forma_pagamento_entrada',
+        'valor_entrada',
+        'data_pagamento_entrada',
+        'forma_pagamento_restante',
+        'valor_restante',
+        'data_contrato'
     ];
 
     protected $casts = [
@@ -45,7 +54,12 @@ class Inscription extends Model
         'platform_release_date' => 'date',
         'has_medboss' => 'boolean',
         'amount_paid' => 'decimal:2',
-        'historico_faturamento' => 'array'
+        'historico_faturamento' => 'array',
+        'valor_total' => 'decimal:2',
+        'valor_entrada' => 'decimal:2',
+        'valor_restante' => 'decimal:2',
+        'data_pagamento_entrada' => 'date',
+        'data_contrato' => 'date'
     ];
 
     protected static function boot()
