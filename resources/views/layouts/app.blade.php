@@ -183,9 +183,11 @@
                                         </a>
                                     @endcan
 
-                                    <a class="dropdown-item" href="{{ route("webhook-logs.index") }}">
-                                        <i class="fas fa-exchange-alt me-2"></i>Webhooks
-                                    </a>
+                                    @can('webhook-logs.view')
+                                        <a class="dropdown-item" href="{{ route("webhook-logs.index") }}">
+                                            <i class="fas fa-exchange-alt me-2"></i>Logs de Webhooks
+                                        </a>
+                                    @endcan
 
                                     @can('manage-integrations')
                                         <a class="dropdown-item" href="{{ route("integrations.index") }}">
