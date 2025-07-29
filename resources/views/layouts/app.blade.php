@@ -158,6 +158,56 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    @auth
+                                        @php
+                                            $adminItems = [
+                                                [
+                                                    'name' => 'Usuários',
+                                                    'route' => 'users.index',
+                                                    'permission' => 'users.index',
+                                                    'icon' => 'fas fa-users',
+                                                ],
+                                                [
+                                                    'name' => 'Cargos',
+                                                    'route' => 'roles.index',
+                                                    'permission' => 'roles.index',
+                                                    'icon' => 'fas fa-user-tag',
+                                                ],
+                                                [
+                                                    'name' => 'Permissões',
+                                                    'route' => 'permissions.index',
+                                                    'permission' => 'permissions.index',
+                                                    'icon' => 'fas fa-shield-alt',
+                                                ],
+                                                [
+                                                    'name' => 'Funcionalidades',
+                                                    'route' => 'feature-flags.index',
+                                                    'permission' => 'feature-flags.index',
+                                                    'icon' => 'fas fa-toggle-on',
+                                                ],
+                                                [
+                                                    'name' => 'Logs de Webhooks',
+                                                    'route' => 'webhook-logs.index',
+                                                    'permission' => 'webhook-logs.index',
+                                                    'icon' => 'fas fa-exchange-alt',
+                                                ],
+                                                [
+                                                    'name' => 'Integrações',
+                                                    'route' => 'integrations.index',
+                                                    'permission' => 'integrations.index',
+                                                    'icon' => 'fas fa-plug',
+                                                ],
+                                            ];
+                                        @endphp
+                                        @foreach($adminItems as $item)
+                                            @can($item['permission'])
+                                                <a class="dropdown-item" href="{{ route($item['route']) }}">
+                                                    <i class="{{ $item['icon'] }} me-2"></i>{{ $item['name'] }}
+                                                </a>
+                                            @endcan
+                                        @endforeach
+                                        <div class="dropdown-divider"></div>
+                                    @endauth
                                     <a class="dropdown-item" href="{{ route("logout") }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById("logout-form").submit();">
