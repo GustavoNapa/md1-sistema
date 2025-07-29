@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('whatsapp_messages', function (Blueprint $table) {
+        if (!Schema::hasTable("whatsapp_messages")) {
+            Schema::create("whatsapp_messages", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('conversation_id'); // FK para whatsapp_conversations
             $table->string('message_id')->unique(); // ID único da mensagem no WhatsApp

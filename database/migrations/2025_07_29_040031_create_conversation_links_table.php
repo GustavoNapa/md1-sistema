@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conversation_links', function (Blueprint $table) {
+        if (!Schema::hasTable("conversation_links")) {
+            Schema::create("conversation_links", function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('conversation_id'); // FK para whatsapp_conversations
             $table->enum('old_type', ['client', 'contact'])->nullable(); // Tipo anterior

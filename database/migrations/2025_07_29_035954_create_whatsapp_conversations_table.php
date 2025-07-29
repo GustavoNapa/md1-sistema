@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('whatsapp_conversations', function (Blueprint $table) {
+        if (!Schema::hasTable('whatsapp_conversations')) {
+            Schema::create('whatsapp_conversations', function (Blueprint $table) {
             $table->id();
             $table->string('contact_phone')->index(); // Número do WhatsApp normalizado
             $table->string('contact_name')->nullable(); // Nome do contato no WhatsApp
