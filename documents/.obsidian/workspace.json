@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Todo - Fase 2.md",
+                "file": "user-historyes/03-integracao-whatsapp-evolution-api.md.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Todo - Fase 2"
+              "title": "03-integracao-whatsapp-evolution-api.md"
             }
           },
           {
@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "user-historyes/02-kanban-inscricoes.md.md",
+                "file": "Todo - Fase 2.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "02-kanban-inscricoes.md"
+              "title": "Todo - Fase 2"
             }
           },
           {
@@ -49,7 +49,8 @@
               "title": "01-2-1-enviar-campos-cliente-inscricao.md"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -196,13 +197,19 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "726ff76a911a36ee",
+  "active": "6d1527b43a281f8a",
   "lastOpenFiles": [
-    "user-historyes/02-3-crud-faixa-faturamento.md.md",
+    "user-historyes/02-kanban-inscricoes.md",
+    "user-historyes/03-2-2-Painel-de-Chat.md",
+    "user-historyes/03-2-tela-chat.md.md",
     "Todo - Fase 2.md",
+    "user-historyes/03-1-configurar-credenciais-env.md.md",
+    "user-historyes/02-kanban-inscricoes.md.md",
+    "user-historyes/03-integracao-whatsapp-evolution-api.md.md",
+    "user-historyes/02-3-crud-faixa-faturamento.md",
+    "user-historyes/02-3-crud-faixa-faturamento.md.md",
     "user-historyes/02-2-renderizar-colunas-cards-kanban.md.md",
     "user-historyes/02-1-select-coluna-kanban.md.md",
-    "user-historyes/02-kanban-inscricoes.md.md",
     "Sem título.md",
     "Propmt - Fase 2 - Manus.md",
     "todos/HEAD_CS_2025-07.md",
