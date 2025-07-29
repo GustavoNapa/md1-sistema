@@ -37,7 +37,7 @@ class ProcessInscriptionWebhook implements ShouldQueue
     public function handle(): void
     {
         // Carregar o relacionamento 'client' para garantir que todos os dados do cliente estejam disponíveis
-        $this->inscription->load("client");
+        $this->inscription->load("client.addresses");
 
         // Montar payload com todos os campos necessários para o webhook
         $payload = [
