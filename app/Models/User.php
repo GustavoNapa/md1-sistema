@@ -63,14 +63,7 @@ class User extends Authenticatable
         return $this->can($permissionSlug);
     }
 
-    /**
-     * Check if user has a specific role (legacy method).
-     */
-    public function hasRole(string $roleName): bool
-    {
-        // Use Spatie Permission method
-        return $this->hasRole($roleName);
-    }
+
 
     /**
      * Get all permissions for this user through their role (legacy method).

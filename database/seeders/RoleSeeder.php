@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
-use App\Models\Permission;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RoleSeeder extends Seeder
 {
@@ -13,42 +13,81 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Criar cargo de Administrador
-        $adminRole = Role::firstOrCreate(
-            ['name' => 'Administrador'],
-            ['status' => true]
-        );
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Atribuir todas as permissões ao administrador
-        $allPermissions = Permission::all();
-        $adminRole->permissions()->sync($allPermissions->pluck('id'));
+        // Criar cargos
+        $roles = [
+            // Cargo de Administrador (todas as permissões)
+            [
+                'name' => 'head-cs',
+                'display_name' => 'Head de CS',
+                'permissions' => Permission::all()->pluck('name')->toArray(),
+            ],
+            // Cargo de Especialista de Suporte (TI)
+            [
+                'name' => 'especialista-suporte-ti',
+                'display_name' => 'Especialista de Suporte (TI)',
+                'permissions' => [
+                    'users.view', 'users.create', 'users.edit',
+                    'clients.view', 'clients.create', 'clients.edit',
+                    'products.view', 'products.create', 'products.edit',
+                    'inscriptions.view', 'inscriptions.create', 'inscriptions.edit',
+                    'payments.view', 'payments.create', 'payments.edit',
+                    'webhooks.view', 'webhooks.resend',
+                    'whatsapp.view', 'whatsapp.conversations',
+                    'settings.view', 'settings.edit',
+                    'feature-flags.view', 'feature-flags.edit',
+                    'import.clients', 'import.inscriptions', 'import.payments',
+                ],
+            ],
+            // Cargo de Coordenador de Mentoria
+            [
+                'name' => 'coordenador-mentoria',
+                'display_name' => 'Coordenador de Mentoria',
+                'permissions' => [
+                    'clients.view', 'clients.edit',
+                    'inscriptions.view', 'inscriptions.edit', 'inscriptions.kanban',
+                    'payments.view',
+                    'achievements.view', 'achievements.create', 'achievements.edit',
+                    'bonuses.view', 'bonuses.create', 'bonuses.edit',
+                    'whatsapp.view', 'whatsapp.send', 'whatsapp.conversations',
+                    'reports.view', 'reports.export',
+                ],
+            ],
+            // Cargo de Especialista em Customer Success
+            [
+                'name' => 'especialista-customer-success',
+                'display_name' => 'Especialista em Customer Success',
+                'permissions' => [
+                    'clients.view', 'clients.edit',
+                    'inscriptions.view', 'inscriptions.edit', 'inscriptions.kanban',
+                    'payments.view',
+                    'faturamentos.view', 'faturamentos.create', 'faturamentos.edit',
+                    'renovacoes.view', 'renovacoes.create', 'renovacoes.edit',
+                    'whatsapp.view', 'whatsapp.send', 'whatsapp.conversations',
+                    'reports.view', 'reports.export',
+                ],
+            ],
+            // Cargo de Especialista em Suporte ao Cliente
+            [
+                'name' => 'especialista-suporte-cliente',
+                'display_name' => 'Especialista em Suporte ao Cliente',
+                'permissions' => [
+                    'clients.view',
+                    'inscriptions.view',
+                    'payments.view',
+                    'whatsapp.view', 'whatsapp.send', 'whatsapp.conversations',
+                    'reports.view',
+                ],
+            ],
+        ];
 
-        // Criar cargo de Vendedor
-        $vendedorRole = Role::firstOrCreate(
-            ['name' => 'Vendedor'],
-            ['status' => true]
-        );
-
-        // Atribuir permissões específicas ao vendedor
-        $vendedorPermissions = Permission::whereIn('slug', [
-            'manage-clients',
-            'manage-inscriptions',
-            'view-reports'
-        ])->get();
-        $vendedorRole->permissions()->sync($vendedorPermissions->pluck('id'));
-
-        // Criar cargo de Suporte
-        $suporteRole = Role::firstOrCreate(
-            ['name' => 'Suporte'],
-            ['status' => true]
-        );
-
-        // Atribuir permissões específicas ao suporte
-        $suportePermissions = Permission::whereIn('slug', [
-            'manage-clients',
-            'view-reports'
-        ])->get();
-        $suporteRole->permissions()->sync($suportePermissions->pluck('id'));
+        foreach ($roles as $roleData) {
+            $role = Role::firstOrCreate(['name' => $roleData['name']], ['guard_name' => 'web']);
+            $role->syncPermissions($roleData['permissions']);
+        }
     }
 }
+
 
