@@ -147,6 +147,7 @@ class PermissionSeeder extends Seeder
             'users.store' => 'Users Store',
             'users.show' => 'Users Show',
             'users.edit' => 'Users Edit',
+
             'users.update' => 'Users Update',
             'users.destroy' => 'Users Destroy',
             'users.assign-role' => 'Users Assign Role',
