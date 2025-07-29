@@ -25,7 +25,7 @@
     - [ ] **03.2.1** Sidebar (15 – 20 %) listando conversas recentes
     - [ ] **03.2.2** Painel de chat (80 – 85 %) com balões — cliente à esquerda, atendente à direita
   - [x] **03.3** Associar conversa a **clientes** ou **contatos** (estrutura de banco criada)
-  - [ ] **03.4** Implementar **webhook** de recepção
+  - [x] **03.4** Implementar **webhook** de recepção
   - [ ] **03.5** Implementar **endpoint** de envio via **Evolution API**
 
 ---
@@ -39,13 +39,11 @@
 - **WhatsApp - Controller**: API endpoints para conversas, mensagens e associações
 
 ### 🔄 Em Andamento
-- **WhatsApp - Tela de Chat**: Criando views e corrigindo erros JavaScript
+- **WhatsApp - Tela de Chat**: Interface básica com sidebar e painel implementada e funcional
 
 ### 📋 Próximas Tarefas
-1. Finalizar interface do chat (sidebar + painel)
-2. Implementar webhook de recepção
-3. Implementar endpoint de envio via Evolution API
-4. Adicionar sistema de filas para mensagens
-5. Implementar WebSocket para tempo real
+1. Implementar endpoint de envio via Evolution API
+2. Adicionar sistema de filas para mensagens
+3. Implementar WebSocket para tempo real
 
 > Atualize as caixas de seleção à medida que avançar. Mantemos todos os documentos em português e slugs numerados para preservar a ordem.

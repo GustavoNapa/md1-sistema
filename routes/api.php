@@ -22,8 +22,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Rotas de Webhook (sem autenticação para permitir chamadas externas)
 Route::prefix('webhooks')->group(function () {
     Route::post('/test', [WebhookController::class, 'test']);
-    Route::post('/{action}', [WebhookController::class, 'handle'])
-        ->where('action', '[a-z-]+');
+    Route::post("/{action}", [WebhookController::class, "handle"])
+        ->where("action", "[a-z-]+");
+    Route::post("/whatsapp-message", [WebhookController::class, "handleWhatsappMessage"]);
 });
 
 // Rotas protegidas por autenticação
