@@ -19,14 +19,14 @@
   - [x] **02.2** Renderizar colunas em **cards** Bootstrap (drag-and-drop opcional)
   - [x] **02.3** Criar **CRUD "Faixa de Faturamento"**
 
-- [ ] **03 Integração WhatsApp (Evolution API)** ([user story](../user-historyes/03-integracao-whatsapp.md))
+- [x] **03 Integração WhatsApp (Evolution API)** ([user story](../user-historyes/03-integracao-whatsapp.md))
   - [x] **03.1** Configurar credenciais no `.env`
-  - [ ] **03.2** Criar tela de chat
-    - [ ] **03.2.1** Sidebar (15 – 20 %) listando conversas recentes
-    - [ ] **03.2.2** Painel de chat (80 – 85 %) com balões — cliente à esquerda, atendente à direita
+  - [x] **03.2** Criar tela de chat
+    - [x] **03.2.1** Sidebar (15 – 20 %) listando conversas recentes
+    - [x] **03.2.2** Painel de chat (80 – 85 %) com balões — cliente à esquerda, atendente à direita
   - [x] **03.3** Associar conversa a **clientes** ou **contatos** (estrutura de banco criada)
   - [x] **03.4** Implementar **webhook** de recepção
-  - [ ] **03.5** Implementar **endpoint** de envio via **Evolution API**
+  - [x] **03.5** Implementar **endpoint** de envio via **Evolution API**
 
 ---
 
@@ -34,16 +34,21 @@
 
 ### ✅ Concluído
 - **Kanban de Inscrições**: Totalmente implementado com seletor de visualização e CRUD de Faixa de Faturamento
-- **WhatsApp - Credenciais**: Configuração no .env e config/services.php
-- **WhatsApp - Estrutura de Banco**: Migrações e modelos criados (WhatsappConversation, WhatsappMessage, ConversationLink)
-- **WhatsApp - Controller**: API endpoints para conversas, mensagens e associações
+- **WhatsApp - Integração Completa**: Sistema completo de chat implementado
+  - **Credenciais**: Configuração no .env e config/services.php
+  - **Estrutura de Banco**: Migrações e modelos criados (WhatsappConversation, WhatsappMessage, ConversationLink)
+  - **Interface de Chat**: Sidebar de conversas e painel de chat com balões
+  - **Webhook de Recepção**: Processamento de mensagens recebidas via Evolution API
+  - **Endpoint de Envio**: Envio de mensagens via Evolution API com sistema de filas
+  - **Tempo Real**: Broadcasting de eventos e atualização automática da interface
+  - **Sistema de Filas**: Processamento assíncrono com retry automático
 
 ### 🔄 Em Andamento
-- **WhatsApp - Tela de Chat**: Interface básica com sidebar e painel implementada e funcional
+- Nenhuma tarefa em andamento no momento
 
 ### 📋 Próximas Tarefas
-1. Implementar endpoint de envio via Evolution API
-2. Adicionar sistema de filas para mensagens
-3. Implementar WebSocket para tempo real
+1. **Webhook de Inscrição** (01.1, 01.2, 01.3)
+2. Melhorias na interface do chat (notificações, sons, etc.)
+3. Implementação de WebSocket real para produção (Laravel Echo Server/Pusher)
 
 > Atualize as caixas de seleção à medida que avançar. Mantemos todos os documentos em português e slugs numerados para preservar a ordem.

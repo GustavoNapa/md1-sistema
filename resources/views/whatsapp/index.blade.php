@@ -392,6 +392,77 @@
 
         // Carregar conversas iniciais
         loadConversations();
+
+        // Função para adicionar nova mensagem à interface
+        function addMessageToChat(messageData) {
+            const messagesContainer = document.getElementById('messages-container');
+            if (!messagesContainer) return;
+
+            const messageElement = createMessageElement(messageData);
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Função para atualizar status de mensagem existente
+        function updateMessageStatus(messageId, status, statusIcon) {
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                const statusElement = messageElement.querySelector('.message-status');
+                if (statusElement) {
+                    statusElement.innerHTML = statusIcon;
+                    statusElement.className = `message-status status-${status}`;
+                }
+            }
+        }
+
+        // Função para criar elemento de mensagem
+        function createMessageElement(messageData) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageData.direction}`;
+            messageDiv.setAttribute('data-message-id', messageData.id);
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${messageData.content}</div>
+                    <div class="message-meta">
+                        <span class="message-time">${messageData.created_at}</span>
+                        ${messageData.direction === 'outbound' ? `<span class="message-status status-${messageData.status}">${messageData.status_icon}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return messageDiv;
+        }
+
+        // Simulação de WebSocket (para desenvolvimento)
+        // Em produção, isso seria substituído por Laravel Echo
+        function initializeRealTimeUpdates() {
+            // Polling para simular tempo real durante desenvolvimento
+            setInterval(() => {
+                if (currentConversationId) {
+                    // Verificar novas mensagens
+                    fetch(`/api/whatsapp/conversations/${currentConversationId}/messages?limit=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.messages && data.messages.length > 0) {
+                                const lastMessage = data.messages[data.messages.length - 1];
+                                const existingMessage = document.querySelector(`[data-message-id="${lastMessage.id}"]`);
+                                
+                                if (!existingMessage) {
+                                    addMessageToChat(lastMessage);
+                                } else {
+                                    // Atualizar status se mudou
+                                    updateMessageStatus(lastMessage.id, lastMessage.status, lastMessage.status_icon);
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Erro ao verificar novas mensagens:', error));
+                }
+            }, 2000); // Verificar a cada 2 segundos
+        }
+
+        // Inicializar atualizações em tempo real
+        initializeRealTimeUpdates();
     });
 </script>
 @endpush

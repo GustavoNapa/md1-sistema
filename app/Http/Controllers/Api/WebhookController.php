@@ -257,16 +257,22 @@ class WebhookController extends Controller
 
             // Salvar a mensagem
             WhatsappMessage::create([
-                \"conversation_id\" => $conversation->id,
-                \"message_id\" => $messageId,
-                \"direction\" => \"inbound\",
-                \"type\" => $messageType,
-                \"content\" => $content,
-                \"from_phone\" => $remoteJid,
-                \"to_phone\" => $instanceName, // O número da instância que recebeu
-                \"status\" => \"received\",
-                \"sent_at\" => now(), // Ou o timestamp do payload se disponível
+                'conversation_id' => $conversation->id,
+                'message_id' => $messageId,
+                'direction' => 'inbound',
+                'type' => $messageType,
+                'content' => $content,
+                'from_phone' => $remoteJid,
+                'to_phone' => $instanceName, // O número da instância que recebeu
+                'status' => 'received',
+                'sent_at' => now(), // Ou o timestamp do payload se disponível
             ]);
+
+            // Broadcast evento de mensagem recebida
+            $message = WhatsappMessage::where('message_id', $messageId)->first();
+            if ($message) {
+                broadcast(new \App\Events\MessageReceived($message));
+            }
 
             // Atualizar a conversa
             $conversation->incrementUnread();

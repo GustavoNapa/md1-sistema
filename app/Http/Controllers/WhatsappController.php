@@ -222,29 +222,38 @@ class WhatsappController extends Controller
 
     /**
      * API: Enviar mensagem
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
+>>>>>>> 80f40225cb6817a4f    /**
+     * API: Enviar mensagem
      */
     public function sendMessage(Request $request): JsonResponse
     {
         $request->validate([
             'conversation_id' => 'required|exists:whatsapp_conversations,id',
-<<<<<<< HEAD
             'content' => 'required|string|max:4096',
         ]);
 
         try {
             $conversation = WhatsappConversation::findOrFail($request->conversation_id);
             
+            // Criar mensagem no banco de dados
             $message = WhatsappMessage::create([
                 'conversation_id' => $conversation->id,
+                'message_id' => uniqid('msg_'),
                 'content' => $request->content,
                 'direction' => 'outbound',
+                'type' => 'text',
+                'from_phone' => config('services.evolution.instance_name'),
+                'to_phone' => $conversation->contact_phone,
                 'status' => 'pending',
                 'user_id' => auth()->id(),
+                'sent_at' => now(),
             ]);
 
-            // TODO: Adicionar à fila de envio
-            // dispatch(new SendWhatsappMessageJob($message));
+            // Adicionar à fila de envio
+            \App\Jobs\SendWhatsappMessage::dispatch($message);
+
+            // Atualizar conversa
+            $conversation->update(['last_message_at' => now()]);
 
             return response()->json([
                 'message' => [
