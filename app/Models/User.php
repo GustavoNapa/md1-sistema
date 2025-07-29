@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -46,7 +47,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the role that owns the user.
+     * Get the role that owns the user (legacy relationship).
      */
     public function role(): BelongsTo
     {
@@ -54,26 +55,29 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has a specific permission.
+     * Check if user has a specific permission (legacy method).
      */
     public function hasPermission(string $permissionSlug): bool
     {
-        return $this->role?->hasPermission($permissionSlug) ?? false;
+        // Use Spatie Permission method
+        return $this->can($permissionSlug);
     }
 
     /**
-     * Check if user has a specific role.
+     * Check if user has a specific role (legacy method).
      */
     public function hasRole(string $roleName): bool
     {
-        return $this->role?->name === $roleName;
+        // Use Spatie Permission method
+        return $this->hasRole($roleName);
     }
 
     /**
-     * Get all permissions for this user through their role.
+     * Get all permissions for this user through their role (legacy method).
      */
     public function getPermissions()
     {
-        return $this->role?->permissions ?? collect();
+        // Use Spatie Permission method
+        return $this->getAllPermissions();
     }
 }
