@@ -18,6 +18,7 @@ use App\Http\Controllers\AchievementTypeController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WhatsappController;
+use App\Http\Controllers\WebhookLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -224,4 +225,9 @@ Route::middleware("auth")->group(function () {
     // Rota para criar cliente a partir do WhatsApp
     Route::get("/whatsapp/create-client", [WhatsappController::class, "createClient"])->name("whatsapp.create-client");
 
+
+
+// Rotas para Histórico de Webhooks
+Route::resource('webhook-logs', WebhookLogController::class)->only(['index', 'show']);
+Route::post('webhook-logs/{webhookLog}/resend', [WebhookLogController::class, 'resend'])->name('webhook-logs.resend');
 

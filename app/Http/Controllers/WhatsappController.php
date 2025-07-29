@@ -228,9 +228,6 @@ class WhatsappController extends Controller
             return response()->json(['error' => 'Erro ao desvincular conversa'], 500);
         }
     }
-}
-
-
     /**
      * Exibe a tela de configuração do WhatsApp
      */
@@ -359,4 +356,7 @@ class WhatsappController extends Controller
             ], 500);
         }
     }
+
+
+}
 

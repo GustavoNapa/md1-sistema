@@ -14,7 +14,7 @@
     - [x] **01.2.2** Incluir objeto **mapping** conforme tabela de equivalência
   - [x] **01.3** Executar disparo **somente** quando o **status** da Inscrição corresponder às regras
   - [x] **01.4** Implementar testes PHPUnit/Pest para o webhook de inscrição (sucesso, falha, retries)
-  - [ ] **01.5** Criar tela "Histórico de Webhooks" com listagem de envios, status, tentativas e botão Reenviar
+  - [x] **01.5** Criar tela "Histórico de Webhooks" com listagem de envios, status, tentativas e botão Reenviar
   - [ ] **01.6** Implementar logs detalhados na tabela `webhook_logs` para cada tentativa de envio
 
 - [x] **02 Kanban de Inscrições** ([user story](../user-historyes/02-kanban-inscricoes.md))
