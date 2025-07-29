@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "user-historyes/03-5-endpoint-envio-evolution.md.md",
+                "file": "todos/HEAD_CS_2025-07.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "03-5-endpoint-envio-evolution.md"
+              "title": "HEAD_CS_2025-07"
             }
           },
           {
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "user-historyes/03-5-endpoint-envio-evolution.md.md",
+                "file": "todos/HEAD_CS_2025-07.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Links inversos para 03-5-endpoint-envio-evolution.md"
+              "title": "Links inversos para HEAD_CS_2025-07"
             }
           },
           {
@@ -142,12 +142,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "user-historyes/03-5-endpoint-envio-evolution.md.md",
+                "file": "todos/HEAD_CS_2025-07.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Links de saída para 03-5-endpoint-envio-evolution.md"
+              "title": "Links de saída para HEAD_CS_2025-07"
             }
           },
           {
@@ -171,13 +171,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "user-historyes/03-5-endpoint-envio-evolution.md.md",
+                "file": "todos/HEAD_CS_2025-07.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Sumário de 03-5-endpoint-envio-evolution.md"
+              "title": "Sumário de HEAD_CS_2025-07"
             }
           }
         ]
