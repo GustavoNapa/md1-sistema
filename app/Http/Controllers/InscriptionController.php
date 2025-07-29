@@ -23,6 +23,125 @@ class InscriptionController extends Controller
     }
 
     /**
+     * API endpoint para dados do Kanban
+     */
+    public function kanbanData(Request $request)
+    {
+        $groupBy = $request->get('group_by', 'status');
+        
+        $inscriptions = Inscription::with(['client', 'vendor', 'product'])
+            ->get()
+            ->map(function ($inscription) {
+                return [
+                    'id' => $inscription->id,
+                    'client' => [
+                        'name' => $inscription->client->name,
+                        'email' => $inscription->client->email ?? '',
+                    ],
+                    'product' => [
+                        'name' => $inscription->product->name ?? '',
+                    ],
+                    'vendor' => [
+                        'name' => $inscription->vendor->name ?? '',
+                    ],
+                    'status' => $inscription->status,
+                    'status_label' => $inscription->status_label,
+                    'status_badge_class' => $inscription->status_badge_class,
+                    'classification' => $inscription->classification,
+                    'calendar_week' => $inscription->calendar_week,
+                    'amount_paid' => $inscription->amount_paid,
+                    'formatted_amount' => $inscription->formatted_amount,
+                    'faixa_faturamento_label' => $inscription->faixa_faturamento_label,
+                    'faixa_faturamento_id' => $inscription->getFaixaFaturamento()?->id,
+                    'start_date' => $inscription->start_date?->format('d/m/Y'),
+                    'class_group' => $inscription->class_group,
+                ];
+            });
+
+        // Agrupar por critério selecionado
+        $grouped = $this->groupInscriptions($inscriptions, $groupBy);
+
+        return response()->json([
+            'inscriptions' => $inscriptions,
+            'grouped' => $grouped,
+            'group_by' => $groupBy
+        ]);
+    }
+
+    /**
+     * Agrupa inscrições por critério
+     */
+    private function groupInscriptions($inscriptions, $groupBy)
+    {
+        $grouped = [];
+
+        foreach ($inscriptions as $inscription) {
+            $key = $this->getGroupKey($inscription, $groupBy);
+            
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'label' => $this->getGroupLabel($key, $groupBy),
+                    'items' => []
+                ];
+            }
+            
+            $grouped[$key]['items'][] = $inscription;
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Obtém a chave do grupo para uma inscrição
+     */
+    private function getGroupKey($inscription, $groupBy)
+    {
+        switch ($groupBy) {
+            case 'status':
+                return $inscription['status'] ?: 'sem_status';
+            case 'faixa_faturamento':
+                return $inscription['faixa_faturamento_id'] ?: 'sem_faixa';
+            case 'calendar_week':
+                return $inscription['calendar_week'] ?: 'sem_semana';
+            case 'classification':
+                return $inscription['classification'] ?: 'sem_fase';
+            default:
+                return 'outros';
+        }
+    }
+
+    /**
+     * Obtém o label do grupo
+     */
+    private function getGroupLabel($key, $groupBy)
+    {
+        switch ($groupBy) {
+            case 'status':
+                $labels = [
+                    'active' => 'Ativo',
+                    'paused' => 'Pausado',
+                    'cancelled' => 'Cancelado',
+                    'completed' => 'Concluído',
+                    'sem_status' => 'Sem Status'
+                ];
+                return $labels[$key] ?? $key;
+            case 'faixa_faturamento':
+                if ($key === 'sem_faixa') {
+                    return 'Sem Faixa';
+                }
+                // Buscar o label da faixa no banco
+                $faixa = \App\Models\FaixaFaturamento::find($key);
+                return $faixa ? $faixa->label : "Faixa {$key}";
+            case 'calendar_week':
+                return $key === 'sem_semana' ? 'Sem Semana' : "Semana {$key}";
+            case 'classification':
+                return $key === 'sem_fase' ? 'Sem Fase' : $key;
+            default:
+                return $key;
+        }
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

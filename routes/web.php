@@ -72,6 +72,7 @@ Route::middleware('auth')->group(function () {
     
     // Rotas de Inscrições
     Route::resource('inscriptions', InscriptionController::class);
+    Route::get('/api/inscriptions/kanban', [InscriptionController::class, 'kanbanData'])->name('inscriptions.kanban-data');
     
     // Rotas de Importação
     Route::get('/import', [ImportController::class, 'index'])->name('import.index');
