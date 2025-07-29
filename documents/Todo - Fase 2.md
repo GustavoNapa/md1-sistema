@@ -47,8 +47,8 @@
 - Nenhuma tarefa em andamento no momento
 
 ### 📋 Próximas Tarefas
-1. **Webhook de Inscrição** (01.2.1, 01.2.2, 01.3)
-2. **Tela de Configuração WhatsApp** (QR Code e instância)
+1. ~~**Webhook de Inscrição** (01.2.1, 01.2.2, 01.3)~~ ✅ **CONCLUÍDO**
+2. ~~**Tela de Configuração WhatsApp** (QR Code e instância)~~ ✅ **CONCLUÍDO**
 3. Melhorias na interface do chat (notificações, sons, etc.)
 4. Implementação de WebSocket real para produção (Laravel Echo Server/Pusher)
 
