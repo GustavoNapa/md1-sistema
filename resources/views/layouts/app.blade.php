@@ -22,9 +22,12 @@
     <link href="{{ asset("css/custom-fonts.css") }}" rel="stylesheet">
 
     <style>
-        html, body, #app {
+        html, body {
             height: 100%;
-            overflow: hidden; /* Evita scroll da página principal */
+            overflow-y: auto;
+        }
+        #app {
+            height: 100%;
         }
         .container-fluid.h-100 {
             height: calc(100vh - 56px); /* Altura total menos a navbar */
@@ -160,36 +163,42 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    @if(Auth::user()->hasPermission("manage-permissions") || Auth::user()->hasPermission("manage-roles") || Auth::user()->hasPermission("manage-users"))
+                                    @canany(['roles.view', 'roles.create', 'roles.edit', 'roles.delete', 'permissions.view', 'permissions.assign', 'users.view', 'users.create', 'users.edit', 'users.delete'])
                                         <h6 class="dropdown-header">Gestão de Acessos</h6>
                                         
-                                        @if(Auth::user()->hasPermission("manage-permissions"))
+                                        @can('permissions.view')
                                             <a class="dropdown-item" href="{{ route("permissions.index") }}">
                                                 <i class="fas fa-shield-alt me-2"></i>Permissões
                                             </a>
-                                        @endif
+                                        @endcan
                                         
-                                        @if(Auth::user()->hasPermission("manage-roles"))
+                                        @can('roles.view')
                                             <a class="dropdown-item" href="{{ route("roles.index") }}">
                                                 <i class="fas fa-user-tag me-2"></i>Cargos
                                             </a>
-                                        @endif
+                                        @endcan
                                         
-                                        @if(Auth::user()->hasPermission("manage-users"))
+                                        @can('users.view')
                                             <a class="dropdown-item" href="{{ route("users.index") }}">
                                                 <i class="fas fa-users me-2"></i>Usuários
                                             </a>
-                                        @endif
+                                        @endcan
                                         
                                         <hr class="dropdown-divider">
-                                    @endif
+                                    @endcanany
                                     
-                                    @if(Auth::user()->hasPermission("manage-integrations"))
+                                    @can('settings.view')
+                                        <a class="dropdown-item" href="{{ route("feature-flags.index") }}">
+                                            <i class="fas fa-toggle-on me-2"></i>Funcionalidades
+                                        </a>
+                                    @endcan
+
+                                    @can('manage-integrations')
                                         <a class="dropdown-item" href="{{ route("integrations.index") }}">
                                             <i class="fas fa-plug me-2"></i>Integrações
                                         </a>
                                         <hr class="dropdown-divider">
-                                    @endif
+                                    @endcan
                                     
                                     <a class="dropdown-item" href="{{ route("logout") }}"
                                        onclick="event.preventDefault();
