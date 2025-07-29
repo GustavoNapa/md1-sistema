@@ -77,6 +77,6 @@ Route::post("inscriptions/{inscription}/move", [App\Http\Controllers\Inscription
 
 
 
-Route::post("feature-flags/{featureKey}/toggle", [\App\Http\Controllers\FeatureFlagController::class, "toggle"])->name("feature-flags.toggle");
+Route::post("feature-flags/{featureKey}/toggle", [\App\Http\Controllers\FeatureFlagController::class, "toggle"])->name("api.feature-flags.toggle");
 
 

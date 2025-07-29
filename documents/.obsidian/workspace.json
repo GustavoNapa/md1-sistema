@@ -197,8 +197,15 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "6d1527b43a281f8a",
+  "active": "77e86065af69912f",
   "lastOpenFiles": [
+    "FRONTEND_VALIDATIONS.md",
+    "todo.md",
+    "user-historyes/01-2-ajuste-webhook-inscricao.md - PROMPT.md",
+    "user-historyes/01-2-ajuste-webhook-inscricao.md copy.md",
+    "user-historyes/01-2-webhook-inscricao.md copy.md",
+    "user-historyes/01-webhook-inscricao.md copy.md",
+    "user-historyes/02-4-drag-and-drop-kanban.md",
     "user-historyes/06-menu-ux.md.md",
     "user-historyes/07-ui-font-change.md.md",
     "user-historyes/05-acl-permissoes.md.md",
@@ -219,13 +226,6 @@
     "user-historyes/02-kanban-inscricoes.md.md",
     "user-historyes/03-integracao-whatsapp-evolution-api.md.md",
     "user-historyes/02-3-crud-faixa-faturamento.md",
-    "user-historyes/02-3-crud-faixa-faturamento.md.md",
-    "user-historyes/02-2-renderizar-colunas-cards-kanban.md.md",
-    "user-historyes/02-1-select-coluna-kanban.md.md",
-    "Sem título.md",
-    "Propmt - Fase 2 - Manus.md",
-    "user-historyes/01-3-disparo-condicional-por-status.md.md",
-    "user-historyes/01-2-2-incluir-mapping-tabela-equivalencia.md.md",
     "user-historyes"
   ]
 }
