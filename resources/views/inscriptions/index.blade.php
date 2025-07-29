@@ -279,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
             group.items.forEach(inscription => {
                 const card = createInscriptionCard(inscription);
                 column.appendChild(card);
+                updateColumnCount(column); // Mover para depois de adicionar o card
             });
         });
     }
@@ -328,9 +329,6 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        // Atualizar contador da coluna
-        updateColumnCount(card.closest('.kanban-column'));
-        
         return card;
     }
 
@@ -342,8 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Atualizar contadores quando a página carrega
-    document.querySelectorAll('.kanban-column').forEach(updateColumnCount);
 });
 </script>
 @endsection
