@@ -107,33 +107,38 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                         @auth
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("clients.index") }}">Clientes</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("products.index") }}">Produtos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("inscriptions.index") }}">Inscrições</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("whatsapp.index") }}">
-                                    <i class="fab fa-whatsapp me-1"></i>WhatsApp
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdownCadastros" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    Cadastros
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownCadastros">
-                                    <a class="dropdown-item" href="{{ route("achievement_types.index") }}">Tipos de Conquistas</a>
-                                    <a class="dropdown-item" href="{{ route("clients.index") }}">Clientes</a>
-                                    <a class="dropdown-item" href="{{ route("products.index") }}">Produtos</a>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("import.index") }}">Importação</a>
-                            </li>
+                            @php
+                                $navigationMap = include resource_path('views/layouts/navigation_map.php');
+                            @endphp
+                            
+                            @foreach($navigationMap as $groupName => $items)
+                                @php
+                                    $hasAccessToGroup = false;
+                                    foreach($items as $item) {
+                                        if(auth()->user()->can($item['permission'])) {
+                                            $hasAccessToGroup = true;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                
+                                @if($hasAccessToGroup)
+                                    <li class="nav-item dropdown">
+                                        <a id="navbarDropdown{{ Str::slug($groupName) }}" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                            {{ $groupName }}
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown{{ Str::slug($groupName) }}">
+                                            @foreach($items as $item)
+                                                @can($item['permission'])
+                                                    <a class="dropdown-item" href="{{ route($item['route']) }}">
+                                                        <i class="{{ $item['icon'] }} me-2"></i>{{ $item['name'] }}
+                                                    </a>
+                                                @endcan
+                                            @endforeach
+                                        </div>
+                                    </li>
+                                @endif
+                            @endforeach
                         @endauth
                     </ul>
 
@@ -153,49 +158,6 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    @canany(['roles.view', 'roles.create', 'roles.edit', 'roles.delete', 'permissions.view', 'permissions.assign', 'users.view', 'users.create', 'users.edit', 'users.delete'])
-                                        <h6 class="dropdown-header">Gestão de Acessos</h6>
-                                        
-                                        @can('permissions.view')
-                                            <a class="dropdown-item" href="{{ route("permissions.index") }}">
-                                                <i class="fas fa-shield-alt me-2"></i>Permissões
-                                            </a>
-                                        @endcan
-                                        
-                                        @can('roles.view')
-                                            <a class="dropdown-item" href="{{ route("roles.index") }}">
-                                                <i class="fas fa-user-tag me-2"></i>Cargos
-                                            </a>
-                                        @endcan
-                                        
-                                        @can('users.view')
-                                            <a class="dropdown-item" href="{{ route("users.index") }}">
-                                                <i class="fas fa-users me-2"></i>Usuários
-                                            </a>
-                                        @endcan
-                                        
-                                        <hr class="dropdown-divider">
-                                    @endcanany
-                                    
-                                    @can('settings.view')
-                                        <a class="dropdown-item" href="{{ route("feature-flags.index") }}">
-                                            <i class="fas fa-toggle-on me-2"></i>Funcionalidades
-                                        </a>
-                                    @endcan
-
-                                    @can('webhook-logs.view')
-                                        <a class="dropdown-item" href="{{ route("webhook-logs.index") }}">
-                                            <i class="fas fa-exchange-alt me-2"></i>Logs de Webhooks
-                                        </a>
-                                    @endcan
-
-                                    @can('manage-integrations')
-                                        <a class="dropdown-item" href="{{ route("integrations.index") }}">
-                                            <i class="fas fa-plug me-2"></i>Integrações
-                                        </a>
-                                        <hr class="dropdown-divider">
-                                    @endcan
-                                    
                                     <a class="dropdown-item" href="{{ route("logout") }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById("logout-form").submit();">

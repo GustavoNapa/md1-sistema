@@ -10,9 +10,9 @@
 ### Sub-tarefas
 | ID  | Descrição                                                        |
 |-----|------------------------------------------------------------------|
-| 06.1| Definir **mapa de navegação** (grupos: Administração, CS, Relatórios…) |
-| 06.2| Refatorar Blade `sidebar.blade.php` para **esconder** itens sem permissão |
-| 06.3| Ajustar ordem e adicionar headers de grupo                       |
+| 06.1| Definir **mapa de navegação** (grupos: Administração, CS, Relatórios…) | ✅
+| 06.2| Refatorar Blade `sidebar.blade.php` para **esconder** itens sem permissão | ✅
+| 06.3| Ajustar ordem e adicionar headers de grupo                       | ✅
 
 ### Critérios de Aceite
 ```gherkin
