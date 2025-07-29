@@ -9,7 +9,7 @@
                     <h4>Nova Inscrição</h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('inscriptions.store') }}">
+                    <form method="POST" action="{{ route(\'inscriptions.store\') }}">ore') }}">
                         @csrf
 
                         <div class="row">
