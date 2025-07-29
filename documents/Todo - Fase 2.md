@@ -13,11 +13,18 @@
     - [x] **01.2.1** Enviar todos os campos de **Cliente** + **Inscrição**
     - [x] **01.2.2** Incluir objeto **mapping** conforme tabela de equivalência
   - [x] **01.3** Executar disparo **somente** quando o **status** da Inscrição corresponder às regras
+  - [ ] **01.4** Implementar testes PHPUnit/Pest para o webhook de inscrição (sucesso, falha, retries)
+  - [ ] **01.5** Criar tela "Histórico de Webhooks" com listagem de envios, status, tentativas e botão Reenviar
+  - [ ] **01.6** Implementar logs detalhados na tabela `webhook_logs` para cada tentativa de envio
 
 - [x] **02 Kanban de Inscrições** ([user story](../user-historyes/02-kanban-inscricoes.md))
   - [x] **02.1** Adicionar seletor (`<select>`) para escolher coluna: **Status / Semana / Fase / Faixa de Faturamento**
   - [x] **02.2** Renderizar colunas em **cards** Bootstrap (drag-and-drop opcional)
   - [x] **02.3** Criar **CRUD "Faixa de Faturamento"**
+  - [ ] **02.4** Implementar Drag-and-Drop para cards do Kanban
+  - [ ] **02.5** Implementar persistência da escolha do usuário para o seletor de colunas do Kanban
+  - [ ] **02.6** Implementar logs de movimento do Kanban na tabela `kanban_movements`
+  - [ ] **02.7** Implementar scroll infinito para as colunas do Kanban
 
 - [x] **03 Integração WhatsApp (Evolution API)** ([user story](../user-historyes/03-integracao-whatsapp.md))
   - [x] **03.1** Configurar credenciais no `.env`
@@ -27,30 +34,15 @@
   - [x] **03.3** Associar conversa a **clientes** ou **contatos** (estrutura de banco criada)
   - [x] **03.4** Implementar **webhook** de recepção
   - [x] **03.5** Implementar **endpoint** de envio via **Evolution API**
-
----
-
-## Progresso Atual (29/07/2025)
-
-### ✅ Concluído
-- **Kanban de Inscrições**: Totalmente implementado com seletor de visualização e CRUD de Faixa de Faturamento
-- **WhatsApp - Integração Completa**: Sistema completo de chat implementado
-  - **Credenciais**: Configuração no .env e config/services.php
-  - **Estrutura de Banco**: Migrações e modelos criados (WhatsappConversation, WhatsappMessage, ConversationLink)
-  - **Interface de Chat**: Sidebar de conversas e painel de chat com balões
-  - **Webhook de Recepção**: Processamento de mensagens recebidas via Evolution API
-  - **Endpoint de Envio**: Envio de mensagens via Evolution API com sistema de filas
-  - **Tempo Real**: Broadcasting de eventos e atualização automática da interface
-  - **Sistema de Filas**: Processamento assíncrono com retry automático
-
-### 🔄 Em Andamento
-- Nenhuma tarefa em andamento no momento
-
-### 📋 Próximas Tarefas
-1. ~~**Webhook de Inscrição** (01.2.1, 01.2.2, 01.3)~~ ✅ **CONCLUÍDO**
-2. ~~**Tela de Configuração WhatsApp** (QR Code e instância)~~ ✅ **CONCLUÍDO**
-3. Melhorias na interface do chat (notificações, sons, etc.)
-4. Implementação de WebSocket real para produção (Laravel Echo Server/Pusher)
-
-> Atualize as caixas de seleção à medida que avançar. Mantemos todos os documentos em português e slugs numerados para preservar a ordem.
-
+  - [ ] **03.6** Criar tela "Canais" para gerenciar números/instâncias (status, QR, logs)
+  - [ ] **03.7** Implementar sincronização de histórico (importação em lote + cache)
+  - [ ] **03.8** Implementar notificações (badge nas conversas e sino global para mensagens não lidas)
+  - [ ] **03.9** Implementar importação obrigatória do histórico – processamento em lote usando filas `messages_sync`
+  - [ ] **03.10** Implementar `whatsapp_logs` para registrar latência, payload e resposta
+  - [ ] **03.11** Implementar `whatsapp_channels` para gerenciar instâncias (número, instanceId, status, QR atual, última renovação, log)
+  - [ ] **03.12** Implementar `whatsapp_channels` CRUD para gerenciar instâncias
+  - [ ] **03.13** Implementar `whatsapp_channels` para renovação de QR a cada ~40s até "Connected"
+  - [ ] **03.14** Implementar atribuição de atendente para cada conversa
+  - [ ] **03.15** Implementar notificações (badge nas conversas e sino global para mensagens não lidas do atendente atribuído)
+  - [ ] **03.16** Implementar UI inspirada no WhatsApp Web (balões cinza cliente / verde atendente); avatar, data, ticks ✓✓
+  - [ ] **03.17** Implementar Sandbox para ambiente de teste via Evolution sandbox para CI/Dusk
