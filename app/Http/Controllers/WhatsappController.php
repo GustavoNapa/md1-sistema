@@ -230,3 +230,133 @@ class WhatsappController extends Controller
     }
 }
 
+
+    /**
+     * Exibe a tela de configuração do WhatsApp
+     */
+    public function config()
+    {
+        return view('whatsapp.config');
+    }
+
+    /**
+     * Conecta uma instância do WhatsApp
+     */
+    public function connect(Request $request)
+    {
+        try {
+            $instanceName = config('services.evolution.instance_name');
+            $baseUrl = config('services.evolution.base_url');
+            $apiKey = config('services.evolution.api_key');
+
+            // Criar instância na Evolution API
+            $response = \Http::withHeaders([
+                'apikey' => $apiKey,
+                'Content-Type' => 'application/json',
+            ])->post("{$baseUrl}/instance/create", [
+                'instanceName' => $instanceName,
+                'qrcode' => true,
+                'integration' => 'WHATSAPP-BAILEYS',
+                'webhook' => [
+                    'url' => url('/api/webhook/whatsapp'),
+                    'events' => [
+                        'APPLICATION_STARTUP',
+                        'QRCODE_UPDATED',
+                        'CONNECTION_UPDATE',
+                        'MESSAGES_UPSERT',
+                        'MESSAGES_UPDATE',
+                        'SEND_MESSAGE'
+                    ]
+                ]
+            ]);
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Instância criada com sucesso. Aguarde o QR Code...'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao criar instância: ' . $response->body()
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Desconecta uma instância do WhatsApp
+     */
+    public function disconnect(Request $request)
+    {
+        try {
+            $instanceName = config('services.evolution.instance_name');
+            $baseUrl = config('services.evolution.base_url');
+            $apiKey = config('services.evolution.api_key');
+
+            // Deletar instância na Evolution API
+            $response = \Http::withHeaders([
+                'apikey' => $apiKey,
+            ])->delete("{$baseUrl}/instance/delete/{$instanceName}");
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Instância desconectada com sucesso.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao desconectar instância: ' . $response->body()
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtém o QR Code da instância
+     */
+    public function getQrCode()
+    {
+        try {
+            $instanceName = config('services.evolution.instance_name');
+            $baseUrl = config('services.evolution.base_url');
+            $apiKey = config('services.evolution.api_key');
+
+            // Buscar QR Code na Evolution API
+            $response = \Http::withHeaders([
+                'apikey' => $apiKey,
+            ])->get("{$baseUrl}/instance/connect/{$instanceName}");
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                return response()->json([
+                    'success' => true,
+                    'qrcode' => $data['base64'] ?? null,
+                    'status' => $data['instance']['state'] ?? 'disconnected'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao obter QR Code: ' . $response->body()
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+

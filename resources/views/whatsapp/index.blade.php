@@ -8,7 +8,14 @@
             <div class="d-flex flex-column h-100">
                 <!-- Cabeçalho da Sidebar -->
                 <div class="p-3 border-bottom bg-white">
-                    <h5 class="mb-2">WhatsApp</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">WhatsApp</h5>
+                        <a href="{{ route('whatsapp.config') }}" 
+                           class="btn btn-outline-primary btn-sm" 
+                           title="Configurações">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </div>
                     
                     <!-- Barra de Busca -->
                     <div class="input-group input-group-sm mb-2">

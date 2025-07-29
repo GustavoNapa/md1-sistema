@@ -199,6 +199,10 @@ Route::get("/integrations/zapsign/templates/{templateId}/fields", [ZapsignContro
 // Rotas do WhatsApp
 Route::middleware("auth")->group(function () {
     Route::get("/whatsapp", [WhatsappController::class, "index"])->name("whatsapp.index");
+    Route::get("/whatsapp/config", [WhatsappController::class, "config"])->name("whatsapp.config");
+    Route::post("/whatsapp/connect", [WhatsappController::class, "connect"])->name("whatsapp.connect");
+    Route::post("/whatsapp/disconnect", [WhatsappController::class, "disconnect"])->name("whatsapp.disconnect");
+    Route::get("/whatsapp/qr-code", [WhatsappController::class, "getQrCode"])->name("whatsapp.qr-code");
     
     // API Routes
     Route::prefix("api/whatsapp")->group(function () {
