@@ -132,7 +132,7 @@ class Inscription extends Model
             return null;
         }
         
-        return FaixaFaturamento::findByValue($this->amount_paid);
+        return FaixaFaturamento::findByValue((float)$this->amount_paid);
     }
 
     /**

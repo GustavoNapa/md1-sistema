@@ -27,45 +27,51 @@ class InscriptionController extends Controller
      */
     public function kanbanData(Request $request)
     {
-        $groupBy = $request->get('group_by', 'status');
-        
-        $inscriptions = Inscription::with(['client', 'vendor', 'product'])
-            ->get()
-            ->map(function ($inscription) {
-                return [
-                    'id' => $inscription->id,
-                    'client' => [
-                        'name' => $inscription->client->name,
-                        'email' => $inscription->client->email ?? '',
-                    ],
-                    'product' => [
-                        'name' => $inscription->product->name ?? '',
-                    ],
-                    'vendor' => [
-                        'name' => $inscription->vendor->name ?? '',
-                    ],
-                    'status' => $inscription->status,
-                    'status_label' => $inscription->status_label,
-                    'status_badge_class' => $inscription->status_badge_class,
-                    'classification' => $inscription->classification,
-                    'calendar_week' => $inscription->calendar_week,
-                    'amount_paid' => $inscription->amount_paid,
-                    'formatted_amount' => $inscription->formatted_amount,
-                    'faixa_faturamento_label' => $inscription->faixa_faturamento_label,
-                    'faixa_faturamento_id' => $inscription->getFaixaFaturamento()?->id,
-                    'start_date' => $inscription->start_date?->format('d/m/Y'),
-                    'class_group' => $inscription->class_group,
-                ];
-            });
+        try {
+            $groupBy = $request->get("group_by", "status");
+            
+            $inscriptions = Inscription::with(["client", "vendor", "product"])
+                ->get()
+                ->map(function ($inscription) {
+                    return [
+                        "id" => $inscription->id,
+                        "client" => [
+                            "name" => $inscription->client->name,
+                            "email" => $inscription->client->email ?? "",
+                        ],
+                        "product" => [
+                            "name" => $inscription->product->name ?? "",
+                        ],
+                        "vendor" => [
+                            "name" => $inscription->vendor->name ?? "",
+                        ],
+                        "status" => $inscription->status,
+                        "status_label" => $inscription->status_label,
+                        "status_badge_class" => $inscription->status_badge_class,
+                        "classification" => $inscription->classification,
+                        "calendar_week" => $inscription->calendar_week,
+                        "amount_paid" => $inscription->amount_paid,
+                        "formatted_amount" => $inscription->formatted_amount,
+                        "faixa_faturamento_label" => $inscription->faixa_faturamento_label,
+                        "faixa_faturamento_id" => $inscription->getFaixaFaturamento()?->id,
+                        "start_date" => $inscription->start_date?->format("d/m/Y"),
+                        "class_group" => $inscription->class_group,
+                    ];
+                });
 
-        // Agrupar por critério selecionado
-        $grouped = $this->groupInscriptions($inscriptions, $groupBy);
+            // Agrupar por critério selecionado
+            $grouped = $this->groupInscriptions($inscriptions, $groupBy);
 
-        return response()->json([
-            'inscriptions' => $inscriptions,
-            'grouped' => $grouped,
-            'group_by' => $groupBy
-        ]);
+            return response()->json([
+                "inscriptions" => $inscriptions,
+                "grouped" => $grouped,
+                "group_by" => $groupBy
+            ]);
+        } catch (\Exception $e) {
+            // Logar o erro para depuração
+            \Log::error("Erro na API do Kanban: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return response()->json(["error" => "Ocorreu um erro ao carregar os dados do Kanban.", "details" => $e->getMessage()], 500);
+        }
     }
 
     /**
