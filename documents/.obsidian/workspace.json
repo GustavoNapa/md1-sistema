@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "todos/HEAD_CS_2025-07.md",
+                "file": "Todo - Fase 3.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "HEAD_CS_2025-07"
+              "title": "Todo - Fase 3"
             }
           },
           {
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "todos/HEAD_CS_2025-07.md",
+                "file": "Todo - Fase 3.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Links inversos para HEAD_CS_2025-07"
+              "title": "Links inversos para Todo - Fase 3"
             }
           },
           {
@@ -142,12 +142,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "todos/HEAD_CS_2025-07.md",
+                "file": "Todo - Fase 3.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Links de saída para HEAD_CS_2025-07"
+              "title": "Links de saída para Todo - Fase 3"
             }
           },
           {
@@ -171,13 +171,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "todos/HEAD_CS_2025-07.md",
+                "file": "Todo - Fase 3.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Sumário de HEAD_CS_2025-07"
+              "title": "Sumário de Todo - Fase 3"
             }
           }
         ]
@@ -199,6 +199,8 @@
   },
   "active": "6d1527b43a281f8a",
   "lastOpenFiles": [
+    "todos/HEAD_CS_2025-07.md",
+    "Todo - Fase 3.md",
     "Todo - Fase 2.md",
     "user-historyes/03-5-endpoint-envio-evolution.md.md",
     "user-historyes/03-4-webhook-recepcao.md.md",
@@ -218,7 +220,6 @@
     "user-historyes/02-1-select-coluna-kanban.md.md",
     "Sem título.md",
     "Propmt - Fase 2 - Manus.md",
-    "todos/HEAD_CS_2025-07.md",
     "user-historyes/01-3-disparo-condicional-por-status.md.md",
     "user-historyes/01-2-2-incluir-mapping-tabela-equivalencia.md.md",
     "user-historyes/01-2-1-enviar-campos-cliente-inscricao.md.md",
