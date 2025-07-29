@@ -75,3 +75,8 @@ Route::prefix("whatsapp")->group(function () {
 Route::post("inscriptions/{inscription}/move", [App\Http\Controllers\InscriptionController::class, "move"]);
 
 
+
+
+Route::post("feature-flags/{featureKey}/toggle", [\App\Http\Controllers\FeatureFlagController::class, "toggle"])->name("feature-flags.toggle");
+
+

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Laravel\Pennant\Feature;
 use Illuminate\Support\Facades\DB;
+use App\Models\FeatureFlag;
 
 class FeatureFlagController extends Controller
 {
@@ -51,6 +52,16 @@ class FeatureFlagController extends Controller
             'name' => 'Acesso à API',
             'description' => 'Habilita acesso às APIs do sistema',
             'category' => 'Integração'
+        ],
+        'ChatWhatsApp' => [
+            'name' => 'Chat WhatsApp',
+            'description' => 'Habilita a funcionalidade de chat do WhatsApp',
+            'category' => 'Comunicação'
+        ],
+        'KanbanInscricoes' => [
+            'name' => 'Kanban de Inscrições',
+            'description' => 'Habilita a visualização Kanban para inscrições',
+            'category' => 'Interface'
         ]
     ];
 
@@ -208,17 +219,22 @@ class FeatureFlagController extends Controller
             return response()->json(['error' => 'Feature flag não encontrada'], 404);
         }
 
-        $currentStatus = $this->isFeatureEnabled($featureKey);
-        
-        if ($currentStatus) {
-            Feature::deactivate($featureKey);
-        } else {
+        $featureFlag = FeatureFlag::firstOrCreate(['key' => $featureKey]);
+
+        $newStatus = !$featureFlag->enabled;
+
+        $featureFlag->enabled = $newStatus;
+        $featureFlag->save();
+
+        if ($newStatus) {
             Feature::activate($featureKey);
+        } else {
+            Feature::deactivate($featureKey);
         }
 
         return response()->json([
             'success' => true,
-            'enabled' => !$currentStatus,
+            'enabled' => $newStatus,
             'message' => 'Feature flag atualizada com sucesso!'
         ]);
     }
@@ -228,7 +244,8 @@ class FeatureFlagController extends Controller
      */
     private function isFeatureEnabled(string $featureKey): bool
     {
-        return Feature::active($featureKey);
+        $featureFlag = FeatureFlag::where('key', $featureKey)->first();
+        return $featureFlag ? $featureFlag->enabled : false;
     }
 
     /**
@@ -258,4 +275,5 @@ class FeatureFlagController extends Controller
         }
     }
 }
+
 

@@ -237,3 +237,8 @@ Route::post('webhook-logs/{webhookLog}/resend', [WebhookLogController::class, 'r
 Route::resource('feature-flags', FeatureFlagController::class);
 Route::post('feature-flags/{featureKey}/toggle', [FeatureFlagController::class, 'toggle'])->name('feature-flags.toggle');
 
+
+
+Route::resource("feature-flags", \App\Http\Controllers\FeatureFlagController::class);
+
+
