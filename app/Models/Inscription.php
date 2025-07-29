@@ -48,24 +48,29 @@ class Inscription extends Model
         'historico_faturamento' => 'array'
     ];
 
-        protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
         static::created(function (Inscription $inscription) {
-            $inscription->product->webhooks->each(function ($webhook) use ($inscription) {
-                if ($webhook->webhook_trigger_status === 'active') {
+            $inscription->load('product.webhooks'); // Eager load product and its webhooks
+            foreach ($inscription->product->webhooks as $webhook) {
+                if ($webhook->webhook_trigger_status === $inscription->status) {
                     ProcessInscriptionWebhook::dispatch($inscription, $webhook);
                 }
-            });
+            }
         });
 
         static::updated(function (Inscription $inscription) {
-            $inscription->product->webhooks->each(function ($webhook) use ($inscription) {
-                if ($webhook->webhook_trigger_status === 'active') {
-                    ProcessInscriptionWebhook::dispatch($inscription, $webhook);
+            // Only dispatch if the status has changed to match a trigger status
+            if ($inscription->isDirty('status')) {
+                $inscription->load('product.webhooks'); // Eager load product and its webhooks
+                foreach ($inscription->product->webhooks as $webhook) {
+                    if ($webhook->webhook_trigger_status === $inscription->status) {
+                        ProcessInscriptionWebhook::dispatch($inscription, $webhook);
+                    }
                 }
-            });
+            }
         });
     }
 
@@ -283,3 +288,5 @@ class Inscription extends Model
     }
 
 }
+
+
