@@ -194,3 +194,17 @@ Route::middleware('auth')->group(function () {
 Route::get('/integrations/zapsign/templates/{templateId}/fields', [ZapsignController::class, 'getTemplateFields'])->name('integrations.zapsign.template-fields');
 
 // Webhook público (sem autenticação)
+
+// Rotas do WhatsApp
+Route::middleware('auth')->group(function () {
+    Route::get('/whatsapp', [App\Http\Controllers\WhatsappController::class, 'index'])->name('whatsapp.index');
+    
+    // API Routes
+    Route::prefix('api/whatsapp')->group(function () {
+        Route::get('/conversations', [App\Http\Controllers\WhatsappController::class, 'conversations']);
+        Route::get('/conversations/{conversation}/messages', [App\Http\Controllers\WhatsappController::class, 'messages']);
+        Route::post('/messages', [App\Http\Controllers\WhatsappController::class, 'sendMessage']);
+        Route::post('/conversations/{conversation}/read', [App\Http\Controllers\WhatsappController::class, 'markAsRead']);
+    });
+});
+
