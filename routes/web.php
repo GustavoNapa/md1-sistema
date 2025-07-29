@@ -194,3 +194,13 @@ Route::middleware('auth')->group(function () {
 Route::get('/integrations/zapsign/templates/{templateId}/fields', [ZapsignController::class, 'getTemplateFields'])->name('integrations.zapsign.template-fields');
 
 // Webhook público (sem autenticação)
+
+
+
+use App\Http\Controllers\WhatsappController;
+
+Route::middleware("auth")->group(function () {
+    Route::get("/whatsapp", [WhatsappController::class, "index"])->name("whatsapp.index");
+});
+
+

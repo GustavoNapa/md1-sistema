@@ -53,3 +53,19 @@ use App\Http\Controllers\Api\AchievementTypeController;
 Route::apiResource("achievement-types", AchievementTypeController::class);
 
 
+
+
+
+use App\Http\Controllers\WhatsappController;
+
+Route::prefix("whatsapp")->group(function () {
+    Route::get("conversations", [WhatsappController::class, "conversations"]);
+    Route::get("conversations/{conversation}/messages", [WhatsappController::class, "messages"]);
+    Route::post("messages", [WhatsappController::class, "sendMessage"]);
+    Route::post("conversations/{conversation}/read", [WhatsappController::class, "markAsRead"]);
+    Route::get("conversations/{conversation}/matches", [WhatsappController::class, "getMatches"]);
+    Route::post("conversations/{conversation}/associate", [WhatsappController::class, "associate"]);
+    Route::post("conversations/{conversation}/unlink", [WhatsappController::class, "unlink"]);
+});
+
+

@@ -20,6 +20,74 @@
 
     <!-- Custom Fonts CSS -->
     <link href="{{ asset("css/custom-fonts.css") }}" rel="stylesheet">
+
+    <style>
+        html, body, #app {
+            height: 100%;
+            overflow: hidden; /* Evita scroll da página principal */
+        }
+        .container-fluid.h-100 {
+            height: calc(100vh - 56px); /* Altura total menos a navbar */
+        }
+        #whatsapp-sidebar {
+            height: 100%;
+            overflow-y: auto;
+            padding-bottom: 15px; /* Espaço para o botão Carregar Mais */
+        }
+        #whatsapp-chat-panel {
+            height: 100%;
+        }
+        #messages-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse; /* Para que as novas mensagens apareçam na parte inferior */
+        }
+        .message-bubble {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+        .message-outbound {
+            background-color: #dcf8c6; /* Verde claro do WhatsApp */
+            align-self: flex-end;
+        }
+        .message-inbound {
+            background-color: #ffffff; /* Branco do WhatsApp */
+            border: 1px solid #e0e0e0;
+            align-self: flex-start;
+        }
+        .message-time {
+            font-size: 0.75em;
+            color: rgba(0, 0, 0, 0.5);
+            margin-top: 3px;
+        }
+        .message-outbound .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        #message-input {
+            resize: none;
+        }
+        @media (max-width: 767.98px) {
+            #whatsapp-sidebar {
+                position: absolute;
+                width: 100%;
+                z-index: 1000;
+                background-color: #fff;
+            }
+            #whatsapp-chat-panel {
+                width: 100%;
+            }
+            .d-md-block {
+                display: none !important;
+            }
+            .d-md-none {
+                display: block !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="app">
