@@ -208,3 +208,14 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+
+    // Rotas para associação de conversas
+    Route::prefix('api/whatsapp')->group(function () {
+        Route::get('/conversations/{conversation}/matches', [App\Http\Controllers\WhatsappController::class, 'possibleMatches']);
+        Route::post('/conversations/{conversation}/associate', [App\Http\Controllers\WhatsappController::class, 'associate']);
+        Route::post('/conversations/{conversation}/unlink', [App\Http\Controllers\WhatsappController::class, 'unlink']);
+    });
+    
+    // Rota para criar cliente a partir do WhatsApp
+    Route::get('/whatsapp/create-client', [App\Http\Controllers\WhatsappController::class, 'createClient'])->name('whatsapp.create-client');
+

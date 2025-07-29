@@ -124,17 +124,7 @@ class WhatsappConversation extends Model
      */
     public function autoAssociate()
     {
-        // Buscar cliente por telefone
-        $client = Client::where('telefone', $this->contact_phone)
-            ->orWhere('telefone', 'LIKE', '%' . substr($this->contact_phone, -9))
-            ->first();
-            
-        if ($client) {
-            $this->update(['client_id' => $client->id]);
-            return true;
-        }
-        
-        return false;
+        return \App\Services\ConversationLinker::autoAssociate($this);
     }
 
     /**
@@ -142,15 +132,32 @@ class WhatsappConversation extends Model
      */
     public function getDisplayNameAttribute()
     {
-        if ($this->client) {
-            return $this->client->name;
-        }
-        
-        if ($this->contact_name) {
-            return $this->contact_name;
-        }
-        
-        return 'Contato não identificado';
+        $info = \App\Services\ConversationLinker::getAssociationInfo($this);
+        return $info['name'];
+    }
+
+    /**
+     * Obter informações de associação
+     */
+    public function getAssociationInfoAttribute()
+    {
+        return \App\Services\ConversationLinker::getAssociationInfo($this);
+    }
+
+    /**
+     * Verificar se está associada
+     */
+    public function isAssociated(): bool
+    {
+        return $this->client_id !== null || $this->contact_id !== null;
+    }
+
+    /**
+     * Obter possíveis matches para associação
+     */
+    public function getPossibleMatches()
+    {
+        return \App\Services\ConversationLinker::findPossibleMatches($this->contact_phone);
     }
 
     /**

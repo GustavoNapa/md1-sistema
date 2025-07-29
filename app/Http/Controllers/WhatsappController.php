@@ -185,4 +185,88 @@ class WhatsappController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * API: Obter possíveis matches para associação
+     */
+    public function possibleMatches(WhatsappConversation $conversation): JsonResponse
+    {
+        $matches = $conversation->getPossibleMatches();
+        
+        return response()->json([
+            'matches' => $matches,
+            'current_association' => $conversation->association_info,
+        ]);
+    }
+
+    /**
+     * API: Associar conversa manualmente
+     */
+    public function associate(Request $request, WhatsappConversation $conversation): JsonResponse
+    {
+        $request->validate([
+            'type' => 'required|in:client,contact',
+            'id' => 'required|integer',
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $success = \App\Services\ConversationLinker::manualAssociate(
+            $conversation,
+            $request->type,
+            $request->id,
+            auth()->id(),
+            $request->reason
+        );
+
+        if (!$success) {
+            return response()->json(['error' => 'Falha ao associar conversa'], 400);
+        }
+
+        // Recarregar a conversa para obter os dados atualizados
+        $conversation->refresh();
+        $conversation->load('client');
+
+        return response()->json([
+            'success' => true,
+            'association' => $conversation->association_info,
+        ]);
+    }
+
+    /**
+     * API: Desassociar conversa
+     */
+    public function unlink(Request $request, WhatsappConversation $conversation): JsonResponse
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:255',
+        ]);
+
+        $success = \App\Services\ConversationLinker::unlink(
+            $conversation,
+            auth()->id(),
+            $request->reason
+        );
+
+        if (!$success) {
+            return response()->json(['error' => 'Conversa já está desassociada'], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'association' => $conversation->association_info,
+        ]);
+    }
+
+    /**
+     * Redirecionar para criação de cliente com telefone pré-preenchido
+     */
+    public function createClient(Request $request)
+    {
+        $phone = $request->get('phone');
+        
+        return redirect()->route('clients.create', ['telefone' => $phone]);
+    }
+
+
 }
+

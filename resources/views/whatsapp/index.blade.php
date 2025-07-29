@@ -83,7 +83,15 @@
                                 <i class="fas fa-user text-white"></i>
                             </div>
                             <div>
-                                <h6 class="mb-0" id="contactName">Nome do Contato</h6>
+                                <h6 class="mb-0 d-flex align-items-center" id="contactName">
+                                    Nome do Contato
+                                    <span class="badge bg-warning ms-2 d-none" id="notAssociatedBadge">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Não vinculado
+                                    </span>
+                                    <span class="badge bg-success ms-2 d-none" id="associatedBadge">
+                                        <i class="fas fa-link me-1"></i>Vinculado
+                                    </span>
+                                </h6>
                                 <small class="text-muted" id="contactPhone">+55 11 99999-9999</small>
                                 <div class="small text-success d-none" id="typingIndicator">
                                     <i class="fas fa-circle fa-xs me-1"></i>
@@ -103,10 +111,16 @@
                                 <li><a class="dropdown-item" href="#" id="viewClientInfo">
                                     <i class="fas fa-user me-2"></i>Ver cliente
                                 </a></li>
+                                <li><a class="dropdown-item" href="#" id="manageAssociation">
+                                    <i class="fas fa-link me-2"></i>Gerenciar vínculo
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" id="createClientFromChat">
+                                    <i class="fas fa-user-plus me-2"></i>Criar cliente
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="#" id="markAsUnread">
                                     <i class="fas fa-envelope me-2"></i>Marcar como não lida
                                 </a></li>
-                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" id="archiveConversation">
                                     <i class="fas fa-archive me-2"></i>Arquivar conversa
                                 </a></li>
@@ -176,6 +190,64 @@
                            id="fileInput" 
                            class="d-none" 
                            accept="image/*,audio/*,video/*,.pdf,.doc,.docx">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Gerenciar Associação -->
+<div class="modal fade" id="associationModal" tabindex="-1" aria-labelledby="associationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="associationModalLabel">Gerenciar Vínculo da Conversa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Estado atual -->
+                <div class="mb-4">
+                    <h6>Estado Atual</h6>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1" id="currentAssociationName">Carregando...</h6>
+                                    <small class="text-muted" id="currentAssociationPhone"></small>
+                                    <div>
+                                        <span class="badge" id="currentAssociationStatus"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Possíveis matches -->
+                <div class="mb-4" id="possibleMatchesSection">
+                    <h6>Possíveis Vínculos</h6>
+                    <div id="possibleMatchesList">
+                        <div class="text-center p-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="small mt-2 mb-0">Buscando possíveis vínculos...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ações -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary" id="createNewClientBtn">
+                        <i class="fas fa-user-plus me-2"></i>Criar Novo Cliente
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" id="unlinkBtn">
+                        <i class="fas fa-unlink me-2"></i>Desvincular
+                    </button>
                 </div>
             </div>
         </div>
@@ -282,6 +354,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Estado da aplicação
     let currentConversationId = null;
+    let currentConversation = null;
     let conversations = [];
     let messages = [];
     let isLoadingConversations = false;
@@ -346,6 +419,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Botão voltar (mobile)
         document.getElementById('backToSidebar').addEventListener('click', function() {
             document.getElementById('chatSidebar').classList.add('show');
+        });
+        
+        // Gerenciar associação
+        document.getElementById('manageAssociation').addEventListener('click', function(e) {
+            e.preventDefault();
+            openAssociationModal();
+        });
+        
+        // Criar cliente a partir do chat
+        document.getElementById('createClientFromChat').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentConversation) {
+                window.open(`/whatsapp/create-client?phone=${encodeURIComponent(currentConversation.contact_phone)}`, '_blank');
+            }
         });
     }
     
@@ -475,10 +562,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
             
             messages = data.messages;
+            currentConversation = data.conversation;
             
             // Atualizar cabeçalho
-            document.getElementById('contactName').textContent = data.conversation.contact_name;
-            document.getElementById('contactPhone').textContent = data.conversation.contact_phone;
+            updateChatHeader(currentConversation);
             
             // Renderizar mensagens
             renderMessages();
@@ -606,3 +693,215 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endsection
 
+
+    
+    function updateChatHeader(conversation) {
+        const contactNameEl = document.getElementById('contactName');
+        const contactPhoneEl = document.getElementById('contactPhone');
+        const notAssociatedBadge = document.getElementById('notAssociatedBadge');
+        const associatedBadge = document.getElementById('associatedBadge');
+        
+        // Atualizar nome e telefone
+        contactNameEl.childNodes[0].textContent = conversation.contact_name;
+        contactPhoneEl.textContent = conversation.contact_phone;
+        
+        // Atualizar badges de associação
+        if (conversation.client && conversation.client.id) {
+            notAssociatedBadge.classList.add('d-none');
+            associatedBadge.classList.remove('d-none');
+        } else {
+            notAssociatedBadge.classList.remove('d-none');
+            associatedBadge.classList.add('d-none');
+        }
+    }
+    
+    async function openAssociationModal() {
+        if (!currentConversationId) return;
+        
+        const modal = new bootstrap.Modal(document.getElementById('associationModal'));
+        modal.show();
+        
+        // Atualizar estado atual
+        updateCurrentAssociationDisplay();
+        
+        // Carregar possíveis matches
+        await loadPossibleMatches();
+        
+        // Setup event listeners do modal
+        setupModalEventListeners();
+    }
+    
+    function updateCurrentAssociationDisplay() {
+        const nameEl = document.getElementById('currentAssociationName');
+        const phoneEl = document.getElementById('currentAssociationPhone');
+        const statusEl = document.getElementById('currentAssociationStatus');
+        
+        if (currentConversation) {
+            nameEl.textContent = currentConversation.contact_name;
+            phoneEl.textContent = currentConversation.contact_phone;
+            
+            if (currentConversation.client && currentConversation.client.id) {
+                statusEl.textContent = 'Vinculado ao cliente: ' + currentConversation.client.name;
+                statusEl.className = 'badge bg-success';
+            } else {
+                statusEl.textContent = 'Não vinculado';
+                statusEl.className = 'badge bg-warning';
+            }
+        }
+    }
+    
+    async function loadPossibleMatches() {
+        const listEl = document.getElementById('possibleMatchesList');
+        
+        try {
+            const response = await fetch(`/api/whatsapp/conversations/${currentConversationId}/matches`);
+            const data = await response.json();
+            
+            if (data.matches.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center p-3 text-muted">
+                        <i class="fas fa-search fa-2x mb-2"></i>
+                        <p>Nenhum cliente encontrado com este telefone</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            listEl.innerHTML = '';
+            data.matches.forEach(match => {
+                const matchEl = document.createElement('div');
+                matchEl.className = 'card mb-2';
+                matchEl.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">${match.name}</h6>
+                                    <small class="text-muted">${match.phone}</small>
+                                    ${match.email ? `<br><small class="text-muted">${match.email}</small>` : ''}
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm" 
+                                    onclick="associateConversation('${match.type}', ${match.id})">
+                                <i class="fas fa-link me-1"></i>Vincular
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(matchEl);
+            });
+            
+        } catch (error) {
+            console.error('Erro ao carregar matches:', error);
+            listEl.innerHTML = `
+                <div class="text-center p-3 text-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <p>Erro ao carregar possíveis vínculos</p>
+                </div>
+            `;
+        }
+    }
+    
+    function setupModalEventListeners() {
+        // Criar novo cliente
+        document.getElementById('createNewClientBtn').onclick = function() {
+            if (currentConversation) {
+                window.open(`/whatsapp/create-client?phone=${encodeURIComponent(currentConversation.contact_phone)}`, '_blank');
+            }
+        };
+        
+        // Desvincular
+        document.getElementById('unlinkBtn').onclick = async function() {
+            if (confirm('Tem certeza que deseja desvincular esta conversa?')) {
+                await unlinkConversation();
+            }
+        };
+    }
+    
+    async function associateConversation(type, id) {
+        try {
+            const response = await fetch(`/api/whatsapp/conversations/${currentConversationId}/associate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    type: type,
+                    id: id,
+                    reason: 'Associação manual via interface'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Atualizar conversa atual
+                currentConversation.client = data.association.type === 'client' ? {
+                    id: data.association.id,
+                    name: data.association.name
+                } : null;
+                
+                // Atualizar UI
+                updateChatHeader(currentConversation);
+                updateCurrentAssociationDisplay();
+                
+                // Fechar modal
+                bootstrap.Modal.getInstance(document.getElementById('associationModal')).hide();
+                
+                // Mostrar sucesso
+                alert('Conversa vinculada com sucesso!');
+            } else {
+                alert('Erro ao vincular conversa: ' + (data.error || 'Erro desconhecido'));
+            }
+            
+        } catch (error) {
+            console.error('Erro ao associar conversa:', error);
+            alert('Erro ao vincular conversa');
+        }
+    }
+    
+    async function unlinkConversation() {
+        try {
+            const response = await fetch(`/api/whatsapp/conversations/${currentConversationId}/unlink`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    reason: 'Desvinculação manual via interface'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Atualizar conversa atual
+                currentConversation.client = null;
+                
+                // Atualizar UI
+                updateChatHeader(currentConversation);
+                updateCurrentAssociationDisplay();
+                
+                // Fechar modal
+                bootstrap.Modal.getInstance(document.getElementById('associationModal')).hide();
+                
+                // Mostrar sucesso
+                alert('Conversa desvinculada com sucesso!');
+            } else {
+                alert('Erro ao desvincular conversa: ' + (data.error || 'Erro desconhecido'));
+            }
+            
+        } catch (error) {
+            console.error('Erro ao desvincular conversa:', error);
+            alert('Erro ao desvincular conversa');
+        }
+    }
+});
+</script>
+@endsection
