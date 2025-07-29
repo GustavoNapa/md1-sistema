@@ -169,6 +169,9 @@ class InscriptionController extends Controller
 
         $inscription->update($validated);
 
+        // Disparar evento para webhook
+        \App\Events\InscriptionUpdated::dispatch($inscription);
+
         return redirect()->route('inscriptions.show', $inscription)
             ->with('success', 'Inscrição atualizada com sucesso!');
     }

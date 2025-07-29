@@ -76,6 +76,48 @@
                             </div>
                         </div>
 
+                        <!-- Seção de Webhook -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Configuração de Webhook</h5>
+                            
+                            <div class="mb-3">
+                                <label for="webhook_url" class="form-label">URL do Webhook</label>
+                                <input type="url" class="form-control @error('webhook_url') is-invalid @enderror" 
+                                       id="webhook_url" name="webhook_url" value="{{ old('webhook_url') }}" 
+                                       placeholder="https://exemplo.com/webhook">
+                                @error('webhook_url')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">URL que receberá os dados das inscrições deste produto</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="webhook_token" class="form-label">Token de Autorização</label>
+                                <input type="text" class="form-control @error('webhook_token') is-invalid @enderror" 
+                                       id="webhook_token" name="webhook_token" value="{{ old('webhook_token') }}" 
+                                       placeholder="Bearer token ou chave de API">
+                                @error('webhook_token')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Token que será enviado no cabeçalho Authorization</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="webhook_trigger_status" class="form-label">Status Gatilho</label>
+                                <select class="form-select @error('webhook_trigger_status') is-invalid @enderror" 
+                                        id="webhook_trigger_status" name="webhook_trigger_status">
+                                    <option value="active" {{ old('webhook_trigger_status', 'active') == 'active' ? 'selected' : '' }}>Ativo</option>
+                                    <option value="paused" {{ old('webhook_trigger_status') == 'paused' ? 'selected' : '' }}>Pausado</option>
+                                    <option value="cancelled" {{ old('webhook_trigger_status') == 'cancelled' ? 'selected' : '' }}>Cancelado</option>
+                                    <option value="completed" {{ old('webhook_trigger_status') == 'completed' ? 'selected' : '' }}>Concluído</option>
+                                </select>
+                                @error('webhook_trigger_status')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Webhook será disparado apenas quando a inscrição tiver este status</div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('products.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Voltar

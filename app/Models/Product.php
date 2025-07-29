@@ -15,6 +15,9 @@ class Product extends Model
         'price',
         'offer_price',
         'is_active',
+        'webhook_url',
+        'webhook_token',
+        'webhook_trigger_status',
     ];
 
     protected $casts = [

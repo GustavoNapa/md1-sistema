@@ -19,7 +19,10 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         \App\Events\InscriptionCreated::class => [
-            \App\Listeners\SendInscriptionWebhook::class,
+            \App\Listeners\SendWebhookOnInscriptionEvent::class,
+        ],
+        \App\Events\InscriptionUpdated::class => [
+            \App\Listeners\SendWebhookOnInscriptionEvent::class,
         ],
     ];
 
