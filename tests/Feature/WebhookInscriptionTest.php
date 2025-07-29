@@ -9,9 +9,7 @@ use App\Models\Inscription;
 use App\Models\Product;
 use App\Models\Client;
 use App\Models\ProductWebhook;
-use Database\Factories\ClientFactory;
-use Database\Factories\ProductFactory;
-use Database\Factories\ProductWebhookFactory;
+use App\Models\WebhookLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use App\Jobs\ProcessInscriptionWebhook;
@@ -60,7 +58,7 @@ class WebhookInscriptionTest extends TestCase
                    $job->productWebhook->id === $this->productWebhook->id;
         });
 
-        // Manually run the job to test the HTTP request
+        // Manually run the job to test the HTTP request and webhook log creation
         $job = new ProcessInscriptionWebhook($inscription, $this->productWebhook);
         $job->handle();
 
@@ -73,6 +71,16 @@ class WebhookInscriptionTest extends TestCase
                    isset($request['inscription']) &&
                    isset($request['mapping']);
         });
+
+        // Assert webhook log was created and updated correctly
+        $this->assertDatabaseHas('webhook_logs', [
+            'inscription_id' => $inscription->id,
+            'webhook_url' => $this->productWebhook->webhook_url,
+            'event_type' => 'inscription_updated',
+            'attempt_number' => 1,
+            'status' => 'success',
+            'response_status' => 200,
+        ]);
     }
 
     /** @test */
@@ -91,6 +99,11 @@ class WebhookInscriptionTest extends TestCase
         Queue::assertNotPushed(ProcessInscriptionWebhook::class);
 
         Http::assertNothingSent();
+
+        // Assert no webhook log was created
+        $this->assertDatabaseMissing('webhook_logs', [
+            'inscription_id' => $inscription->id,
+        ]);
     }
 
     /** @test */
@@ -109,7 +122,7 @@ class WebhookInscriptionTest extends TestCase
 
         // Manually run the job to simulate the first attempt
         $job = new ProcessInscriptionWebhook($inscription, $this->productWebhook);
-        $job->tries = 1; // Simulate first attempt
+        $job->attempts = 1; // Simulate first attempt
 
         try {
             $job->handle();
@@ -117,17 +130,32 @@ class WebhookInscriptionTest extends TestCase
             // Expected to fail on first attempt
         }
 
-        // Assert that the job was released back to the queue for retry
-        Queue::assertPushed(ProcessInscriptionWebhook::class, function ($job) {
-            return $job->attempts() === 1; // Check if it's the first retry
-        });
+        // Assert webhook log for first attempt
+        $this->assertDatabaseHas('webhook_logs', [
+            'inscription_id' => $inscription->id,
+            'webhook_url' => $this->productWebhook->webhook_url,
+            'event_type' => 'inscription_updated',
+            'attempt_number' => 1,
+            'status' => 'failed',
+            'response_status' => 500,
+        ]);
 
         // Simulate a retry by creating a new job instance and running it
         $retriedJob = new ProcessInscriptionWebhook($inscription, $this->productWebhook);
-        $retriedJob->tries = 2; // Simulate second attempt
+        $retriedJob->attempts = 2; // Simulate second attempt
         $retriedJob->handle();
 
         Http::assertSentCount(2); // Two requests should have been sent
+
+        // Assert webhook log for the successful retry (it updates the existing log)
+        $this->assertDatabaseHas('webhook_logs', [
+            'inscription_id' => $inscription->id,
+            'webhook_url' => $this->productWebhook->webhook_url,
+            'event_type' => 'inscription_updated',
+            'attempt_number' => 1, // Still attempt 1 as it's updated
+            'status' => 'success',
+            'response_status' => 200,
+        ]);
     }
 }
 
