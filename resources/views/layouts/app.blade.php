@@ -121,16 +121,6 @@
                                     <i class="fab fa-whatsapp me-1"></i>WhatsApp
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("webhook-logs.index") }}">
-                                    <i class="fas fa-exchange-alt me-1"></i>Webhooks
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route("feature-flags.index") }}">
-                                    <i class="fas fa-toggle-on me-1"></i>Funcionalidades
-                                </a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdownCadastros" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     Cadastros
@@ -192,6 +182,10 @@
                                             <i class="fas fa-toggle-on me-2"></i>Funcionalidades
                                         </a>
                                     @endcan
+
+                                    <a class="dropdown-item" href="{{ route("webhook-logs.index") }}">
+                                        <i class="fas fa-exchange-alt me-2"></i>Webhooks
+                                    </a>
 
                                     @can('manage-integrations')
                                         <a class="dropdown-item" href="{{ route("integrations.index") }}">
