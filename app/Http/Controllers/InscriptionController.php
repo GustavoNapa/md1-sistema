@@ -287,6 +287,9 @@ class InscriptionController extends Controller
             'status' => 'pendente',
         ]);
 
+        // Recarregar a inscrição com todos os relacionamentos antes do webhook
+        $inscription->load('client.addresses');
+
         // Disparar evento para webhook
         \App\Events\InscriptionCreated::dispatch($inscription);
 
