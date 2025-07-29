@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WhatsappController;
 use App\Http\Controllers\WebhookLogController;
+use App\Http\Controllers\FeatureFlagController;
 
 /*
 |--------------------------------------------------------------------------
@@ -230,4 +231,9 @@ Route::middleware("auth")->group(function () {
 // Rotas para Histórico de Webhooks
 Route::resource('webhook-logs', WebhookLogController::class)->only(['index', 'show']);
 Route::post('webhook-logs/{webhookLog}/resend', [WebhookLogController::class, 'resend'])->name('webhook-logs.resend');
+
+
+// Rotas para Feature Flags
+Route::resource('feature-flags', FeatureFlagController::class);
+Route::post('feature-flags/{featureKey}/toggle', [FeatureFlagController::class, 'toggle'])->name('feature-flags.toggle');
 
