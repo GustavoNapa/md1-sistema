@@ -17,28 +17,18 @@ class WhatsappConversation extends Model
         'instance_name',
         'client_id',
         'contact_id',
-<<<<<<< HEAD
         'user_id',
         'unread_count',
         'last_message_at',
         'is_active',
-=======
-        'last_message_at',
-        'unread_count',
-        'is_active',
         'metadata',
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
     ];
 
     protected $casts = [
         'last_message_at' => 'datetime',
-<<<<<<< HEAD
         'is_active' => 'boolean',
         'unread_count' => 'integer',
-=======
         'metadata' => 'array',
-        'is_active' => 'boolean',
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
     ];
 
     /**
@@ -50,7 +40,6 @@ class WhatsappConversation extends Model
     }
 
     /**
-<<<<<<< HEAD
      * Relacionamento com Usuário (atendente)
      */
     public function user(): BelongsTo
@@ -65,14 +54,6 @@ class WhatsappConversation extends Model
     {
         return $this->belongsTo(ClientPhone::class, 'contact_id');
     }
-=======
-     * Relacionamento com Contato (se existir tabela contacts)
-     */
-    // public function contact(): BelongsTo
-    // {
-    //     return $this->belongsTo(Contact::class);
-    // }
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
 
     /**
      * Relacionamento com Mensagens
@@ -83,8 +64,6 @@ class WhatsappConversation extends Model
     }
 
     /**
-<<<<<<< HEAD
-=======
      * Relacionamento com Links de Auditoria
      */
     public function links(): HasMany
@@ -93,7 +72,6 @@ class WhatsappConversation extends Model
     }
 
     /**
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
      * Scope para conversas ativas
      */
     public function scopeActive($query)
@@ -110,7 +88,6 @@ class WhatsappConversation extends Model
     }
 
     /**
-<<<<<<< HEAD
      * Scope para conversas de um atendente específico
      */
     public function scopeForUser($query, $userId)
@@ -119,41 +96,22 @@ class WhatsappConversation extends Model
     }
 
     /**
-     * Normaliza o telefone para formato padrão
-=======
      * Normalizar número de telefone
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
      */
     public static function normalizePhone($phone)
     {
         // Remove todos os caracteres não numéricos
-<<<<<<< HEAD
-        $phone = preg_replace('/\D/', '', $phone);
-        
-        // Se começar com 55 (Brasil), mantém
-        if (strlen($phone) >= 13 && substr($phone, 0, 2) === '55') {
-            return $phone;
-        }
-        
-        // Se não tem código do país, adiciona 55
-        if (strlen($phone) === 11) {
-            return '55' . $phone;
-=======
         $phone = preg_replace('/[^0-9]/', '', $phone);
         
         // Se não começar com 55, adiciona o código do Brasil
         if (!str_starts_with($phone, '55')) {
             $phone = '55' . $phone;
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
         }
         
         return $phone;
     }
 
     /**
-<<<<<<< HEAD
-     * Marca conversa como lida
-=======
      * Buscar ou criar conversa por telefone
      */
     public static function findOrCreateByPhone($phone, $instanceName, $contactName = null)
@@ -222,12 +180,15 @@ class WhatsappConversation extends Model
 
     /**
      * Marcar mensagens como lidas
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
      */
     public function markAsRead()
     {
         $this->update(['unread_count' => 0]);
-<<<<<<< HEAD
+        
+        $this->messages()
+            ->where('direction', 'inbound')
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
     }
 
     /**
@@ -263,13 +224,3 @@ class WhatsappConversation extends Model
         return $this->contact_name ?: $this->contact_phone;
     }
 }
-
-=======
-        
-        $this->messages()
-            ->where('direction', 'inbound')
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]);
-    }
-}
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
