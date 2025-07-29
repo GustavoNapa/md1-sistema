@@ -10,11 +10,11 @@
 ### Sub-tarefas
 | ID  | Descrição                                                          |
 |-----|--------------------------------------------------------------------|
-| 05.1| **Scanner** que varre rotas/controllers e gera lista de ações      |
-| 05.2| Seeder `permissions_table` (idempotente)                            |
-| 05.3| Seeder `roles` + atribui permissões aos 5 cargos padrão            |
-| 05.4| Middleware `permission:<slug>` aplicado em rotas + controllers      |
-| 05.5| Handler 403 → redirect back + Toastr “Permissão insuficiente”       |
+| 05.1| **Scanner** que varre rotas/controllers e gera lista de ações      | ✅
+| 05.2| Seeder `permissions_table` (idempotente)                            | ✅
+| 05.3| Seeder `roles` + atribui permissões aos 5 cargos padrão            | ✅
+| 05.4| Middleware `permission:<slug>` aplicado em rotas + controllers      | ✅
+| 05.5| Handler 403 → redirect back + Toastr “Permissão insuficiente”       | ✅
 
 ### Critérios de Aceite
 ```gherkin
