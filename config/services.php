@@ -31,13 +31,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-];
-
-
     'evolution' => [
         'base_url' => env('EVOLUTION_BASE_URL'),
         'api_key' => env('EVOLUTION_API_KEY'),
         'instance_name' => env('EVOLUTION_INSTANCE_NAME'),
     ],
+
+];
 
 
