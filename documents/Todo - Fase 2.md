@@ -8,9 +8,9 @@
 ### Lista de tarefas
 
 - [ ] **01 Webhook de Inscrição** ([user story](../user-historyes/01-webhook-inscricao.md))
-  - [ ] **01.1** Criar tela para cadastrar a **URL do webhook** no CRUD **Produto**
+  - [x] **01.1** Criar tela para cadastrar a **URL do webhook** no CRUD **Produto**
   - [ ] **01.2** Disparar **POST JSON** ao criar/atualizar **Inscrição**
-    - [ ] **01.2.1** Enviar todos os campos de **Cliente** + **Inscrição**
+    - [x] **01.2.1** Enviar todos os campos de **Cliente** + **Inscrição**
     - [ ] **01.2.2** Incluir objeto **mapping** conforme tabela de equivalência
   - [ ] **01.3** Executar disparo **somente** quando o **status** da Inscrição corresponder às regras
 
@@ -47,8 +47,10 @@
 - Nenhuma tarefa em andamento no momento
 
 ### 📋 Próximas Tarefas
-1. **Webhook de Inscrição** (01.1, 01.2, 01.3)
-2. Melhorias na interface do chat (notificações, sons, etc.)
-3. Implementação de WebSocket real para produção (Laravel Echo Server/Pusher)
+1. **Webhook de Inscrição** (01.2.1, 01.2.2, 01.3)
+2. **Tela de Configuração WhatsApp** (QR Code e instância)
+3. Melhorias na interface do chat (notificações, sons, etc.)
+4. Implementação de WebSocket real para produção (Laravel Echo Server/Pusher)
 
 > Atualize as caixas de seleção à medida que avançar. Mantemos todos os documentos em português e slugs numerados para preservar a ordem.
+

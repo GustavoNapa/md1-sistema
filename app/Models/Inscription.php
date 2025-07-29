@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Jobs\ProcessInscriptionWebhook;
+use App\Models\ProductWebhook;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -45,6 +47,27 @@ class Inscription extends Model
         'amount_paid' => 'decimal:2',
         'historico_faturamento' => 'array'
     ];
+
+        protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function (Inscription $inscription) {
+            $inscription->product->webhooks->each(function ($webhook) use ($inscription) {
+                if ($webhook->webhook_trigger_status === 'active') {
+                    ProcessInscriptionWebhook::dispatch($inscription, $webhook);
+                }
+            });
+        });
+
+        static::updated(function (Inscription $inscription) {
+            $inscription->product->webhooks->each(function ($webhook) use ($inscription) {
+                if ($webhook->webhook_trigger_status === 'active') {
+                    ProcessInscriptionWebhook::dispatch($inscription, $webhook);
+                }
+            });
+        });
+    }
 
     // Relacionamentos
     public function client()
