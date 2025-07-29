@@ -40,25 +40,34 @@ class SendInscriptionWebhook implements ShouldQueue
     {
         $product = $this->inscription->product;
         
-        // Verificar se o produto tem webhook configurado
-        if (!$product->webhook_url) {
-            Log::info("Produto {$product->id} não tem webhook configurado");
+        // Buscar webhooks que correspondem ao status atual da inscrição
+        $webhooks = $product->webhooks()
+            ->where('webhook_trigger_status', $this->inscription->status)
+            ->get();
+
+        if ($webhooks->isEmpty()) {
+            Log::info("Produto {$product->id} não tem webhooks configurados para o status '{$this->inscription->status}'");
             return;
         }
 
-        // Verificar se o status da inscrição corresponde ao gatilho
-        if ($this->inscription->status !== $product->webhook_trigger_status) {
-            Log::info("Status da inscrição ({$this->inscription->status}) não corresponde ao gatilho ({$product->webhook_trigger_status})");
-            return;
-        }
-
-        // Preparar o payload
+        // Preparar o payload uma vez
         $payload = $this->buildPayload();
 
+        // Enviar para cada webhook configurado
+        foreach ($webhooks as $webhook) {
+            $this->sendWebhook($webhook, $payload);
+        }
+    }
+
+    /**
+     * Send webhook to a specific URL
+     */
+    private function sendWebhook($webhook, $payload): void
+    {
         // Criar log do webhook
         $webhookLog = WebhookLog::create([
             'inscription_id' => $this->inscription->id,
-            'webhook_url' => $product->webhook_url,
+            'webhook_url' => $webhook->webhook_url,
             'event_type' => $this->eventType,
             'payload' => $payload,
             'attempt_number' => $this->attemptNumber,
@@ -69,11 +78,11 @@ class SendInscriptionWebhook implements ShouldQueue
             // Enviar webhook
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'Authorization' => 'Bearer ' . $product->webhook_token,
+                    'Authorization' => 'Bearer ' . $webhook->webhook_token,
                     'Content-Type' => 'application/json',
                     'User-Agent' => 'MD1-Sistema/1.0',
                 ])
-                ->post($product->webhook_url, $payload);
+                ->post($webhook->webhook_url, $payload);
 
             // Atualizar log com resposta
             $webhookLog->update([
@@ -87,7 +96,7 @@ class SendInscriptionWebhook implements ShouldQueue
                 throw new \Exception("Webhook failed with status {$response->status()}: {$response->body()}");
             }
 
-            Log::info("Webhook enviado com sucesso para inscrição {$this->inscription->id}");
+            Log::info("Webhook enviado com sucesso para inscrição {$this->inscription->id} - URL: {$webhook->webhook_url}");
 
         } catch (\Exception $e) {
             // Atualizar log com erro
@@ -97,7 +106,7 @@ class SendInscriptionWebhook implements ShouldQueue
                 'sent_at' => now(),
             ]);
 
-            Log::error("Erro ao enviar webhook para inscrição {$this->inscription->id}: " . $e->getMessage());
+            Log::error("Erro ao enviar webhook para inscrição {$this->inscription->id} - URL: {$webhook->webhook_url} - Erro: " . $e->getMessage());
 
             // Re-lançar exceção para que o Laravel tente novamente
             throw $e;

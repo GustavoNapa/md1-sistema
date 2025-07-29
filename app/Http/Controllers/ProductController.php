@@ -40,6 +40,10 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'offer_price' => 'nullable|numeric|min:0|lt:price',
             'is_active' => 'boolean',
+            'webhooks' => 'nullable|array',
+            'webhooks.*.webhook_url' => 'nullable|url',
+            'webhooks.*.webhook_token' => 'nullable|string',
+            'webhooks.*.webhook_trigger_status' => 'nullable|in:active,paused,cancelled,completed',
         ], [
             'name.required' => 'O nome do produto é obrigatório.',
             'price.required' => 'O preço é obrigatório.',
@@ -48,11 +52,26 @@ class ProductController extends Controller
             'offer_price.numeric' => 'O preço de oferta deve ser um valor numérico.',
             'offer_price.min' => 'O preço de oferta não pode ser negativo.',
             'offer_price.lt' => 'O preço de oferta deve ser menor que o preço normal.',
+            'webhooks.*.webhook_url.url' => 'A URL do webhook deve ser válida.',
+            'webhooks.*.webhook_trigger_status.in' => 'Status de gatilho inválido.',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        // Processar webhooks
+        if ($request->has('webhooks')) {
+            foreach ($request->webhooks as $webhookData) {
+                if (!empty($webhookData['webhook_url'])) {
+                    $product->webhooks()->create([
+                        'webhook_url' => $webhookData['webhook_url'],
+                        'webhook_token' => $webhookData['webhook_token'] ?? null,
+                        'webhook_trigger_status' => $webhookData['webhook_trigger_status'] ?? 'active',
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'Produto criado com sucesso!');
@@ -86,6 +105,11 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'offer_price' => 'nullable|numeric|min:0|lt:price',
             'is_active' => 'boolean',
+            'webhooks' => 'nullable|array',
+            'webhooks.*.id' => 'nullable|exists:product_webhooks,id',
+            'webhooks.*.webhook_url' => 'nullable|url',
+            'webhooks.*.webhook_token' => 'nullable|string',
+            'webhooks.*.webhook_trigger_status' => 'nullable|in:active,paused,cancelled,completed',
         ], [
             'name.required' => 'O nome do produto é obrigatório.',
             'price.required' => 'O preço é obrigatório.',
@@ -94,11 +118,49 @@ class ProductController extends Controller
             'offer_price.numeric' => 'O preço de oferta deve ser um valor numérico.',
             'offer_price.min' => 'O preço de oferta não pode ser negativo.',
             'offer_price.lt' => 'O preço de oferta deve ser menor que o preço normal.',
+            'webhooks.*.webhook_url.url' => 'A URL do webhook deve ser válida.',
+            'webhooks.*.webhook_trigger_status.in' => 'Status de gatilho inválido.',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
 
         $product->update($validated);
+
+        // Processar webhooks
+        if ($request->has('webhooks')) {
+            $existingWebhookIds = [];
+            
+            foreach ($request->webhooks as $webhookData) {
+                if (!empty($webhookData['webhook_url'])) {
+                    if (!empty($webhookData['id'])) {
+                        // Atualizar webhook existente
+                        $webhook = $product->webhooks()->find($webhookData['id']);
+                        if ($webhook) {
+                            $webhook->update([
+                                'webhook_url' => $webhookData['webhook_url'],
+                                'webhook_token' => $webhookData['webhook_token'] ?? null,
+                                'webhook_trigger_status' => $webhookData['webhook_trigger_status'] ?? 'active',
+                            ]);
+                            $existingWebhookIds[] = $webhook->id;
+                        }
+                    } else {
+                        // Criar novo webhook
+                        $newWebhook = $product->webhooks()->create([
+                            'webhook_url' => $webhookData['webhook_url'],
+                            'webhook_token' => $webhookData['webhook_token'] ?? null,
+                            'webhook_trigger_status' => $webhookData['webhook_trigger_status'] ?? 'active',
+                        ]);
+                        $existingWebhookIds[] = $newWebhook->id;
+                    }
+                }
+            }
+            
+            // Remover webhooks que não estão mais na lista
+            $product->webhooks()->whereNotIn('id', $existingWebhookIds)->delete();
+        } else {
+            // Se não há webhooks no request, remover todos
+            $product->webhooks()->delete();
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'Produto atualizado com sucesso!');

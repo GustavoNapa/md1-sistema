@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropColumn(['contrato_assinado', 'contrato_na_pasta']);
+        Schema::table("payments", function (Blueprint $table) {
+            // $table->dropColumn(["contrato_assinado", "contrato_na_pasta"]);
         });
     }
 

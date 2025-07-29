@@ -77,46 +77,96 @@
                             </div>
                         </div>
 
-                        <!-- Seção de Webhook -->
+                        <!-- Seção de Webhooks -->
                         <div class="mb-4">
-                            <h5 class="border-bottom pb-2">Configuração de Webhook</h5>
+                            <h5 class="border-bottom pb-2">Configuração de Webhooks</h5>
                             
-                            <div class="mb-3">
-                                <label for="webhook_url" class="form-label">URL do Webhook</label>
-                                <input type="url" class="form-control @error('webhook_url') is-invalid @enderror" 
-                                       id="webhook_url" name="webhook_url" value="{{ old('webhook_url', $product->webhook_url) }}" 
-                                       placeholder="https://exemplo.com/webhook">
-                                @error('webhook_url')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">URL que receberá os dados das inscrições deste produto</div>
+                            <div id="webhooks-container">
+                                @forelse($product->webhooks as $index => $webhook)
+                                <div class="webhook-item border rounded p-3 mb-3">
+                                    <input type="hidden" name="webhooks[{{ $index }}][id]" value="{{ $webhook->id }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="webhook_url_{{ $index }}" class="form-label">URL do Webhook</label>
+                                            <input type="url" class="form-control" 
+                                                   id="webhook_url_{{ $index }}" name="webhooks[{{ $index }}][webhook_url]" 
+                                                   value="{{ old('webhooks.'.$index.'.webhook_url', $webhook->webhook_url) }}"
+                                                   placeholder="https://exemplo.com/webhook">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="webhook_trigger_status_{{ $index }}" class="form-label">Status Gatilho</label>
+                                            <select class="form-select" 
+                                                    id="webhook_trigger_status_{{ $index }}" name="webhooks[{{ $index }}][webhook_trigger_status]">
+                                                <option value="active" {{ old('webhooks.'.$index.'.webhook_trigger_status', $webhook->webhook_trigger_status) == 'active' ? 'selected' : '' }}>Ativo</option>
+                                                <option value="paused" {{ old('webhooks.'.$index.'.webhook_trigger_status', $webhook->webhook_trigger_status) == 'paused' ? 'selected' : '' }}>Pausado</option>
+                                                <option value="cancelled" {{ old('webhooks.'.$index.'.webhook_trigger_status', $webhook->webhook_trigger_status) == 'cancelled' ? 'selected' : '' }}>Cancelado</option>
+                                                <option value="completed" {{ old('webhooks.'.$index.'.webhook_trigger_status', $webhook->webhook_trigger_status) == 'completed' ? 'selected' : '' }}>Concluído</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-outline-danger btn-sm remove-webhook">
+                                                    <i class="fas fa-trash"></i> Remover
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12">
+                                            <label for="webhook_token_{{ $index }}" class="form-label">Token de Autorização</label>
+                                            <input type="text" class="form-control" 
+                                                   id="webhook_token_{{ $index }}" name="webhooks[{{ $index }}][webhook_token]" 
+                                                   value="{{ old('webhooks.'.$index.'.webhook_token', $webhook->webhook_token) }}"
+                                                   placeholder="Bearer token ou chave de API">
+                                            <div class="form-text">Token que será enviado no cabeçalho Authorization</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="webhook-item border rounded p-3 mb-3">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="webhook_url_0" class="form-label">URL do Webhook</label>
+                                            <input type="url" class="form-control" 
+                                                   id="webhook_url_0" name="webhooks[0][webhook_url]" 
+                                                   placeholder="https://exemplo.com/webhook">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="webhook_trigger_status_0" class="form-label">Status Gatilho</label>
+                                            <select class="form-select" 
+                                                    id="webhook_trigger_status_0" name="webhooks[0][webhook_trigger_status]">
+                                                <option value="active">Ativo</option>
+                                                <option value="paused">Pausado</option>
+                                                <option value="cancelled">Cancelado</option>
+                                                <option value="completed">Concluído</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-outline-danger btn-sm remove-webhook" disabled>
+                                                    <i class="fas fa-trash"></i> Remover
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-12">
+                                            <label for="webhook_token_0" class="form-label">Token de Autorização</label>
+                                            <input type="text" class="form-control" 
+                                                   id="webhook_token_0" name="webhooks[0][webhook_token]" 
+                                                   placeholder="Bearer token ou chave de API">
+                                            <div class="form-text">Token que será enviado no cabeçalho Authorization</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforelse
                             </div>
-
-                            <div class="mb-3">
-                                <label for="webhook_token" class="form-label">Token de Autorização</label>
-                                <input type="text" class="form-control @error('webhook_token') is-invalid @enderror" 
-                                       id="webhook_token" name="webhook_token" value="{{ old('webhook_token', $product->webhook_token) }}" 
-                                       placeholder="Bearer token ou chave de API">
-                                @error('webhook_token')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Token que será enviado no cabeçalho Authorization</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="webhook_trigger_status" class="form-label">Status Gatilho</label>
-                                <select class="form-select @error('webhook_trigger_status') is-invalid @enderror" 
-                                        id="webhook_trigger_status" name="webhook_trigger_status">
-                                    <option value="active" {{ old('webhook_trigger_status', $product->webhook_trigger_status) == 'active' ? 'selected' : '' }}>Ativo</option>
-                                    <option value="paused" {{ old('webhook_trigger_status', $product->webhook_trigger_status) == 'paused' ? 'selected' : '' }}>Pausado</option>
-                                    <option value="cancelled" {{ old('webhook_trigger_status', $product->webhook_trigger_status) == 'cancelled' ? 'selected' : '' }}>Cancelado</option>
-                                    <option value="completed" {{ old('webhook_trigger_status', $product->webhook_trigger_status) == 'completed' ? 'selected' : '' }}>Concluído</option>
-                                </select>
-                                @error('webhook_trigger_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Webhook será disparado apenas quando a inscrição tiver este status</div>
-                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-webhook">
+                                <i class="fas fa-plus"></i> Adicionar Webhook
+                            </button>
                         </div>
 
                         <div class="d-flex justify-content-between">
@@ -134,3 +184,78 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let webhookIndex = {{ $product->webhooks->count() }};
+    
+    function updateRemoveButtons() {
+        const webhookItems = document.querySelectorAll('.webhook-item');
+        const removeButtons = document.querySelectorAll('.remove-webhook');
+        
+        removeButtons.forEach(button => {
+            button.disabled = webhookItems.length <= 1;
+        });
+    }
+    
+    document.getElementById('add-webhook').addEventListener('click', function() {
+        const container = document.getElementById('webhooks-container');
+        const newWebhook = document.createElement('div');
+        newWebhook.className = 'webhook-item border rounded p-3 mb-3';
+        newWebhook.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="webhook_url_${webhookIndex}" class="form-label">URL do Webhook</label>
+                    <input type="url" class="form-control" 
+                           id="webhook_url_${webhookIndex}" name="webhooks[${webhookIndex}][webhook_url]" 
+                           placeholder="https://exemplo.com/webhook">
+                </div>
+                <div class="col-md-3">
+                    <label for="webhook_trigger_status_${webhookIndex}" class="form-label">Status Gatilho</label>
+                    <select class="form-select" 
+                            id="webhook_trigger_status_${webhookIndex}" name="webhooks[${webhookIndex}][webhook_trigger_status]">
+                        <option value="active">Ativo</option>
+                        <option value="paused">Pausado</option>
+                        <option value="cancelled">Cancelado</option>
+                        <option value="completed">Concluído</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-webhook">
+                            <i class="fas fa-trash"></i> Remover
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-12">
+                    <label for="webhook_token_${webhookIndex}" class="form-label">Token de Autorização</label>
+                    <input type="text" class="form-control" 
+                           id="webhook_token_${webhookIndex}" name="webhooks[${webhookIndex}][webhook_token]" 
+                           placeholder="Bearer token ou chave de API">
+                    <div class="form-text">Token que será enviado no cabeçalho Authorization</div>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(newWebhook);
+        webhookIndex++;
+        updateRemoveButtons();
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-webhook') || e.target.closest('.remove-webhook')) {
+            const webhookItem = e.target.closest('.webhook-item');
+            webhookItem.remove();
+            updateRemoveButtons();
+        }
+    });
+    
+    updateRemoveButtons();
+});
+</script>
+@endsection
+

@@ -15,9 +15,6 @@ class Product extends Model
         'price',
         'offer_price',
         'is_active',
-        'webhook_url',
-        'webhook_token',
-        'webhook_trigger_status',
     ];
 
     protected $casts = [
@@ -30,6 +27,11 @@ class Product extends Model
     public function inscriptions()
     {
         return $this->hasMany(Inscription::class);
+    }
+
+    public function webhooks()
+    {
+        return $this->hasMany(ProductWebhook::class);
     }
 
     // Accessors
