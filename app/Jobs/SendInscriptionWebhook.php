@@ -38,6 +38,9 @@ class SendInscriptionWebhook implements ShouldQueue
      */
     public function handle(): void
     {
+        // Carregar relacionamentos necessários
+        $this->inscription->load(['client.addresses', 'product.webhooks']);
+        
         $product = $this->inscription->product;
         
         // Buscar webhooks que correspondem ao status atual da inscrição
@@ -119,48 +122,24 @@ class SendInscriptionWebhook implements ShouldQueue
     private function buildPayload(): array
     {
         $client = $this->inscription->client;
+        $address = $client->addresses()->latest()->first();
+        
+        // Log para debug se não houver endereço
+        if (!$address) {
+            Log::warning('Nenhum endereço encontrado para o cliente no SendInscriptionWebhook', [
+                'client_id' => $client->id,
+                'client_name' => $client->name,
+                'inscription_id' => $this->inscription->id
+            ]);
+        }
         
         return [
             'timestamp' => now()->toISOString(),
             'event_type' => $this->eventType,
             'status' => $this->inscription->status,
-            'cliente' => [
-                'id' => $client->id,
-                'name' => $client->name,
-                'email' => $client->email,
-                'cpf' => $client->cpf,
-                'phone' => $client->phone,
-                'birth_date' => $client->birth_date?->format('Y-m-d'),
-                'address' => $client->address,
-                'city' => $client->city,
-                'state' => $client->state,
-                'zip_code' => $client->zip_code,
-                'created_at' => $client->created_at?->toISOString(),
-                'updated_at' => $client->updated_at?->toISOString(),
-            ],
-            'inscricao' => [
-                'id' => $this->inscription->id,
-                'status' => $this->inscription->status,
-                'start_date' => $this->inscription->start_date?->format('Y-m-d'),
-                'original_end_date' => $this->inscription->original_end_date?->format('Y-m-d'),
-                'actual_end_date' => $this->inscription->actual_end_date?->format('Y-m-d'),
-                'platform_release_date' => $this->inscription->platform_release_date?->format('Y-m-d'),
-                'class_group' => $this->inscription->class_group,
-                'classification' => $this->inscription->classification,
-                'crmb_number' => $this->inscription->crmb_number,
-                'calendar_week' => $this->inscription->calendar_week,
-                'current_week' => $this->inscription->current_week,
-                'amount_paid' => $this->inscription->amount_paid,
-                'payment_method' => $this->inscription->payment_method,
-                'has_medboss' => $this->inscription->has_medboss,
-                'contrato_assinado' => $this->inscription->contrato_assinado,
-                'contrato_na_pasta' => $this->inscription->contrato_na_pasta,
-                'contract_folder_link' => $this->inscription->contract_folder_link,
-                'commercial_notes' => $this->inscription->commercial_notes,
-                'general_notes' => $this->inscription->general_notes,
-                'created_at' => $this->inscription->created_at?->toISOString(),
-                'updated_at' => $this->inscription->updated_at?->toISOString(),
-            ],
+            'event' => 'inscription_updated',
+            'client' => $client->toArray(),
+            'inscription' => $this->inscription->toArray(),
             'mapping' => [
                 'Nome' => 'contact_name',
                 'Email' => 'contact_email',
@@ -185,6 +164,30 @@ class SendInscriptionWebhook implements ShouldQueue
                 'Pagamento_restante' => 'contact_pagamento_restante',
                 'Data_pagamento_entrada' => 'contact_data_pagamento_entra',
             ],
+            'body' => [
+                "contact_name" => $client->name,
+                "contact_email" => $client->email,
+                "contact_phone" => $client->phone,
+                "deal_stage" => "Sistema MD1",
+                "deal_user" => auth()->user()->email ?? 'sistema@md1.com',
+                "deal_status" => strtoupper($this->inscription->status),
+                "contact_natureza_juridica" => [$this->inscription->natureza_juridica],
+                "contact_cpfcnpj" => $this->inscription->cpf_cnpj,
+                "contact_produto" => number_format($this->inscription->valor_total, 0, '', ''),
+                "contact_forma_pagamento_entr" => $this->inscription->forma_pagamento_entrada,
+                "contact_parcelas_cartao" => $this->inscription->forma_pagamento_restante,
+                "contact_data_contrato" => $this->inscription->data_contrato?->format('d/m/Y'),
+                "contact_endereco" => $address?->endereco,
+                "contact_numero_casa" => $address?->numero_casa,
+                "contact_complemento" => $address?->complemento,
+                "contact_bairro" => $address?->bairro,
+                "contact_cidade" => $address?->cidade,
+                "contact_estado" => $address?->estado,
+                "contact_cep" => $address?->cep,
+                "contact_pagamento_entrada" => (int)$this->inscription->valor_entrada,
+                "contact_pagamento_restante" => (int)$this->inscription->valor_restante,
+                "contact_data_pagamento_entra" => $this->inscription->data_pagamento_entrada?->format('d/m/Y')
+            ]
         ];
     }
 

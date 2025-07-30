@@ -37,7 +37,7 @@ class ProcessInscriptionWebhook implements ShouldQueue
     public function handle(): void
     {
         // Carregar o relacionamento 'client' para garantir que todos os dados do cliente estejam disponíveis
-        $this->inscription->load("client.addresses");
+        $this->inscription->load(['client.addresses']);
 
         // Montar payload com todos os campos necessários para o webhook
         $payload = [
@@ -141,7 +141,18 @@ class ProcessInscriptionWebhook implements ShouldQueue
     private function buildWebhookBody(): array
     {
         $client = $this->inscription->client;
+        
+        // Buscar o endereço mais recente ou criar um vazio se não existir
         $address = $client->addresses()->latest()->first();
+        
+        // Log para debug se não houver endereço
+        if (!$address) {
+            Log::warning('Nenhum endereço encontrado para o cliente', [
+                'client_id' => $client->id,
+                'client_name' => $client->name,
+                'inscription_id' => $this->inscription->id
+            ]);
+        }
 
         return [
             "contact_name" => $client->name,

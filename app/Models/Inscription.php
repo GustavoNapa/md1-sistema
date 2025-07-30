@@ -66,26 +66,9 @@ class Inscription extends Model
     {
         parent::boot();
 
-        static::created(function (Inscription $inscription) {
-            $inscription->load('product.webhooks'); // Eager load product and its webhooks
-            foreach ($inscription->product->webhooks as $webhook) {
-                if ($webhook->webhook_trigger_status === $inscription->status) {
-                    ProcessInscriptionWebhook::dispatch($inscription, $webhook);
-                }
-            }
-        });
-
-        static::updated(function (Inscription $inscription) {
-            // Only dispatch if the status has changed to match a trigger status
-            if ($inscription->isDirty('status')) {
-                $inscription->load('product.webhooks'); // Eager load product and its webhooks
-                foreach ($inscription->product->webhooks as $webhook) {
-                    if ($webhook->webhook_trigger_status === $inscription->status) {
-                        ProcessInscriptionWebhook::dispatch($inscription, $webhook);
-                    }
-                }
-            }
-        });
+        // Webhooks agora são disparados via eventos específicos no controller
+        // para garantir que todos os dados relacionados (endereços, pagamentos) 
+        // sejam criados antes do envio
     }
 
     // Relacionamentos
