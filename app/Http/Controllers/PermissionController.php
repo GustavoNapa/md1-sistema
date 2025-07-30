@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Permission;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -14,8 +14,7 @@ class PermissionController extends Controller
      */
     public function index(): View
     {
-        $permissions = Permission::with('roles')->paginate(15);
-        
+        $permissions = Permission::paginate(15);
         return view('permissions.index', compact('permissions'));
     }
 

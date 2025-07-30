@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
-use App\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -15,7 +15,7 @@ class RoleController extends Controller
      */
     public function index(): View
     {
-        $roles = Role::with(['permissions', 'users'])->paginate(15);
+        $roles = Role::with("permissions")->paginate(15);
         $permissions = Permission::orderBy('name')->get();
         
         return view('roles.index', compact('roles', 'permissions'));
@@ -38,14 +38,12 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
-            'status' => 'boolean',
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::create([
             'name' => $validated['name'],
-            'status' => $validated['status'] ?? true,
         ]);
 
         if (isset($validated['permissions'])) {
@@ -68,7 +66,7 @@ class RoleController extends Controller
      */
     public function show(Request $request, Role $role)
     {
-        $role->load(['permissions', 'users']);
+        $role->load('permissions');
         
         if ($request->expectsJson()) {
             return response()->json([
@@ -76,7 +74,6 @@ class RoleController extends Controller
                 'data' => [
                     'id' => $role->id,
                     'name' => $role->name,
-                    'status' => $role->status,
                     'permissions' => $role->permissions->pluck('id')->toArray(),
                     'permissions_names' => $role->permissions->pluck('name')->toArray(),
                     'users_count' => $role->users->count(),
@@ -105,14 +102,12 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
-            'status' => 'boolean',
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update([
             'name' => $validated['name'],
-            'status' => $validated['status'] ?? $role->status,
         ]);
 
         if (isset($validated['permissions'])) {
@@ -151,18 +146,6 @@ class RoleController extends Controller
         ]);
     }
 
-    /**
-     * Toggle role status.
-     */
-    public function toggleStatus(Role $role): JsonResponse
-    {
-        $role->update(['status' => !$role->status]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Status do cargo alterado com sucesso!',
-            'data' => $role
-        ]);
-    }
 }
 
