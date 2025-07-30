@@ -139,27 +139,22 @@ Route::middleware("auth")->group(function () {
     });
     
     // Rotas de Gestão de Acessos (protegidas por permissão)
-    Route::middleware("permission:manage-permissions")->group(function () {
         Route::resource("permissions", PermissionController::class);
-    });
     
-    Route::middleware("permission:manage-roles")->group(function () {
         Route::resource("roles", RoleController::class);
         Route::post("/roles/{role}/toggle-status", [RoleController::class, "toggleStatus"])->name("roles.toggle-status");
-    });
+
     
-    Route::middleware("permission:manage-users")->group(function () {
         Route::resource("users", UserManagementController::class);
         Route::post("/users/{user}/assign-role", [UserManagementController::class, "assignRole"])->name("users.assign-role");
         Route::post("/users/{user}/remove-role", [UserManagementController::class, "removeRole"])->name("users.remove-role");
-        
+
         // Rota de registro apenas para administradores
         Route::get("/register", [App\Http\Controllers\Auth\RegisterController::class, "showRegistrationForm"])->name("register");
         Route::post("/register", [App\Http\Controllers\Auth\RegisterController::class, "register"]);
-    });
+
     
     // Rotas de Integrações
-    Route::middleware("permission:manage-integrations")->group(function () {
         Route::get("/integrations", [IntegrationController::class, "index"])->name("integrations.index");
         
         // ZapSign
@@ -178,7 +173,6 @@ Route::middleware("auth")->group(function () {
         
         // Document Creation
         Route::post("/integrations/zapsign/create-document/{inscription}", [ZapsignController::class, "createDocumentFromInscription"])->name("integrations.zapsign.create-document");
-    });
     
     // Rota para dashboard principal
     Route::get("/dashboard", function () {

@@ -12,7 +12,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                   <form method="POST" action="{{ route(\'inscriptions.update\', $inscription) }}">pdate', $inscription) }}">
+                   <form method="POST" action="{{ route('inscriptions.update', $inscription) }}">
                         @csrf
                         @method('PUT')
 
