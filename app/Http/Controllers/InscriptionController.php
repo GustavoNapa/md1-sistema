@@ -192,10 +192,10 @@ class InscriptionController extends Controller
             // Novos campos obrigatórios
             "natureza_juridica" => "required|in:pessoa fisica,pessoa juridica",
             "valor_total" => "required|numeric|min:0",
-            "forma_pagamento_entrada" => "required|in:PIX,Boleto,Cartão,Cartão Recorrencia,Deposito em conta",
+            "forma_pagamento_entrada" => "required|in:PIX,Boleto,Cartão 1x,Cartão 2x,Cartão 3x,Cartão 4x,Cartão 5x,Cartão 6x,Cartão 7x,Cartão 8x,Cartão 9x,Cartão 10x,Cartão 11x,Cartão 12x,Cartão Recorrencia,Deposito em conta",
             "valor_entrada" => "required|numeric|min:0",
             "data_pagamento_entrada" => "required|date",
-            "forma_pagamento_restante" => "required|in:PIX,Boleto,Cartão,Cartão Recorrencia,Deposito em conta",
+            "forma_pagamento_restante" => "required|in:PIX,Boleto,Cartão 1x,Cartão 2x,Cartão 3x,Cartão 4x,Cartão 5x,Cartão 6x,Cartão 7x,Cartão 8x,Cartão 9x,Cartão 10x,Cartão 11x,Cartão 12x,Cartão Recorrencia,Deposito em conta",
             "valor_restante" => "required|numeric|min:0",
             "data_contrato" => "required|date",
             // Campos de endereço
