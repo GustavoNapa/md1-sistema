@@ -163,7 +163,18 @@
                                                 <option value="">Selecione</option>
                                                 <option value="PIX" {{ old('forma_pagamento_entrada') == 'PIX' ? 'selected' : '' }}>PIX</option>
                                                 <option value="Boleto" {{ old('forma_pagamento_entrada') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
-                                                <option value="Cartão" {{ old('forma_pagamento_entrada') == 'Cartão' ? 'selected' : '' }}>Cartão</option>
+                                                <option value="Cartão 1x" {{ old('forma_pagamento_entrada') == 'Cartão 1x' ? 'selected' : '' }}>Cartão 1x</option>
+                                                <option value="Cartão 2x" {{ old('forma_pagamento_entrada') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
+                                                <option value="Cartão 3x" {{ old('forma_pagamento_entrada') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
+                                                <option value="Cartão 4x" {{ old('forma_pagamento_entrada') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
+                                                <option value="Cartão 5x" {{ old('forma_pagamento_entrada') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
+                                                <option value="Cartão 6x" {{ old('forma_pagamento_entrada') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
+                                                <option value="Cartão 7x" {{ old('forma_pagamento_entrada') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option>
+                                                <option value="Cartão 8x" {{ old('forma_pagamento_entrada') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
+                                                <option value="Cartão 9x" {{ old('forma_pagamento_entrada') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
+                                                <option value="Cartão 10x" {{ old('forma_pagamento_entrada') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
+                                                <option value="Cartão 11x" {{ old('forma_pagamento_entrada') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
+                                                <option value="Cartão 12x" {{ old('forma_pagamento_entrada') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
                                                 <option value="Cartão Recorrencia" {{ old('forma_pagamento_entrada') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
                                                 <option value="Deposito em conta" {{ old('forma_pagamento_entrada') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
                                             </select>
@@ -206,7 +217,19 @@
                                                 <option value="">Selecione</option>
                                                 <option value="PIX" {{ old('forma_pagamento_restante') == 'PIX' ? 'selected' : '' }}>PIX</option>
                                                 <option value="Boleto" {{ old('forma_pagamento_restante') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
-                                                <option value="Cartão" {{ old('forma_pagamento_restante') == 'Cartão' ? 'selected' : '' }}>Cartão</option>
+                                                <option value="Cartão 1x" {{ old('forma_pagamento_restante') == ' 1x' ? 'selected' : '' }}>Cartão 1x</option>
+                                                <option value="Cartão 2x" {{ old('forma_pagamento_restante') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
+                                                <option value="Cartão 3x" {{ old('forma_pagamento_restante') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
+                                                <option value="Cartão 4x" {{ old('forma_pagamento_restante') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
+                                                <option value="Cartão 5x" {{ old('forma_pagamento_restante') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
+                                                <option value="Cartão 6x" {{ old('forma_pagamento_restante') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
+                                                <option value="Cartão 7x" {{ old('forma_pagamento_restante') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option> 
+                                                <option value="Cartão 8x" {{ old('forma_pagamento_restante') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
+                                                <option value="Cartão 9x" {{ old('forma_pagamento_restante') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
+                                                <option value="Cartão 10x" {{ old('forma_pagamento_restante') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
+                                                <option value="Cartão 11x" {{ old('forma_pagamento_restante') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
+                                                <option value="Cartão 12x" {{ old('forma_pagamento_restante') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
+
                                                 <option value="Cartão Recorrencia" {{ old('forma_pagamento_restante') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
                                                 <option value="Deposito em conta" {{ old('forma_pagamento_restante') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
                                             </select>
