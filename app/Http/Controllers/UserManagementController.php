@@ -16,7 +16,7 @@ class UserManagementController extends Controller
      */
     public function index(): View
     {
-        $users = User::with('role')->paginate(15);
+        $users = User::with('roles')->paginate(15);
         
         return view('users.index', compact('users'));
     }
@@ -73,7 +73,7 @@ class UserManagementController extends Controller
      */
     public function show(User $user): View
     {
-        $user->load('role');
+        $user->load('roles');
         
         return view('users.show', compact('user'));
     }
@@ -84,7 +84,7 @@ class UserManagementController extends Controller
     public function edit(User $user): View
     {
         $roles = Role::where('status', true)->get();
-        $user->load('role');
+        $user->load('roles');
         
         return view('users.edit', compact('user', 'roles'));
     }
