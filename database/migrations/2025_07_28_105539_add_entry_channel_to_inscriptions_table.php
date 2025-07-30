@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('inscriptions', function (Blueprint $table) {
-            //
+            $table->foreign("entry_channel")->references("id")->on("entry_channels")->onDelete("set null");
         });
     }
 
@@ -22,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('inscriptions', function (Blueprint $table) {
-            //
+            $table->dropForeign(["entry_channel"]);
+            $table->dropColumn("entry_channel");
         });
     }
 };
