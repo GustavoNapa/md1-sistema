@@ -16,7 +16,7 @@ class UserManagementController extends Controller
      */
     public function index(): View
     {
-        $users = User::with('role')->paginate(15);
+        $users = User::with('roles')->paginate(15);
         
         return view('users.index', compact('users'));
     }
@@ -40,15 +40,22 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'nullable|exists:roles,id',
+            // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role_id' => $validated['role_id'] ?? null,
         ]);
+
+        // Atribuir cargo usando Spatie Permission
+        if (isset($validated['role_id'])) {
+            $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+            if ($role) {
+                $user->assignRole($role);
+            }
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -66,7 +73,7 @@ class UserManagementController extends Controller
      */
     public function show(User $user): View
     {
-        $user->load('role');
+        $user->load('roles');
         
         return view('users.show', compact('user'));
     }
@@ -77,7 +84,7 @@ class UserManagementController extends Controller
     public function edit(User $user): View
     {
         $roles = Role::where('status', true)->get();
-        $user->load('role');
+        $user->load('roles');
         
         return view('users.edit', compact('user', 'roles'));
     }
@@ -91,14 +98,21 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role_id' => 'nullable|exists:roles,id',
+            // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'role_id' => $validated['role_id'] ?? null,
+            // 'role_id' => $validated['role_id'] ?? null, // Removido, Spatie Permission gerencia isso
         ];
+
+        if (isset($validated['role_id'])) {
+            $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+            if ($role) {
+                $user->syncRoles($role);
+            }
+        }
 
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);
@@ -147,12 +161,15 @@ class UserManagementController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
-        $user->update(['role_id' => $validated['role_id']]);
+        $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+        if ($role) {
+            $user->assignRole($role);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Cargo atribuído com sucesso!',
-            'data' => $user->load('role')
+            'data' => $user->load('roles')
         ]);
     }
 
@@ -161,12 +178,12 @@ class UserManagementController extends Controller
      */
     public function removeRole(User $user): JsonResponse
     {
-        $user->update(['role_id' => null]);
+        $user->syncRoles([]); // Remove all roles from the user
 
         return response()->json([
             'success' => true,
             'message' => 'Cargo removido com sucesso!',
-            'data' => $user->load('role')
+            'data' => $user->load('roles')
         ]);
     }
 }

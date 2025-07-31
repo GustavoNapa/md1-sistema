@@ -23,7 +23,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id',
     ];
 
     /**
@@ -46,13 +45,7 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Get the role that owns the user (legacy relationship).
-     */
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
+
 
     /**
      * Check if user has a specific permission (legacy method).
