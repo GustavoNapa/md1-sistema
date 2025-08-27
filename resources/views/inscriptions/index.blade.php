@@ -63,7 +63,7 @@
                                                 </span>
                                             </td>
                                             <td>{{ $inscription->vendor->name ?? '-' }}</td>
-                                            <td>{{ $inscription->formatted_amount }}</td>
+                                            <td>{{ $inscription->valor_total }}</td>
                                             <td>{{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group" aria-label="Ações da inscrição">

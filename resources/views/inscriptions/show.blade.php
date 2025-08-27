@@ -347,9 +347,9 @@
                                         <tbody>
                                             @foreach($inscription->payments as $payment)
                                                 <tr>
-                                                    <td>R$ {{ number_format($payment->amount, 2, ',', '.') }}</td>
-                                                    <td>{{ $payment->payment_date ? $payment->payment_date->format('d/m/Y') : 'N/A' }}</td>
-                                                    <td>{{ $payment->method }}</td>
+                                                    <td>R$ {{ number_format($payment->valor, 2, ',', '.') }}</td>
+                                                    <td>{{ $payment->data_pagamento ? $payment->data_pagamento->format('d/m/Y') : 'N/A' }}</td>
+                                                    <td>{{ $payment->forma_pagamento }}</td>
                                                     <td>
                                                         <span class="badge {{ $payment->status === 'paid' ? 'bg-success' : 'bg-warning' }}">
                                                             {{ $payment->status }}
@@ -880,189 +880,6 @@
         </div>
     </div>
 </div>
-@endsection
-
-<!-- Modais para cadastro -->
-@include('inscriptions.modals.preceptor')
-@include('inscriptions.modals.pagamento')
-@include('inscriptions.modals.sessao')
-@include('inscriptions.modals.diagnostico')
-@include('inscriptions.modals.conquista')
-@include('inscriptions.modals.followup')
-@include('inscriptions.modals.documento')
-
-@push('scripts')
-<script>
-// Funções globais para abrir modais
-function abrirModalPagamento() {
-    $('#modalPagamento').modal('show');
-}
-
-function abrirModalSessao() {
-    $('#modalSessao').modal('show');
-}
-
-function abrirModalDiagnostico() {
-    $('#modalDiagnostico').modal('show');
-}
-
-function abrirModalConquista() {
-    $('#modalConquista').modal('show');
-}
-
-function abrirModalFollowUp() {
-    $('#modalFollowUp').modal('show');
-}
-
-// Função global para excluir registros
-function excluirRegistro(tipo, id) {
-    if (confirm('Tem certeza que deseja excluir este registro?')) {
-        const routes = {
-            'preceptor': `/preceptor-records/${id}`,
-            'payment': `/payments/${id}`,
-            'session': `/sessions/${id}`,
-            'diagnostic': `/diagnostics/${id}`,
-            'achievement': `/achievements/${id}`,
-            'followup': `/follow-ups/${id}`
-        };
-
-        fetch(routes[tipo], {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then data => {
-            if (data.success) {
-                location.reload(); // Simplificado por enquanto
-            } else {
-                alert('Erro ao excluir registro');
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Erro ao excluir registro');
-        });
-    }
-}
-
-// Funções globais para atualizar abas (usadas pelos modais)
-function atualizarAbaPreceptores(novoRegistro) {
-    const tabela = $('#preceptores tbody');
-    const contadorBadge = $('#preceptores-tab .badge');
-    
-    // Adicionar nova linha na tabela
-    const novaLinha = `
-        <tr>
-            <td>${novoRegistro.nome_preceptor || 'N/A'}</td>
-            <td>${novoRegistro.data_preceptor_informado ? formatarData(novoRegistro.data_preceptor_informado) : 'N/A'}</td>
-            <td>${novoRegistro.data_preceptor_contato ? formatarData(novoRegistro.data_preceptor_contato) : 'N/A'}</td>
-            <td>${novoRegistro.nome_secretaria || 'N/A'}</td>
-            <td>
-                ${novoRegistro.usm ? '<span class="badge bg-primary">USM</span>' : ''}
-                ${novoRegistro.acesso_vitrine_gmc ? '<span class="badge bg-success">Vitrine GMC</span>' : ''}
-                ${novoRegistro.medico_celebridade ? '<span class="badge bg-warning">Celebridade</span>' : ''}
-            </td>
-            <td>
-                <button class="btn btn-sm btn-outline-danger" onclick="excluirRegistro('preceptor', ${novoRegistro.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        </tr>
-    `;
-    
-    // Se não há registros, remover mensagem de "nenhum registro"
-    const mensagemVazia = $('#preceptores .text-center.py-4');
-    if (mensagemVazia.length) {
-        mensagemVazia.parent().html(`
-            <div class="table-responsive">
-                <table class="table table-sm">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Data Informado</th>
-                            <th>Data Contato</th>
-                            <th>Secretária</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>${novaLinha}</tbody>
-                </table>
-            </div>
-        `);
-    } else {
-        tabela.append(novaLinha);
-    }
-    
-    // Atualizar contador na badge
-    const novoCount = parseInt(contadorBadge.text()) + 1;
-    contadorBadge.text(novoCount);
-}
-
-function atualizarAbaPagamentos(novoRegistro) {
-    // Recarregar por enquanto - implementar depois
-    location.reload();
-}
-
-function atualizarAbaSessoes(novoRegistro) {
-    // Recarregar por enquanto - implementar depois
-    location.reload();
-}
-
-function atualizarAbaDiagnosticos(novoRegistro) {
-    // Recarregar por enquanto - implementar depois
-    location.reload();
-}
-
-function atualizarAbaConquistas(novoRegistro) {
-    // Recarregar por enquanto - implementar depois
-    location.reload();
-}
-
-function atualizarAbaFollowUps(novoRegistro) {
-    // Recarregar por enquanto - implementar depois
-    location.reload();
-}
-
-// Funções utilitárias globais
-function formatarData(dataString) {
-    if (!dataString) return 'N/A';
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
-}
-
-function mostrarMensagemSucesso(mensagem) {
-    // Criar um toast ou alert temporário
-    const alert = $(`
-        <div class="alert alert-success alert-dismissible fade show position-fixed" 
-             style="top: 20px; right: 20px; z-index: 9999;">
-            ${mensagem}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `);
-    
-    $('body').append(alert);
-    
-    // Remover automaticamente após 3 segundos
-    setTimeout(() => {
-        alert.alert('close');
-    }, 3000);
-}
-</script>
-@endpush
-
-
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Modal de Bônus -->
 <div class="modal fade" id="modalBonus" tabindex="-1" aria-labelledby="modalBonusLabel" aria-hidden="true">
@@ -1094,589 +911,6 @@ function mostrarMensagemSucesso(mensagem) {
     </div>
 </div>
 
-<style>
-/* Fallback CSS para garantir que o modal apareça */
-.modal.show {
-    display: block !important;
-    z-index: 1055 !important;
-}
-.modal-backdrop.show {
-    opacity: 0.5;
-    z-index: 1050 !important;
-}
-
-/* Garantir que o modal de bônus tenha prioridade */
-#modalBonus {
-    z-index: 1060 !important;
-}
-
-#modalBonus.show {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* Override para qualquer CSS conflitante */
-.modal-open {
-    overflow: hidden !important;
-}
-
-/* Debug: adicionar bordas temporárias */
-#modalBonus {
-    border: 3px solid red !important;
-}
-
-#modalBonus .modal-content {
-    border: 2px solid blue !important;
-}
-</style>
-
-@push('scripts')
-<script>
-// Scripts para o modal de bônus
-window.formatDateForInput = function(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return '';
-    return d.toISOString().slice(0, 10);
-};
-
-window.abrirModalBonus = function(bonus = null) {
-    console.log('=== INICIANDO ABERTURA DO MODAL DE BÔNUS ===');
-    const modalElement = document.getElementById('modalBonus');
-    
-    if (!modalElement) {
-        console.error('❌ Modal não encontrado no DOM');
-        alert('Erro: Modal não encontrado no DOM');
-        return;
-    }
-    
-    console.log('✅ Modal encontrado:', modalElement);
-    
-    const form = document.getElementById('formBonus');
-    if (!form) {
-        console.error('❌ Formulário não encontrado');
-        alert('Erro: Formulário não encontrado');
-        return;
-    }
-    
-    // Resetar formulário primeiro
-    form.reset();
-    document.getElementById('bonusId').value = '';
-    document.getElementById('bonusDescription').value = '';
-    document.getElementById('bonusReleaseDate').value = '';
-    document.getElementById('bonusExpirationDate').value = '';
-    
-    console.log('✅ Formulário resetado');
-    
-    // Método 1: jQuery
-    let tentativas = 0;
-    let modalAberto = false;
-    
-    if (typeof $ !== 'undefined') {
-        console.log('🔄 Tentativa 1: jQuery');
-        try {
-            $('#modalBonus').modal('show');
-            // Verificar se abriu
-            setTimeout(() => {
-                if (modalElement.classList.contains('show')) {
-                    console.log('✅ Modal aberto com jQuery');
-                    modalAberto = true;
-                } else {
-                    console.log('❌ jQuery falhou, tentando Bootstrap nativo');
-                    tentarBootstrapNativo();
-                }
-            }, 100);
-        } catch (e) {
-            console.error('❌ Erro com jQuery:', e);
-            tentarBootstrapNativo();
-        }
-    } else {
-        tentarBootstrapNativo();
-    }
-    
-    function tentarBootstrapNativo() {
-        if (modalAberto) return;
-        
-        console.log('🔄 Tentativa 2: Bootstrap nativo');
-        if (typeof bootstrap !== 'undefined') {
-            try {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-                
-                setTimeout(() => {
-                    if (modalElement.classList.contains('show')) {
-                        console.log('✅ Modal aberto com Bootstrap nativo');
-                        modalAberto = true;
-                    } else {
-                        console.log('❌ Bootstrap nativo falhou, forçando manualmente');
-                        forcarModalManual();
-                    }
-                }, 100);
-            } catch (e) {
-                console.error('❌ Erro com Bootstrap nativo:', e);
-                forcarModalManual();
-            }
-        } else {
-            forcarModalManual();
-        }
-    }
-    
-    function forcarModalManual() {
-        if (modalAberto) return;
-        
-        console.log('🔄 Tentativa 3: Forçando manualmente');
-        try {
-            // Remover aria-hidden e adicionar classes necessárias
-            modalElement.style.display = 'block';
-            modalElement.classList.add('show');
-            modalElement.setAttribute('aria-hidden', 'false');
-            modalElement.setAttribute('aria-modal', 'true');
-            
-            // Adicionar backdrop
-            let backdrop = document.querySelector('.modal-backdrop');
-            if (!backdrop) {
-                backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop fade show';
-                document.body.appendChild(backdrop);
-            }
-            
-            // Adicionar classe ao body
-            document.body.classList.add('modal-open');
-            
-            console.log('✅ Modal forçado manualmente');
-            modalAberto = true;
-            
-            // Listener para fechar com backdrop
-            backdrop.addEventListener('click', function() {
-                fecharModal();
-            });
-            
-        } catch (e) {
-            console.error('❌ Erro ao forçar modal:', e);
-            alert('Erro crítico: Não foi possível abrir o modal de bônus');
-        }
-    }
-    
-    function fecharModal() {
-        modalElement.style.display = 'none';
-        modalElement.classList.remove('show');
-        modalElement.setAttribute('aria-hidden', 'true');
-        modalElement.removeAttribute('aria-modal');
-        
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) {
-            backdrop.remove();
-        }
-        
-        document.body.classList.remove('modal-open');
-    }
-
-    if (bonus) {
-        document.getElementById('bonusId').value = bonus.id;
-        document.getElementById('bonusDescription').value = bonus.description || '';
-        document.getElementById('bonusReleaseDate').value = formatDateForInput(bonus.release_date);
-        document.getElementById('bonusExpirationDate').value = formatDateForInput(bonus.expiration_date);
-    }
-};
-
-// Função de teste para ser chamada pelo console
-window.testarModalBonus = function() {
-    console.log('=== TESTE DO MODAL DE BÔNUS ===');
-    console.log('DOM carregado:', document.readyState);
-    console.log('jQuery disponível:', typeof $ !== 'undefined');
-    console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
-    
-    const modal = document.getElementById('modalBonus');
-    console.log('Modal encontrado:', !!modal);
-    
-    if (modal) {
-        console.log('Classes do modal:', modal.className);
-        console.log('Display do modal:', getComputedStyle(modal).display);
-        console.log('Z-index do modal:', getComputedStyle(modal).zIndex);
-    }
-    
-    const btnNovoBonus = document.getElementById('btnNovoBonus');
-    console.log('Botão encontrado:', !!btnNovoBonus);
-    
-    if (btnNovoBonus) {
-        console.log('Forçando clique no botão...');
-        btnNovoBonus.click();
-    }
-    
-    return {
-        dom: document.readyState,
-        jquery: typeof $ !== 'undefined',
-        bootstrap: typeof bootstrap !== 'undefined',
-        modal: !!modal,
-        botao: !!btnNovoBonus
-    };
-};
-
-// Função para forçar modal via console
-window.forceShowModal = function() {
-    console.log('=== FORÇANDO MODAL VIA CONSOLE ===');
-    const modal = document.getElementById('modalBonus');
-    if (!modal) {
-        console.error('Modal não encontrado');
-        return;
-    }
-    
-    modal.style.display = 'block';
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-    
-    let backdrop = document.querySelector('.modal-backdrop');
-    if (!backdrop) {
-        backdrop = document.createElement('div');
-        backdrop.className = 'modal-backdrop fade show';
-        document.body.appendChild(backdrop);
-    }
-    
-    console.log('Modal forçado com sucesso!');
-};
-
-window.editarBonus = function(bonusId) {
-    console.log('Editando bônus', bonusId);
-    fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
-        .then(response => response.json())
-        .then(data => {
-            window.abrirModalBonus(data);
-        })
-        .catch(error => {
-            console.error('Erro ao buscar bônus para edição:', error);
-            alert('Erro ao buscar dados do bônus');
-        });
-};
-
-window.excluirBonus = function(bonusId) {
-    if (confirm('Tem certeza que deseja excluir este bônus?')) {
-        fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Bônus excluído com sucesso!');
-            location.reload();
-        })
-        .catch(error => {
-            console.error('Erro ao excluir bônus:', error);
-            alert('Erro ao excluir bônus');
-        });
-    }
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM carregado, configurando eventos para modal de bônus');
-    
-    // Debug: verificar se todos os elementos estão disponíveis
-    const btnNovoBonus = document.getElementById('btnNovoBonus');
-    const modalBonus = document.getElementById('modalBonus');
-    const formBonus = document.getElementById('formBonus');
-    
-    console.log('Botão Novo Bônus encontrado:', !!btnNovoBonus);
-    console.log('Modal Bônus encontrado:', !!modalBonus);
-    console.log('Form Bônus encontrado:', !!formBonus);
-    console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
-    console.log('jQuery disponível:', typeof $ !== 'undefined');
-    
-    // Listener para o botão Novo Bônus
-    if (btnNovoBonus) {
-        console.log('Configurando evento do botão Novo Bônus');
-        btnNovoBonus.addEventListener('click', function(e) {
-            e.preventDefault();
-            console.log('Clique no botão Novo Bônus - chamando abrirModalBonus');
-            window.abrirModalBonus();
-        });
-    } else {
-        console.error('Botão Novo Bônus não encontrado');
-    }
-
-    // Listeners para botões de editar bônus
-    document.querySelectorAll('.btn-editar-bonus').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const bonusId = this.getAttribute('data-bonus-id');
-            console.log('Editando bônus:', bonusId);
-            window.editarBonus(bonusId);
-        });
-    });
-
-    // Listeners para botões de excluir bônus
-    document.querySelectorAll('.btn-excluir-bonus').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const bonusId = this.getAttribute('data-bonus-id');
-            console.log('Excluindo bônus:', bonusId);
-            window.excluirBonus(bonusId);
-        });
-    });
-
-    // Submit do formulário de bônus
-    if (formBonus) {
-        formBonus.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const bonusId = document.getElementById('bonusId').value;
-            const url = bonusId
-                ? `/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`
-                : `/api/inscriptions/{{ $inscription->id }}/bonuses`;
-            const method = bonusId ? 'PUT' : 'POST';
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    description: document.getElementById('bonusDescription').value,
-                    release_date: document.getElementById('bonusReleaseDate').value || null,
-                    expiration_date: document.getElementById('bonusExpirationDate').value || null
-                })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('Erro ao salvar bônus');
-                return response.json();
-            })
-            .then(data => {
-                alert('Bônus salvo com sucesso!');
-                location.reload();
-            })
-            .catch(error => {
-                alert('Erro: ' + error.message);
-                console.error('Erro ao salvar bônus:', error);
-            });
-        });
-    } else {
-        console.error('Formulário de bônus não encontrado');
-    }
-    
-    // Fallback: tentar abrir modal manualmente usando CSS se necessário
-    window.forceShowModal = function() {
-        const modal = document.getElementById('modalBonus');
-        if (modal) {
-            modal.style.display = 'block';
-            modal.classList.add('show');
-            modal.setAttribute('aria-hidden', 'false');
-            document.body.classList.add('modal-open');
-            
-            // Criar backdrop se não existir
-            if (!document.querySelector('.modal-backdrop')) {
-                const backdrop = document.createElement('div');
-                backdrop.className = 'modal-backdrop fade show';
-                document.body.appendChild(backdrop);
-            }
-        }
-    };
-
-    // Funções para o modal de Faturamento
-    window.abrirModalFaturamento = function(faturamento = null) {
-        const modal = new bootstrap.Modal(document.getElementById("modalFaturamento"));
-        const form = document.getElementById("formFaturamento");
-        form.reset();
-
-        if (faturamento) {
-            document.getElementById("faturamentoId").value = faturamento.id;
-            document.getElementById("faturamentoMesAno").value = faturamento.mes_ano;
-            document.getElementById("faturamentoValor").value = faturamento.valor;
-            document.getElementById("faturamentoVencimento").value = faturamento.data_vencimento;
-            document.getElementById("faturamentoStatus").value = faturamento.status;
-            document.getElementById("faturamentoObservacoes").value = faturamento.observacoes;
-        } else {
-            document.getElementById("faturamentoId").value = "";
-        }
-
-        modal.show();
-    };
-
-    // Funções para o modal de Renovação
-    window.abrirModalRenovacao = function(renovacao = null) {
-        const modal = new bootstrap.Modal(document.getElementById("modalRenovacao"));
-        const form = document.getElementById("formRenovacao");
-        form.reset();
-
-        if (renovacao) {
-            document.getElementById("renovacaoId").value = renovacao.id;
-            document.getElementById("renovacaoDataInicio").value = renovacao.data_inicio;
-            document.getElementById("renovacaoDataFim").value = renovacao.data_fim;
-            document.getElementById("renovacaoValor").value = renovacao.valor;
-            document.getElementById("renovacaoStatus").value = renovacao.status;
-            document.getElementById("renovacaoObservacoes").value = renovacao.observacoes;
-        } else {
-            document.getElementById("renovacaoId").value = "";
-        }
-
-        modal.show();
-    };
-
-    // Event listeners para os formulários
-    const formFaturamento = document.getElementById("formFaturamento");
-    if (formFaturamento) {
-        formFaturamento.addEventListener("submit", function(event) {
-            event.preventDefault();
-            const faturamentoId = document.getElementById("faturamentoId").value;
-            const url = faturamentoId 
-                ? `/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}` 
-                : `/inscriptions/{{ $inscription->id }}/faturamentos`;
-            const method = faturamentoId ? "PUT" : "POST";
-
-            const formData = {
-                mes_ano: document.getElementById("faturamentoMesAno").value,
-                valor: document.getElementById("faturamentoValor").value,
-                data_vencimento: document.getElementById("faturamentoVencimento").value,
-                status: document.getElementById("faturamentoStatus").value,
-                observacoes: document.getElementById("faturamentoObservacoes").value || null,
-            };
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao salvar faturamento.");
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert("Faturamento salvo com sucesso!");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao salvar faturamento:", error);
-            });
-        });
-    }
-
-    const formRenovacao = document.getElementById("formRenovacao");
-    if (formRenovacao) {
-        formRenovacao.addEventListener("submit", function(event) {
-            event.preventDefault();
-            const renovacaoId = document.getElementById("renovacaoId").value;
-            const url = renovacaoId 
-                ? `/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}` 
-                : `/inscriptions/{{ $inscription->id }}/renovacoes`;
-            const method = renovacaoId ? "PUT" : "POST";
-
-            const formData = {
-                data_inicio: document.getElementById("renovacaoDataInicio").value,
-                data_fim: document.getElementById("renovacaoDataFim").value,
-                valor: document.getElementById("renovacaoValor").value,
-                status: document.getElementById("renovacaoStatus").value,
-                observacoes: document.getElementById("renovacaoObservacoes").value || null,
-            };
-
-            fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao salvar renovação.");
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                alert("Renovação salva com sucesso!");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao salvar renovação:", error);
-            });
-        });
-    }
-
-    // Funções para editar e excluir faturamentos
-    window.editarFaturamento = function(faturamentoId) {
-        fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`)
-            .then(response => response.json())
-            .then(data => {
-                abrirModalFaturamento(data);
-            })
-            .catch(error => console.error("Erro ao buscar faturamento para edição:", error));
-    };
-
-    window.excluirFaturamento = function(faturamentoId) {
-        if (confirm("Tem certeza que deseja excluir este faturamento?")) {
-            fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`, {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao excluir faturamento.");
-                    });
-                }
-                alert("Faturamento excluído com sucesso!");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao excluir faturamento:", error);
-            });
-        }
-    };
-
-    // Funções para editar e excluir renovações
-    window.editarRenovacao = function(renovacaoId) {
-        fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`)
-            .then(response => response.json())
-            .then(data => {
-                abrirModalRenovacao(data);
-            })
-            .catch(error => console.error("Erro ao buscar renovação para edição:", error));
-    };
-
-    window.excluirRenovacao = function(renovacaoId) {
-        if (confirm("Tem certeza que deseja excluir esta renovação?")) {
-            fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`, {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.message || "Erro ao excluir renovação.");
-                    });
-                }
-                alert("Renovação excluída com sucesso!");
-                location.reload();
-            })
-            .catch(error => {
-                alert("Erro: " + error.message);
-                console.error("Erro ao excluir renovação:", error);
-            });
-        }
-    };
-});
-</script>
-@endpush
 
 
 <!-- Modal Faturamento -->
@@ -1783,3 +1017,757 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+<!-- Modais para cadastro -->
+@include('inscriptions.modals.preceptor')
+@include('inscriptions.modals.pagamento')
+@include('inscriptions.modals.sessao')
+@include('inscriptions.modals.diagnostico')
+@include('inscriptions.modals.conquista')
+@include('inscriptions.modals.followup')
+@include('inscriptions.modals.documento')
+@endsection
+
+
+<style>
+/* Fallback CSS para garantir que o modal apareça */
+.modal.show {
+    display: block !important;
+    z-index: 1055 !important;
+}
+.modal-backdrop.show {
+    opacity: 0.5;
+    z-index: 1050 !important;
+}
+
+/* Garantir que o modal de bônus tenha prioridade */
+#modalBonus {
+    z-index: 1060 !important;
+}
+
+#modalBonus.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Override para qualquer CSS conflitante */
+.modal-open {
+    overflow: hidden !important;
+}
+
+/* Debug: adicionar bordas temporárias */
+#modalBonus {
+    border: 3px solid red !important;
+}
+
+#modalBonus .modal-content {
+    border: 2px solid blue !important;
+}
+</style>
+
+@push('scripts')
+    <script>
+        // Scripts para o modal de bônus
+        window.formatDateForInput = function(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return '';
+            return d.toISOString().slice(0, 10);
+        };
+
+        window.abrirModalBonus = function(bonus = null) {
+            console.log('=== INICIANDO ABERTURA DO MODAL DE BÔNUS ===');
+            const modalElement = document.getElementById('modalBonus');
+            
+            if (!modalElement) {
+                console.error('❌ Modal não encontrado no DOM');
+                alert('Erro: Modal não encontrado no DOM');
+                return;
+            }
+            
+            console.log('✅ Modal encontrado:', modalElement);
+            
+            const form = document.getElementById('formBonus');
+            if (!form) {
+                console.error('❌ Formulário não encontrado');
+                alert('Erro: Formulário não encontrado');
+                return;
+            }
+            
+            // Resetar formulário primeiro
+            form.reset();
+            document.getElementById('bonusId').value = '';
+            document.getElementById('bonusDescription').value = '';
+            document.getElementById('bonusReleaseDate').value = '';
+            document.getElementById('bonusExpirationDate').value = '';
+            
+            console.log('✅ Formulário resetado');
+            
+            // Método 1: jQuery
+            let tentativas = 0;
+            let modalAberto = false;
+            
+            if (typeof $ !== 'undefined') {
+                console.log('🔄 Tentativa 1: jQuery');
+                try {
+                    $('#modalBonus').modal('show');
+                    // Verificar se abriu
+                    setTimeout(() => {
+                        if (modalElement.classList.contains('show')) {
+                            console.log('✅ Modal aberto com jQuery');
+                            modalAberto = true;
+                        } else {
+                            console.log('❌ jQuery falhou, tentando Bootstrap nativo');
+                            tentarBootstrapNativo();
+                        }
+                    }, 100);
+                } catch (e) {
+                    console.error('❌ Erro com jQuery:', e);
+                    tentarBootstrapNativo();
+                }
+            } else {
+                tentarBootstrapNativo();
+            }
+            
+            function tentarBootstrapNativo() {
+                if (modalAberto) return;
+                
+                console.log('🔄 Tentativa 2: Bootstrap nativo');
+                if (typeof bootstrap !== 'undefined') {
+                    try {
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                        
+                        setTimeout(() => {
+                            if (modalElement.classList.contains('show')) {
+                                console.log('✅ Modal aberto com Bootstrap nativo');
+                                modalAberto = true;
+                            } else {
+                                console.log('❌ Bootstrap nativo falhou, forçando manualmente');
+                                forcarModalManual();
+                            }
+                        }, 100);
+                    } catch (e) {
+                        console.error('❌ Erro com Bootstrap nativo:', e);
+                        forcarModalManual();
+                    }
+                } else {
+                    forcarModalManual();
+                }
+            }
+            
+            function forcarModalManual() {
+                if (modalAberto) return;
+                
+                console.log('🔄 Tentativa 3: Forçando manualmente');
+                try {
+                    // Remover aria-hidden e adicionar classes necessárias
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    modalElement.setAttribute('aria-hidden', 'false');
+                    modalElement.setAttribute('aria-modal', 'true');
+                    
+                    // Adicionar backdrop
+                    let backdrop = document.querySelector('.modal-backdrop');
+                    if (!backdrop) {
+                        backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                    
+                    // Adicionar classe ao body
+                    document.body.classList.add('modal-open');
+                    
+                    console.log('✅ Modal forçado manualmente');
+                    modalAberto = true;
+                    
+                    // Listener para fechar com backdrop
+                    backdrop.addEventListener('click', function() {
+                        fecharModal();
+                    });
+                    
+                } catch (e) {
+                    console.error('❌ Erro ao forçar modal:', e);
+                    alert('Erro crítico: Não foi possível abrir o modal de bônus');
+                }
+            }
+            
+            function fecharModal() {
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                modalElement.setAttribute('aria-hidden', 'true');
+                modalElement.removeAttribute('aria-modal');
+                
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) {
+                    backdrop.remove();
+                }
+                
+                document.body.classList.remove('modal-open');
+            }
+
+            if (bonus) {
+                document.getElementById('bonusId').value = bonus.id;
+                document.getElementById('bonusDescription').value = bonus.description || '';
+                document.getElementById('bonusReleaseDate').value = formatDateForInput(bonus.release_date);
+                document.getElementById('bonusExpirationDate').value = formatDateForInput(bonus.expiration_date);
+            }
+        };
+
+        // Função de teste para ser chamada pelo console
+        window.testarModalBonus = function() {
+            console.log('=== TESTE DO MODAL DE BÔNUS ===');
+            console.log('DOM carregado:', document.readyState);
+            console.log('jQuery disponível:', typeof $ !== 'undefined');
+            console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
+            
+            const modal = document.getElementById('modalBonus');
+            console.log('Modal encontrado:', !!modal);
+            
+            if (modal) {
+                console.log('Classes do modal:', modal.className);
+                console.log('Display do modal:', getComputedStyle(modal).display);
+                console.log('Z-index do modal:', getComputedStyle(modal).zIndex);
+            }
+            
+            const btnNovoBonus = document.getElementById('btnNovoBonus');
+            console.log('Botão encontrado:', !!btnNovoBonus);
+            
+            if (btnNovoBonus) {
+                console.log('Forçando clique no botão...');
+                btnNovoBonus.click();
+            }
+            
+            return {
+                dom: document.readyState,
+                jquery: typeof $ !== 'undefined',
+                bootstrap: typeof bootstrap !== 'undefined',
+                modal: !!modal,
+                botao: !!btnNovoBonus
+            };
+        };
+
+        // Função para forçar modal via console
+        window.forceShowModal = function() {
+            console.log('=== FORÇANDO MODAL VIA CONSOLE ===');
+            const modal = document.getElementById('modalBonus');
+            if (!modal) {
+                console.error('Modal não encontrado');
+                return;
+            }
+            
+            modal.style.display = 'block';
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            
+            let backdrop = document.querySelector('.modal-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+            
+            console.log('Modal forçado com sucesso!');
+        };
+
+        window.editarBonus = function(bonusId) {
+            console.log('Editando bônus', bonusId);
+            fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`)
+                .then(response => response.json())
+                .then(data => {
+                    window.abrirModalBonus(data);
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar bônus para edição:', error);
+                    alert('Erro ao buscar dados do bônus');
+                });
+        };
+
+        window.excluirBonus = function(bonusId) {
+            if (confirm('Tem certeza que deseja excluir este bônus?')) {
+                fetch(`/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Bônus excluído com sucesso!');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Erro ao excluir bônus:', error);
+                    alert('Erro ao excluir bônus');
+                });
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM carregado, configurando eventos para modal de bônus');
+            
+            // Debug: verificar se todos os elementos estão disponíveis
+            const btnNovoBonus = document.getElementById('btnNovoBonus');
+            const modalBonus = document.getElementById('modalBonus');
+            const formBonus = document.getElementById('formBonus');
+            
+            console.log('Botão Novo Bônus encontrado:', !!btnNovoBonus);
+            console.log('Modal Bônus encontrado:', !!modalBonus);
+            console.log('Form Bônus encontrado:', !!formBonus);
+            console.log('Bootstrap disponível:', typeof bootstrap !== 'undefined');
+            console.log('jQuery disponível:', typeof $ !== 'undefined');
+            
+            // Listener para o botão Novo Bônus
+            if (btnNovoBonus) {
+                console.log('Configurando evento do botão Novo Bônus');
+                btnNovoBonus.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Clique no botão Novo Bônus - chamando abrirModalBonus');
+                    window.abrirModalBonus();
+                });
+            } else {
+                console.error('Botão Novo Bônus não encontrado');
+            }
+
+            // Listeners para botões de editar bônus
+            document.querySelectorAll('.btn-editar-bonus').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const bonusId = this.getAttribute('data-bonus-id');
+                    console.log('Editando bônus:', bonusId);
+                    window.editarBonus(bonusId);
+                });
+            });
+
+            // Listeners para botões de excluir bônus
+            document.querySelectorAll('.btn-excluir-bonus').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const bonusId = this.getAttribute('data-bonus-id');
+                    console.log('Excluindo bônus:', bonusId);
+                    window.excluirBonus(bonusId);
+                });
+            });
+
+            // Submit do formulário de bônus
+            if (formBonus) {
+                formBonus.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const bonusId = document.getElementById('bonusId').value;
+                    const url = bonusId
+                        ? `/api/inscriptions/{{ $inscription->id }}/bonuses/${bonusId}`
+                        : `/api/inscriptions/{{ $inscription->id }}/bonuses`;
+                    const method = bonusId ? 'PUT' : 'POST';
+
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            description: document.getElementById('bonusDescription').value,
+                            release_date: document.getElementById('bonusReleaseDate').value || null,
+                            expiration_date: document.getElementById('bonusExpirationDate').value || null
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erro ao salvar bônus');
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert('Bônus salvo com sucesso!');
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert('Erro: ' + error.message);
+                        console.error('Erro ao salvar bônus:', error);
+                    });
+                });
+            } else {
+                console.error('Formulário de bônus não encontrado');
+            }
+            
+            // Fallback: tentar abrir modal manualmente usando CSS se necessário
+            window.forceShowModal = function() {
+                const modal = document.getElementById('modalBonus');
+                if (modal) {
+                    modal.style.display = 'block';
+                    modal.classList.add('show');
+                    modal.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('modal-open');
+                    
+                    // Criar backdrop se não existir
+                    if (!document.querySelector('.modal-backdrop')) {
+                        const backdrop = document.createElement('div');
+                        backdrop.className = 'modal-backdrop fade show';
+                        document.body.appendChild(backdrop);
+                    }
+                }
+            };
+
+            // Funções para o modal de Faturamento
+            window.abrirModalFaturamento = function(faturamento = null) {
+                const modal = new bootstrap.Modal(document.getElementById("modalFaturamento"));
+                const form = document.getElementById("formFaturamento");
+                form.reset();
+
+                if (faturamento) {
+                    document.getElementById("faturamentoId").value = faturamento.id;
+                    document.getElementById("faturamentoMesAno").value = faturamento.mes_ano;
+                    document.getElementById("faturamentoValor").value = faturamento.valor;
+                    document.getElementById("faturamentoVencimento").value = faturamento.data_vencimento;
+                    document.getElementById("faturamentoStatus").value = faturamento.status;
+                    document.getElementById("faturamentoObservacoes").value = faturamento.observacoes;
+                } else {
+                    document.getElementById("faturamentoId").value = "";
+                }
+
+                modal.show();
+            };
+
+            // Funções para o modal de Renovação
+            window.abrirModalRenovacao = function(renovacao = null) {
+                const modal = new bootstrap.Modal(document.getElementById("modalRenovacao"));
+                const form = document.getElementById("formRenovacao");
+                form.reset();
+
+                if (renovacao) {
+                    document.getElementById("renovacaoId").value = renovacao.id;
+                    document.getElementById("renovacaoDataInicio").value = renovacao.data_inicio;
+                    document.getElementById("renovacaoDataFim").value = renovacao.data_fim;
+                    document.getElementById("renovacaoValor").value = renovacao.valor;
+                    document.getElementById("renovacaoStatus").value = renovacao.status;
+                    document.getElementById("renovacaoObservacoes").value = renovacao.observacoes;
+                } else {
+                    document.getElementById("renovacaoId").value = "";
+                }
+
+                modal.show();
+            };
+
+            // Event listeners para os formulários
+            const formFaturamento = document.getElementById("formFaturamento");
+            if (formFaturamento) {
+                formFaturamento.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    const faturamentoId = document.getElementById("faturamentoId").value;
+                    const url = faturamentoId 
+                        ? `/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}` 
+                        : `/inscriptions/{{ $inscription->id }}/faturamentos`;
+                    const method = faturamentoId ? "PUT" : "POST";
+
+                    const formData = {
+                        mes_ano: document.getElementById("faturamentoMesAno").value,
+                        valor: document.getElementById("faturamentoValor").value,
+                        data_vencimento: document.getElementById("faturamentoVencimento").value,
+                        status: document.getElementById("faturamentoStatus").value,
+                        observacoes: document.getElementById("faturamentoObservacoes").value || null,
+                    };
+
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || "Erro ao salvar faturamento.");
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert("Faturamento salvo com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert("Erro: " + error.message);
+                        console.error("Erro ao salvar faturamento:", error);
+                    });
+                });
+            }
+
+            const formRenovacao = document.getElementById("formRenovacao");
+            if (formRenovacao) {
+                formRenovacao.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    const renovacaoId = document.getElementById("renovacaoId").value;
+                    const url = renovacaoId 
+                        ? `/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}` 
+                        : `/inscriptions/{{ $inscription->id }}/renovacoes`;
+                    const method = renovacaoId ? "PUT" : "POST";
+
+                    const formData = {
+                        data_inicio: document.getElementById("renovacaoDataInicio").value,
+                        data_fim: document.getElementById("renovacaoDataFim").value,
+                        valor: document.getElementById("renovacaoValor").value,
+                        status: document.getElementById("renovacaoStatus").value,
+                        observacoes: document.getElementById("renovacaoObservacoes").value || null,
+                    };
+
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        },
+                        body: JSON.stringify(formData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || "Erro ao salvar renovação.");
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        alert("Renovação salva com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert("Erro: " + error.message);
+                        console.error("Erro ao salvar renovação:", error);
+                    });
+                });
+            }
+
+            // Funções para editar e excluir faturamentos
+            window.editarFaturamento = function(faturamentoId) {
+                fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        abrirModalFaturamento(data);
+                    })
+                    .catch(error => console.error("Erro ao buscar faturamento para edição:", error));
+            };
+
+            window.excluirFaturamento = function(faturamentoId) {
+                if (confirm("Tem certeza que deseja excluir este faturamento?")) {
+                    fetch(`/inscriptions/{{ $inscription->id }}/faturamentos/${faturamentoId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || "Erro ao excluir faturamento.");
+                            });
+                        }
+                        alert("Faturamento excluído com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert("Erro: " + error.message);
+                        console.error("Erro ao excluir faturamento:", error);
+                    });
+                }
+            };
+
+            // Funções para editar e excluir renovações
+            window.editarRenovacao = function(renovacaoId) {
+                fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        abrirModalRenovacao(data);
+                    })
+                    .catch(error => console.error("Erro ao buscar renovação para edição:", error));
+            };
+
+            window.excluirRenovacao = function(renovacaoId) {
+                if (confirm("Tem certeza que deseja excluir esta renovação?")) {
+                    fetch(`/inscriptions/{{ $inscription->id }}/renovacoes/${renovacaoId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || "Erro ao excluir renovação.");
+                            });
+                        }
+                        alert("Renovação excluída com sucesso!");
+                        location.reload();
+                    })
+                    .catch(error => {
+                        alert("Erro: " + error.message);
+                        console.error("Erro ao excluir renovação:", error);
+                    });
+                }
+            };
+        });
+
+        // Funções globais para abrir modais
+        function abrirModalPagamento() {
+            $('#modalPagamento').modal('show');
+        }
+
+        function abrirModalSessao() {
+            $('#modalSessao').modal('show');
+        }
+
+        function abrirModalDiagnostico() {
+            $('#modalDiagnostico').modal('show');
+        }
+
+        function abrirModalConquista() {
+            $('#modalConquista').modal('show');
+        }
+
+        function abrirModalFollowUp() {
+            $('#modalFollowUp').modal('show');
+        }
+
+        // Função global para excluir registros
+        function excluirRegistro(tipo, id) {
+            if (confirm('Tem certeza que deseja excluir este registro?')) {
+                const routes = {
+                    'preceptor': `/preceptor-records/${id}`,
+                    'payment': `/payments/${id}`,
+                    'session': `/sessions/${id}`,
+                    'diagnostic': `/diagnostics/${id}`,
+                    'achievement': `/achievements/${id}`,
+                    'followup': `/follow-ups/${id}`
+                };
+
+                fetch(routes[tipo], {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                    .then(data => {
+                    if (data.success) {
+                        location.reload(); // Simplificado por enquanto
+                    } else {
+                        alert('Erro ao excluir registro');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao excluir registro');
+                });
+            }
+        }
+
+        // Funções globais para atualizar abas (usadas pelos modais)
+        function atualizarAbaPreceptores(novoRegistro) {
+            const tabela = $('#preceptores tbody');
+            const contadorBadge = $('#preceptores-tab .badge');
+            
+            // Adicionar nova linha na tabela
+            const novaLinha = `
+                <tr>
+                    <td>${novoRegistro.nome_preceptor || 'N/A'}</td>
+                    <td>${novoRegistro.data_preceptor_informado ? formatarData(novoRegistro.data_preceptor_informado) : 'N/A'}</td>
+                    <td>${novoRegistro.data_preceptor_contato ? formatarData(novoRegistro.data_preceptor_contato) : 'N/A'}</td>
+                    <td>${novoRegistro.nome_secretaria || 'N/A'}</td>
+                    <td>
+                        ${novoRegistro.usm ? '<span class="badge bg-primary">USM</span>' : ''}
+                        ${novoRegistro.acesso_vitrine_gmc ? '<span class="badge bg-success">Vitrine GMC</span>' : ''}
+                        ${novoRegistro.medico_celebridade ? '<span class="badge bg-warning">Celebridade</span>' : ''}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="excluirRegistro('preceptor', ${novoRegistro.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            
+            // Se não há registros, remover mensagem de "nenhum registro"
+            const mensagemVazia = $('#preceptores .text-center.py-4');
+            if (mensagemVazia.length) {
+                mensagemVazia.parent().html(`
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Data Informado</th>
+                                    <th>Data Contato</th>
+                                    <th>Secretária</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>${novaLinha}</tbody>
+                        </table>
+                    </div>
+                `);
+            } else {
+                tabela.append(novaLinha);
+            }
+            
+            // Atualizar contador na badge
+            const novoCount = parseInt(contadorBadge.text()) + 1;
+            contadorBadge.text(novoCount);
+        }
+
+        function atualizarAbaPagamentos(novoRegistro) {
+            // Recarregar por enquanto - implementar depois
+            location.reload();
+        }
+
+        function atualizarAbaSessoes(novoRegistro) {
+            // Recarregar por enquanto - implementar depois
+            location.reload();
+        }
+
+        function atualizarAbaDiagnosticos(novoRegistro) {
+            // Recarregar por enquanto - implementar depois
+            location.reload();
+        }
+
+        function atualizarAbaConquistas(novoRegistro) {
+            // Recarregar por enquanto - implementar depois
+            location.reload();
+        }
+
+        function atualizarAbaFollowUps(novoRegistro) {
+            // Recarregar por enquanto - implementar depois
+            location.reload();
+        }
+
+        // Funções utilitárias globais
+        function formatarData(dataString) {
+            if (!dataString) return 'N/A';
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function mostrarMensagemSucesso(mensagem) {
+            // Criar um toast ou alert temporário
+            const alert = $(`
+                <div class="alert alert-success alert-dismissible fade show position-fixed" 
+                    style="top: 20px; right: 20px; z-index: 9999;">
+                    ${mensagem}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            
+            $('body').append(alert);
+            
+            // Remover automaticamente após 3 segundos
+            setTimeout(() => {
+                alert.alert('close');
+            }, 3000);
+        }
+    </script>
+@endpush

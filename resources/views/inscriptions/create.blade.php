@@ -279,6 +279,10 @@
                                             @error('cep')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
+                                                <div id="cep-loading" style="display:none;" class="mt-2">
+                                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                    <span>Buscando CEP...</span>
+                                                </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -418,31 +422,62 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Máscara para CEP
-    const cepInput = document.getElementById('cep');
-    cepInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 5) {
-            value = value.substring(0, 5) + '-' + value.substring(5, 8);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara para CEP
+        const cepInput = document.getElementById('cep');
+        cepInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+        });
+
+            // Preencher endereço via ViaCEP
+            cepInput.addEventListener('input', function(e) {
+                const cep = cepInput.value.replace(/\D/g, '');
+                if (cep.length === 8) {
+                const loading = document.getElementById('cep-loading');
+                loading.style.display = 'inline-block';
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(data => {
+                    loading.style.display = 'none';
+                            if (!('erro' in data)) {
+                                document.getElementById('endereco').value = data.logradouro || '';
+                                document.getElementById('bairro').value = data.bairro || '';
+                                document.getElementById('cidade').value = data.localidade || '';
+                                document.getElementById('estado').value = data.uf || '';
+                                document.getElementById('numero_casa').focus();
+                            } else {
+                                // Limpa campos se CEP não encontrado
+                                document.getElementById('endereco').value = '';
+                                document.getElementById('bairro').value = '';
+                                document.getElementById('cidade').value = '';
+                                document.getElementById('estado').value = '';
+                                alert('CEP não encontrado.');
+                            }
+                        })
+                        .catch(() => {
+                    loading.style.display = 'none';
+                            alert('Erro ao buscar o CEP.');
+                        });
+                }
+            });
+        // Auto-calcular valor restante
+        const valorTotalInput = document.getElementById('valor_total');
+        const valorEntradaInput = document.getElementById('valor_entrada');
+        const valorRestanteInput = document.getElementById('valor_restante');
+
+        function calcularRestante() {
+            const total = parseFloat(valorTotalInput.value) || 0;
+            const entrada = parseFloat(valorEntradaInput.value) || 0;
+            const restante = total - entrada;
+            valorRestanteInput.value = restante >= 0 ? restante.toFixed(2) : '';
         }
-        e.target.value = value;
+
+        valorTotalInput.addEventListener('input', calcularRestante);
+        valorEntradaInput.addEventListener('input', calcularRestante);
     });
-
-    // Auto-calcular valor restante
-    const valorTotalInput = document.getElementById('valor_total');
-    const valorEntradaInput = document.getElementById('valor_entrada');
-    const valorRestanteInput = document.getElementById('valor_restante');
-
-    function calcularRestante() {
-        const total = parseFloat(valorTotalInput.value) || 0;
-        const entrada = parseFloat(valorEntradaInput.value) || 0;
-        const restante = total - entrada;
-        valorRestanteInput.value = restante >= 0 ? restante.toFixed(2) : '';
-    }
-
-    valorTotalInput.addEventListener('input', calcularRestante);
-    valorEntradaInput.addEventListener('input', calcularRestante);
-});
 </script>
 @endsection
