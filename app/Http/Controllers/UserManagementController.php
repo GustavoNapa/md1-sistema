@@ -37,12 +37,16 @@ class UserManagementController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        Log::info('Storing new user', ['request' => $request->all()]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
+
+        Log::info('Validate PASS');
 
         $user = User::create([
             'name' => $validated['name'],
@@ -51,20 +55,28 @@ class UserManagementController extends Controller
         ]);
 
         // Atribuir cargo usando Spatie Permission
-        if (isset($validated['role_id'])) {
-            $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+        if (isset($request->role_id)) {
+            Log::info('Assigning role to user', ['role_id' => $request->role_id]);
+            
+            $role = \Spatie\Permission\Models\Role::findById($request->role_id);
             if ($role) {
-                $user->assignRole($role);
+                $user->syncRoles($role);
             }
+
+            Log::info('User role assigned successfully', ['user' => $user, 'role' => $role]);
         }
 
         if ($request->expectsJson()) {
+            Log::info('Returning JSON response for user creation');
+
             return response()->json([
                 'success' => true,
                 'message' => 'Usuário criado com sucesso!',
                 'data' => $user->load('roles')
             ]);
         }
+
+        Log::info('User created successfully', ['user' => $user]);
 
         return response()->json(['success' => false], 400);
     }
@@ -122,13 +134,13 @@ class UserManagementController extends Controller
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            // 'role_id' => $validated['role_id'] ?? null, // Removido, Spatie Permission gerencia isso
+            // 'role_id' => $request->role_id ?? null, // Removido, Spatie Permission gerencia isso
         ];
 
-        if (isset($validated['role_id'])) {
-            Log::info('Update user role data: ', ['role_id' => $validated['role_id']]);
+        if (isset($request->role_id)) {
+            Log::info('Update user role data: ', ['role_id' => $request->role_id]);
 
-            $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+            $role = \Spatie\Permission\Models\Role::findById($request->role_id);
             if ($role) {
                 $user->syncRoles($role);
             }
@@ -189,10 +201,12 @@ class UserManagementController extends Controller
             'role_id' => 'required|exists:roles,id',
         ]);
 
-        $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
+        $role = \Spatie\Permission\Models\Role::findById($request->role_id);
         if ($role) {
-            $user->assignRole($role);
+            $user->syncRoles($role);
         }
+
+        Log::info('Assingned role to user:', ['role' => $role->name, 'user' => ['name' => $user->name, 'email' => $user->email]]);
 
         return response()->json([
             'success' => true,

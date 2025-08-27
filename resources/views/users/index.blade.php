@@ -66,7 +66,7 @@
                                             <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    @if(!$user->role)
+                                                    @if(!$user->roles->first())
                                                         <button type="button" class="btn btn-outline-success" 
                                                                 onclick="assignRole({{ $user->id }})"
                                                                 data-bs-toggle="tooltip" title="Atribuir Cargo">
@@ -132,22 +132,42 @@
                     <div class="mb-3">
                         <label for="name" class="form-label">Nome Completo <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="name" name="name" required>
+                        @error('name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
                     
                     <div class="mb-3">
                         <label for="email" class="form-label">E-mail <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" id="email" name="email" required>
+                        @error('email')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">Senha <span class="text-danger" id="password-required">*</span></label>
                         <input type="password" class="form-control" id="password" name="password">
                         <div class="form-text">Mínimo de 8 caracteres</div>
+                        @error('password')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
                     
                     <div class="mb-3">
                         <label for="password_confirmation" class="form-label">Confirmar Senha <span class="text-danger" id="password-confirmation-required">*</span></label>
                         <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                        @error('password_confirmation')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
                     
                     <div class="mb-3">
@@ -156,6 +176,11 @@
                             <option value="">Selecione um cargo</option>
                             <!-- Roles will be loaded here -->
                         </select>
+                        @error('role_id')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                         <div class="form-text">Deixe em branco se não quiser atribuir um cargo agora</div>
                     </div>
                 </div>
