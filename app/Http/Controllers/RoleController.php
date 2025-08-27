@@ -24,7 +24,9 @@ class RoleController extends Controller
         
         $roles = Role::with("permissions")->paginate(15);
         $permissions = Permission::orderBy('name')->get();
-        
+
+        Log::info('Fetching roles and permissions');
+
         return view('roles.index', compact('roles', 'permissions'));
     }
 
@@ -34,7 +36,9 @@ class RoleController extends Controller
     public function create(): View
     {
         $permissions = Permission::all();
-        
+
+        Log::info('Fetching permissions for role creation');
+
         return view('roles.create', compact('permissions'));
     }
 
@@ -43,6 +47,8 @@ class RoleController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        Log::info('Storing new role');
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:roles,name',
             'permissions' => 'array',
@@ -64,6 +70,8 @@ class RoleController extends Controller
                 'data' => $role->load('permissions')
             ]);
         }
+
+        Log::info('Role created successfully', ['role' => $role]);
 
         return response()->json(['success' => false], 400);
     }
@@ -87,7 +95,9 @@ class RoleController extends Controller
                 ]
             ]);
         }
-        
+
+        Log::info('Fetching role details', ['role' => $role]);
+
         return view('roles.show', compact('role'));
     }
 
@@ -98,7 +108,9 @@ class RoleController extends Controller
     {
         $permissions = Permission::all();
         $role->load('permissions');
-        
+
+        Log::info('Fetching permissions for role editing', ['role' => $role]);
+
         return view('roles.edit', compact('role', 'permissions'));
     }
 
@@ -129,6 +141,8 @@ class RoleController extends Controller
             ]);
         }
 
+        Log::info('Role updated successfully', ['role' => $role]);
+
         return response()->json(['success' => false], 400);
     }
 
@@ -146,6 +160,8 @@ class RoleController extends Controller
         }
 
         $role->delete();
+
+        Log::info('Role deleted successfully', ['role' => $role]);
 
         return response()->json([
             'success' => true,
