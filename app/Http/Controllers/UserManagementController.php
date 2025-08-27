@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserManagementController extends Controller
 {
@@ -61,7 +62,7 @@ class UserManagementController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Usuário criado com sucesso!',
-                'data' => $user->load('role')
+                'data' => $user->load('roles')
             ]);
         }
 
@@ -71,9 +72,22 @@ class UserManagementController extends Controller
     /**
      * Display the specified user.
      */
-    public function show(User $user): View
+    public function show(User $user): View | JsonResponse
     {
         $user->load('roles');
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role_id' => $user->role ? $user->role->id : null,
+                    // Adicione outros campos necessários
+                ]
+            ]);
+        }
         
         return view('users.show', compact('user'));
     }
@@ -94,12 +108,16 @@ class UserManagementController extends Controller
      */
     public function update(Request $request, User $user): JsonResponse
     {
+        Log::info('Update user request data: ', $request->all());
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
+
+        Log::info('Update user validated data: ', $validated);
 
         $updateData = [
             'name' => $validated['name'],
@@ -108,23 +126,33 @@ class UserManagementController extends Controller
         ];
 
         if (isset($validated['role_id'])) {
+            Log::info('Update user role data: ', ['role_id' => $validated['role_id']]);
+
             $role = \Spatie\Permission\Models\Role::findById($validated['role_id']);
             if ($role) {
                 $user->syncRoles($role);
             }
+
+            Log::info('Updated user role data: ', $role ? $role->toArray() : null);
         }
 
-        if (!empty($validated['password'])) {
+        if (!empty($validated['password']) && !empty($validated['password_confirmation'])) {
+            Log::info('Update user password data: ', ['password' => $validated['password']]);
+
             $updateData['password'] = Hash::make($validated['password']);
+
+            Log::info('Updated user password data: ', $updateData['password']);
         }
 
         $user->update($updateData);
+
+        Log::info('Updated user final data: ', $user->toArray());
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Usuário atualizado com sucesso!',
-                'data' => $user->load('role')
+                'data' => $user->load('roles')
             ]);
         }
 

@@ -44,9 +44,9 @@
                                             </td>
                                             <td>{{ $user->email }}</td>
                                             <td>
-                                                @if($user->role)
-                                                    <span class="badge bg-{{ $user->role->status ? 'success' : 'secondary' }}">
-                                                        {{ $user->role->name }}
+                                                @if($user->roles->isNotEmpty())
+                                                    <span class="badge bg-{{ $user->roles->first() ? 'success' : 'secondary' }}">
+                                                        {{ $user->roles->first()->name }}
                                                     </span>
                                                 @else
                                                     <span class="text-muted">Sem cargo</span>
@@ -316,48 +316,56 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadRoles(selectId) {
-    // This is a simplified version - in a real app, you'd have an API endpoint
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">Carregando...</option>';
-    
-    // Simulate loading roles
-    setTimeout(() => {
-        select.innerHTML = `
-            <option value="">Selecione um cargo</option>
-            <option value="1">Administrador</option>
-            <option value="2">Vendedor</option>
-            <option value="3">Suporte</option>
-        `;
-    }, 500);
+
+    fetch('/roles', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(roles => {
+        let options = '<option value=\"\">Selecione um cargo</option>';
+        roles.forEach(role => {
+            options += `<option value=\"${role.id}\">${role.name}</option>`;
+        });
+        select.innerHTML = options;
+    })
+    .catch(() => {
+        select.innerHTML = '<option value=\"\">Erro ao carregar cargos</option>';
+    });
 }
 
 function editUser(id) {
-    fetch(`/users/${id}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('user_id').value = data.data.id;
-                document.getElementById('name').value = data.data.name;
-                document.getElementById('email').value = data.data.email;
-                document.getElementById('role_id').value = data.data.role_id || '';
-                document.getElementById('form_method').value = 'PUT';
-                document.getElementById('userForm').action = `/users/${id}`;
-                document.getElementById('userModalLabel').textContent = 'Editar Usuário';
-                
-                // Make password optional for editing
-                document.getElementById('password').required = false;
-                document.getElementById('password_confirmation').required = false;
-                document.getElementById('password-required').style.display = 'none';
-                document.getElementById('password-confirmation-required').style.display = 'none';
-                
-                const modal = new bootstrap.Modal(document.getElementById('userModal'));
-                modal.show();
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao carregar usuário:', error);
-            alert('Erro ao carregar dados do usuário.');
-        });
+    fetch(`/users/${id}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('user_id').value = data.data.id;
+            document.getElementById('name').value = data.data.name;
+            document.getElementById('email').value = data.data.email;
+            document.getElementById('role_id').value = data.data.role_id || '';
+            document.getElementById('form_method').value = 'PUT';
+            document.getElementById('userForm').action = `/users/${id}`;
+            document.getElementById('userModalLabel').textContent = 'Editar Usuário';
+            
+            // Make password optional for editing
+            document.getElementById('password').required = false;
+            document.getElementById('password_confirmation').required = false;
+            document.getElementById('password-required').style.display = 'none';
+            document.getElementById('password-confirmation-required').style.display = 'none';
+            
+            const modal = new bootstrap.Modal(document.getElementById('userModal'));
+            modal.show();
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao carregar usuário:', error);
+        alert('Erro ao carregar dados do usuário.');
+    });
 }
 
 function deleteUser(id) {

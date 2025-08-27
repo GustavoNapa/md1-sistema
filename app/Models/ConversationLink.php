@@ -4,16 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-<<<<<<< HEAD
-=======
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
 
 class ConversationLink extends Model
 {
     use HasFactory;
-<<<<<<< HEAD
-=======
 
     protected $fillable = [
         'conversation_id',
@@ -97,5 +92,4 @@ class ConversationLink extends Model
             'reason' => $reason,
         ]);
     }
->>>>>>> 80f40225cb6817a4fe5a1b80530045030db9b600
 }

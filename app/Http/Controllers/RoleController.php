@@ -6,6 +6,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class RoleController extends Controller
@@ -13,8 +14,14 @@ class RoleController extends Controller
     /**
      * Display a listing of the roles.
      */
-    public function index(): View
+    public function index(Request $request): View | JsonResponse
     {
+        if ($request->expectsJson() || $request->ajax()) {
+            Log::info('Fetching roles for AJAX request');
+            // Retorna todos os cargos para o select
+            return response()->json(Role::orderBy('name')->get(['id', 'name']));
+        }
+        
         $roles = Role::with("permissions")->paginate(15);
         $permissions = Permission::orderBy('name')->get();
         
