@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class PermissionController extends Controller
@@ -31,12 +32,17 @@ class PermissionController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        Log::info('Creating permission', $request->all());
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:permissions,slug',
         ]);
 
+        Log::info('Permission created successfully', $validated);
+
         $permission = Permission::create($validated);
+
+        Log::info('Permission created successfully', ['id' => $permission->id]);
 
         if ($request->expectsJson()) {
             return response()->json([
