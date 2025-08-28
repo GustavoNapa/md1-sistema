@@ -58,7 +58,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            {{ $product->inscriptions_count ?? 0 }}
+                                            {{ count($product->inscriptions) ?? 0 }}
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group" aria-label="Ações do produto">
