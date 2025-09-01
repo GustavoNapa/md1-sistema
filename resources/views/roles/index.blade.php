@@ -53,7 +53,9 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                <span class="badge bg-secondary">{{ $role->users->count() }} usuários</span>
+                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" title="{{ $role->users->pluck('name')->implode(', ') }}">
+                                                    {{ $role->users->count() }} usuários
+                                                </span>
                                             </td>
                                             <td>{{ $role->created_at->format('d/m/Y H:i') }}</td>
                                             <td>
@@ -134,6 +136,10 @@
                     <div class="mb-3">
                         <label class="form-label">Permissões</label>
                         <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="selectAllPermissions" onclick="toggleAllPermissions()">
+                                <label class="form-check-label" for="selectAllPermissions">Selecionar todos</label>
+                            </div>
                             <div id="permissions-list">
                                 <!-- Permissions will be loaded here -->
                                 <div class="text-center">
@@ -220,18 +226,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function loadPermissions() {
+function loadPermissions(selectedIds) {
     const permissionsList = document.getElementById('permissions-list');
-    permissionsList.innerHTML = `
-        @foreach($permissions as $permission)
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="permissions[]" value="{{ $permission->id }}" id="permission{{ $permission->id }}">
-            <label class="form-check-label" for="permission{{ $permission->id }}">
-                {{ $permission->name }}
-            </label>
-        </div>
-        @endforeach
-    `;
+    permissionsList.innerHTML = '';
+    const permissions = @json($permissions);
+    selectedIds = Array.isArray(selectedIds) ? selectedIds : [];
+    let allChecked = permissions.length > 0 && selectedIds.length === permissions.length;
+    permissions.forEach(function(permission) {
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        const input = document.createElement('input');
+        input.className = 'form-check-input';
+        input.type = 'checkbox';
+        input.name = 'permissions[]';
+        input.value = permission.id;
+        input.id = 'permission' + permission.id;
+        if (selectedIds.includes(permission.id)) {
+            input.checked = true;
+        }
+        const label = document.createElement('label');
+        label.className = 'form-check-label';
+        label.htmlFor = input.id;
+        label.textContent = permission.name;
+        div.appendChild(input);
+        div.appendChild(label);
+        permissionsList.appendChild(div);
+    });
+    // Marca ou desmarca o 'Selecionar todos'
+    const selectAll = document.getElementById('selectAllPermissions');
+    if (selectAll) {
+        selectAll.checked = allChecked;
+    }
 }
 
 function editRole(id) {
@@ -253,9 +278,12 @@ function editRole(id) {
                 document.getElementById('form_method').value = 'PUT';
                 document.getElementById('roleForm').action = `/roles/${id}`;
                 document.getElementById('roleModalLabel').textContent = 'Editar Cargo';
-                
+                // Aguarda o modal abrir para marcar permissões
                 const modal = new bootstrap.Modal(document.getElementById('roleModal'));
                 modal.show();
+                setTimeout(function() {
+                    loadPermissions(data.data.permissions);
+                }, 300);
             }
         })
         .catch(error => {
@@ -309,6 +337,13 @@ function toggleRoleStatus(id) {
     .catch(error => {
         console.error('Erro ao alterar status:', error);
         alert('Erro ao alterar status do cargo.');
+    });
+}
+
+function toggleAllPermissions() {
+    const checked = document.getElementById('selectAllPermissions').checked;
+    document.querySelectorAll('#permissions-list input[type=checkbox]').forEach(function(cb) {
+        cb.checked = checked;
     });
 }
 </script>
