@@ -58,10 +58,27 @@ class PermissionController extends Controller
     /**
      * Display the specified permission.
      */
-    public function show(Permission $permission): View
+    public function show(Request $request, Permission $permission)
     {
+        // Defensive: check if permission exists
+        if (!$permission) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permissão não encontrada.'
+            ], 404);
+        }
         $permission->load('roles');
-        
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $permission->id,
+                    'name' => $permission->name,
+                    'roles' => $permission->roles->pluck('id')->toArray(),
+                    'roles_names' => $permission->roles->pluck('name')->toArray(),
+                ]
+            ]);
+        }
         return view('permissions.show', compact('permission'));
     }
 

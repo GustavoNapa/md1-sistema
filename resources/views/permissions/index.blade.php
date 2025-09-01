@@ -34,7 +34,7 @@
                                         <tr>
                                             <td>{{ $permission->id }}</td>
                                             <td>{{ $permission->name }}</td>
-                                            <td><code>{{ $permission->slug }}</code></td>
+                                            <!-- slug column removed -->
                                             <td>
                                                 @if($permission->roles->count() > 0)
                                                     @foreach($permission->roles as $role)
@@ -101,11 +101,7 @@
                         <div class="form-text">Nome descritivo da permissão (ex: "Gerenciar Usuários")</div>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="slug" class="form-label">Slug <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="slug" name="slug" required>
-                        <div class="form-text">Identificador único da permissão (ex: "manage-users")</div>
-                    </div>
+                    <!-- slug field removed -->
                 </div>
                 
                 <div class="modal-footer">
@@ -197,7 +193,7 @@ function editPermission(id) {
             if (data.success) {
                 document.getElementById('permission_id').value = data.data.id;
                 document.getElementById('name').value = data.data.name;
-                document.getElementById('slug').value = data.data.slug;
+                // slug field removed
                 document.getElementById('form_method').value = 'PUT';
                 document.getElementById('permissionForm').action = `/permissions/${id}`;
                 document.getElementById('permissionModalLabel').textContent = 'Editar Permissão';

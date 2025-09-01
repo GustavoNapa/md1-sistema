@@ -132,6 +132,22 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="mb-3">
+                                            <label for="payment_platform_id" class="form-label">Plataforma de Pagamento *</label>
+                                            <select class="form-select @error('payment_platform_id') is-invalid @enderror" id="payment_platform_id" name="payment_platform_id" required>
+                                                <option value="">Selecione uma plataforma</option>
+                                                @foreach($paymentPlatforms as $platform)
+                                                    <option value="{{ $platform->id }}" {{ old('payment_platform_id') == $platform->id ? 'selected' : '' }}>
+                                                        {{ $platform->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('payment_platform_id')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
                                             <label for="class_group" class="form-label">Turma</label>
                                             <input type="text" class="form-control @error('class_group') is-invalid @enderror" 
                                                    id="class_group" name="class_group" value="{{ old('class_group') }}">
@@ -153,110 +169,125 @@
                                 </div>
 
                                 <!-- Pagamento Entrada -->
-                                <h6 class="mt-3">Pagamento de Entrada</h6>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="forma_pagamento_entrada" class="form-label">Forma de Pagamento *</label>
-                                            <select class="form-select @error('forma_pagamento_entrada') is-invalid @enderror" 
-                                                    id="forma_pagamento_entrada" name="forma_pagamento_entrada" required>
-                                                <option value="">Selecione</option>
-                                                <option value="PIX" {{ old('forma_pagamento_entrada') == 'PIX' ? 'selected' : '' }}>PIX</option>
-                                                <option value="Boleto" {{ old('forma_pagamento_entrada') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
-                                                <option value="Cartão 1x" {{ old('forma_pagamento_entrada') == 'Cartão 1x' ? 'selected' : '' }}>Cartão 1x</option>
-                                                <option value="Cartão 2x" {{ old('forma_pagamento_entrada') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
-                                                <option value="Cartão 3x" {{ old('forma_pagamento_entrada') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
-                                                <option value="Cartão 4x" {{ old('forma_pagamento_entrada') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
-                                                <option value="Cartão 5x" {{ old('forma_pagamento_entrada') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
-                                                <option value="Cartão 6x" {{ old('forma_pagamento_entrada') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
-                                                <option value="Cartão 7x" {{ old('forma_pagamento_entrada') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option>
-                                                <option value="Cartão 8x" {{ old('forma_pagamento_entrada') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
-                                                <option value="Cartão 9x" {{ old('forma_pagamento_entrada') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
-                                                <option value="Cartão 10x" {{ old('forma_pagamento_entrada') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
-                                                <option value="Cartão 11x" {{ old('forma_pagamento_entrada') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
-                                                <option value="Cartão 12x" {{ old('forma_pagamento_entrada') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
-                                                <option value="Cartão Recorrencia" {{ old('forma_pagamento_entrada') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
-                                                <option value="Deposito em conta" {{ old('forma_pagamento_entrada') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
-                                            </select>
-                                            @error('forma_pagamento_entrada')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                <div class="mb-3">
+                                    <label class="form-label">Possui pagamento de entrada?</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tem_entrada" id="entrada_sim" value="sim">
+                                            <label class="form-check-label" for="entrada_sim">Sim</label>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="valor_entrada" class="form-label">Valor da Entrada *</label>
-                                            <input type="number" class="form-control @error('valor_entrada') is-invalid @enderror" 
-                                                   id="valor_entrada" name="valor_entrada" value="{{ old('valor_entrada') }}" 
-                                                   step="0.01" min="0" required>
-                                            @error('valor_entrada')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="data_pagamento_entrada" class="form-label">Data do Pagamento *</label>
-                                            <input type="date" class="form-control @error('data_pagamento_entrada') is-invalid @enderror" 
-                                                   id="data_pagamento_entrada" name="data_pagamento_entrada" value="{{ old('data_pagamento_entrada') }}" required>
-                                            @error('data_pagamento_entrada')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="tem_entrada" id="entrada_nao" value="nao" checked>
+                                            <label class="form-check-label" for="entrada_nao">Não</label>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Pagamento Restante -->
-                                <h6 class="mt-3">Pagamento Restante</h6>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="forma_pagamento_restante" class="form-label">Forma de Pagamento *</label>
-                                            <select class="form-select @error('forma_pagamento_restante') is-invalid @enderror" 
-                                                    id="forma_pagamento_restante" name="forma_pagamento_restante" required>
-                                                <option value="">Selecione</option>
-                                                <option value="PIX" {{ old('forma_pagamento_restante') == 'PIX' ? 'selected' : '' }}>PIX</option>
-                                                <option value="Boleto" {{ old('forma_pagamento_restante') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
-                                                <option value="Cartão 1x" {{ old('forma_pagamento_restante') == ' 1x' ? 'selected' : '' }}>Cartão 1x</option>
-                                                <option value="Cartão 2x" {{ old('forma_pagamento_restante') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
-                                                <option value="Cartão 3x" {{ old('forma_pagamento_restante') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
-                                                <option value="Cartão 4x" {{ old('forma_pagamento_restante') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
-                                                <option value="Cartão 5x" {{ old('forma_pagamento_restante') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
-                                                <option value="Cartão 6x" {{ old('forma_pagamento_restante') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
-                                                <option value="Cartão 7x" {{ old('forma_pagamento_restante') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option> 
-                                                <option value="Cartão 8x" {{ old('forma_pagamento_restante') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
-                                                <option value="Cartão 9x" {{ old('forma_pagamento_restante') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
-                                                <option value="Cartão 10x" {{ old('forma_pagamento_restante') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
-                                                <option value="Cartão 11x" {{ old('forma_pagamento_restante') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
-                                                <option value="Cartão 12x" {{ old('forma_pagamento_restante') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
-
-                                                <option value="Cartão Recorrencia" {{ old('forma_pagamento_restante') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
-                                                <option value="Deposito em conta" {{ old('forma_pagamento_restante') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
-                                            </select>
-                                            @error('forma_pagamento_restante')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                <div id="entrada-fields" style="display:none;">
+                                    <h6 class="mt-3">Pagamento de Entrada</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="forma_pagamento_entrada" class="form-label">Forma de Pagamento *</label>
+                                                <select class="form-select @error('forma_pagamento_entrada') is-invalid @enderror" 
+                                                        id="forma_pagamento_entrada" name="forma_pagamento_entrada">
+                                                    <option value="">Selecione</option>
+                                                    <option value="PIX" {{ old('forma_pagamento_entrada') == 'PIX' ? 'selected' : '' }}>PIX</option>
+                                                    <option value="Boleto" {{ old('forma_pagamento_entrada') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
+                                                    <option value="Cartão 1x" {{ old('forma_pagamento_entrada') == 'Cartão 1x' ? 'selected' : '' }}>Cartão 1x</option>
+                                                    <option value="Cartão 2x" {{ old('forma_pagamento_entrada') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
+                                                    <option value="Cartão 3x" {{ old('forma_pagamento_entrada') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
+                                                    <option value="Cartão 4x" {{ old('forma_pagamento_entrada') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
+                                                    <option value="Cartão 5x" {{ old('forma_pagamento_entrada') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
+                                                    <option value="Cartão 6x" {{ old('forma_pagamento_entrada') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
+                                                    <option value="Cartão 7x" {{ old('forma_pagamento_entrada') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option>
+                                                    <option value="Cartão 8x" {{ old('forma_pagamento_entrada') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
+                                                    <option value="Cartão 9x" {{ old('forma_pagamento_entrada') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
+                                                    <option value="Cartão 10x" {{ old('forma_pagamento_entrada') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
+                                                    <option value="Cartão 11x" {{ old('forma_pagamento_entrada') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
+                                                    <option value="Cartão 12x" {{ old('forma_pagamento_entrada') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
+                                                    <option value="Cartão Recorrencia" {{ old('forma_pagamento_entrada') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
+                                                    <option value="Deposito em conta" {{ old('forma_pagamento_entrada') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
+                                                </select>
+                                                @error('forma_pagamento_entrada')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="valor_entrada" class="form-label">Valor da Entrada *</label>
+                                                <input type="number" class="form-control @error('valor_entrada') is-invalid @enderror" 
+                                                       id="valor_entrada" name="valor_entrada" value="{{ old('valor_entrada') }}" 
+                                                       step="0.01" min="0">
+                                                @error('valor_entrada')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="data_pagamento_entrada" class="form-label">Data do Pagamento *</label>
+                                                <input type="date" class="form-control @error('data_pagamento_entrada') is-invalid @enderror" 
+                                                       id="data_pagamento_entrada" name="data_pagamento_entrada" value="{{ old('data_pagamento_entrada') }}">
+                                                @error('data_pagamento_entrada')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="valor_restante" class="form-label">Valor Restante *</label>
-                                            <input type="number" class="form-control @error('valor_restante') is-invalid @enderror" 
-                                                   id="valor_restante" name="valor_restante" value="{{ old('valor_restante') }}" 
-                                                   step="0.01" min="0" required>
-                                            @error('valor_restante')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                </div>
+                                <div id="restante-fields">
+                                    <h6 class="mt-3">Pagamento Restante</h6>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="forma_pagamento_restante" class="form-label">Forma de Pagamento *</label>
+                                                <select class="form-select @error('forma_pagamento_restante') is-invalid @enderror" 
+                                                        id="forma_pagamento_restante" name="forma_pagamento_restante">
+                                                    <option value="">Selecione</option>
+                                                    <option value="PIX" {{ old('forma_pagamento_restante') == 'PIX' ? 'selected' : '' }}>PIX</option>
+                                                    <option value="Boleto" {{ old('forma_pagamento_restante') == 'Boleto' ? 'selected' : '' }}>Boleto</option>
+                                                    <option value="Cartão 1x" {{ old('forma_pagamento_restante') == ' 1x' ? 'selected' : '' }}>Cartão 1x</option>
+                                                    <option value="Cartão 2x" {{ old('forma_pagamento_restante') == 'Cartão 2x' ? 'selected' : '' }}>Cartão 2x</option>
+                                                    <option value="Cartão 3x" {{ old('forma_pagamento_restante') == 'Cartão 3x' ? 'selected' : '' }}>Cartão 3x</option>
+                                                    <option value="Cartão 4x" {{ old('forma_pagamento_restante') == 'Cartão 4x' ? 'selected' : '' }}>Cartão 4x</option>
+                                                    <option value="Cartão 5x" {{ old('forma_pagamento_restante') == 'Cartão 5x' ? 'selected' : '' }}>Cartão 5x</option>
+                                                    <option value="Cartão 6x" {{ old('forma_pagamento_restante') == 'Cartão 6x' ? 'selected' : '' }}>Cartão 6x</option>
+                                                    <option value="Cartão 7x" {{ old('forma_pagamento_restante') == 'Cartão 7x' ? 'selected' : '' }}>Cartão 7x</option> 
+                                                    <option value="Cartão 8x" {{ old('forma_pagamento_restante') == 'Cartão 8x' ? 'selected' : '' }}>Cartão 8x</option>
+                                                    <option value="Cartão 9x" {{ old('forma_pagamento_restante') == 'Cartão 9x' ? 'selected' : '' }}>Cartão 9x</option>
+                                                    <option value="Cartão 10x" {{ old('forma_pagamento_restante') == 'Cartão 10x' ? 'selected' : '' }}>Cartão 10x</option>
+                                                    <option value="Cartão 11x" {{ old('forma_pagamento_restante') == 'Cartão 11x' ? 'selected' : '' }}>Cartão 11x</option>
+                                                    <option value="Cartão 12x" {{ old('forma_pagamento_restante') == 'Cartão 12x' ? 'selected' : '' }}>Cartão 12x</option>
+
+                                                    <option value="Cartão Recorrencia" {{ old('forma_pagamento_restante') == 'Cartão Recorrencia' ? 'selected' : '' }}>Cartão Recorrência</option>
+                                                    <option value="Deposito em conta" {{ old('forma_pagamento_restante') == 'Deposito em conta' ? 'selected' : '' }}>Depósito em conta</option>
+                                                </select>
+                                                @error('forma_pagamento_restante')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="data_contrato" class="form-label">Data do Contrato *</label>
-                                            <input type="date" class="form-control @error('data_contrato') is-invalid @enderror" 
-                                                   id="data_contrato" name="data_contrato" value="{{ old('data_contrato') }}" required>
-                                            @error('data_contrato')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="valor_restante" class="form-label">Valor Restante *</label>
+                                                <input type="number" class="form-control @error('valor_restante') is-invalid @enderror" 
+                                                       id="valor_restante" name="valor_restante" value="{{ old('valor_restante') }}" 
+                                                       step="0.01" min="0">
+                                                @error('valor_restante')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="data_contrato" class="form-label">Data do Contrato *</label>
+                                                <input type="date" class="form-control @error('data_contrato') is-invalid @enderror" 
+                                                       id="data_contrato" name="data_contrato" value="{{ old('data_contrato') }}">
+                                                @error('data_contrato')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -478,6 +509,34 @@
 
         valorTotalInput.addEventListener('input', calcularRestante);
         valorEntradaInput.addEventListener('input', calcularRestante);
+
+        function toggleEntradaFields() {
+            const sim = document.getElementById('entrada_sim');
+            const entradaFields = document.getElementById('entrada-fields');
+            const restanteFields = document.getElementById('restante-fields');
+            if (sim.checked) {
+                entradaFields.style.display = '';
+                restanteFields.style.display = '';
+                document.getElementById('forma_pagamento_entrada').required = true;
+                document.getElementById('valor_entrada').required = true;
+                document.getElementById('data_pagamento_entrada').required = true;
+                document.getElementById('forma_pagamento_restante').required = true;
+                document.getElementById('valor_restante').required = true;
+                document.getElementById('data_contrato').required = true;
+            } else {
+                entradaFields.style.display = 'none';
+                restanteFields.style.display = '';
+                document.getElementById('forma_pagamento_entrada').required = false;
+                document.getElementById('valor_entrada').required = false;
+                document.getElementById('data_pagamento_entrada').required = false;
+                document.getElementById('forma_pagamento_restante').required = true;
+                document.getElementById('valor_restante').required = true;
+                document.getElementById('data_contrato').required = true;
+            }
+        }
+        document.getElementById('entrada_sim').addEventListener('change', toggleEntradaFields);
+        document.getElementById('entrada_nao').addEventListener('change', toggleEntradaFields);
+        toggleEntradaFields();
     });
 </script>
 @endsection

@@ -234,5 +234,6 @@ Route::post('feature-flags/{featureKey}/toggle', [FeatureFlagController::class, 
 
 
 Route::resource("feature-flags", \App\Http\Controllers\FeatureFlagController::class);
+Route::resource('payment_platforms', App\Http\Controllers\PaymentPlatformController::class);
 
 

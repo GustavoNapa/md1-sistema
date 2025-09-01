@@ -27,6 +27,12 @@ return [
             'permission' => 'import.index',
             'icon' => 'fas fa-file-import',
         ],
+        [
+            'name' => 'Plataforma de pagamento',
+            'route' => 'payment_platforms.index',
+            'permission' => 'payment_platforms.index',
+            'icon' => 'fas fa-credit-card',
+        ]
     ],
     'Comunicação' => [
         [

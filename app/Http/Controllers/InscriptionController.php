@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Events\InscriptionCreated;
 use App\Events\InscriptionUpdated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InscriptionController extends Controller
 {
@@ -71,7 +72,7 @@ class InscriptionController extends Controller
             ]);
         } catch (\Exception $e) {
             // Logar o erro para depuração
-            \Log::error("Erro na API do Kanban: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            Log::error("Erro na API do Kanban: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return response()->json(["error" => "Ocorreu um erro ao carregar os dados do Kanban.", "details" => $e->getMessage()], 500);
         }
     }
@@ -158,8 +159,9 @@ class InscriptionController extends Controller
         $vendors = Vendor::where("active", true)->orderBy("name")->get();
         $products = Product::where("is_active", true)->orderBy("name")->get();
         $entryChannels = \App\Models\EntryChannel::all();
+        $paymentPlatforms = \App\Models\PaymentPlatform::all();
         
-        return view("inscriptions.create", compact("clients", "vendors", "products", "entryChannels"));
+        return view("inscriptions.create", compact("clients", "vendors", "products", "entryChannels", "paymentPlatforms"));
     }
 
     /**
@@ -179,7 +181,6 @@ class InscriptionController extends Controller
             "start_date" => "nullable|date",
             "original_end_date" => "nullable|date|after_or_equal:start_date",
             "actual_end_date" => "nullable|date",
-            "platform_release_date" => "nullable|date",
             "calendar_week" => "nullable|integer|min:1|max:52",
             "current_week" => "nullable|integer|min:1|max:52",
             "amount_paid" => "nullable|numeric|min:0",
