@@ -72,138 +72,140 @@
     </div>
 </div>
 
-<script>
-// Variáveis globais para o modal de telefone
-let telefoneEditando = null;
-
-// Máscara para telefone
-$(document).ready(function() {
-    $('#phone').mask('(00) 00000-0000', {
-        placeholder: '(11) 99999-9999',
-        translation: {
-            '0': {pattern: /[0-9]/}
+@push('scripts')
+    <script>
+        // Variáveis globais para o modal de telefone
+        let telefoneEditando = null;
+        
+        // Máscara para telefone
+        $(document).ready(function() {
+            $('#phone').mask('(00) 00000-0000', {
+                placeholder: '(11) 99999-9999',
+                translation: {
+                    '0': {pattern: /[0-9]/}
+                }
+            });
+        });
+        
+        // Função para abrir modal de edição
+        function editarTelefone(id) {
+            // Buscar dados do telefone via AJAX
+            fetch(`/client-phones/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    telefoneEditando = id;
+                    preencherFormularioTelefone(data.data);
+                    $('#modalTelefone').modal('show');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar telefone:', error);
+                alert('Erro ao carregar dados do telefone');
+            });
         }
-    });
-});
+        
+        // Função para preencher formulário
+        function preencherFormularioTelefone(phone) {
+            $('#phone-modal-title').text('Editar Telefone');
+            $('#phone_id').val(phone.id);
+            $('#phone').val(phone.phone);
+            $('#phone_type').val(phone.type);
+            $('#is_whatsapp').prop('checked', phone.is_whatsapp);
+            $('#is_primary_phone').prop('checked', phone.is_primary);
+            $('#phone_notes').val(phone.notes || '');
+        }
+        
+        // Função para limpar formulário
+        function limparFormularioTelefone() {
+            $('#phone-modal-title').text('Novo Telefone');
+            $('#formTelefone')[0].reset();
+            $('#phone_id').val('');
+            telefoneEditando = null;
+            
+            // Limpar classes de validação
+            $('#formTelefone .form-control, #formTelefone .form-select').removeClass('is-invalid');
+            $('#formTelefone .invalid-feedback').text('');
+    }
 
-// Função para abrir modal de edição
-function editarTelefone(id) {
-    // Buscar dados do telefone via AJAX
-    fetch(`/client-phones/${id}`)
+    // Event listener para o formulário
+    $('#formTelefone').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const isEditing = telefoneEditando !== null;
+        const url = isEditing ? `/client-phones/${telefoneEditando}` : '/client-phones';
+        const method = isEditing ? 'PUT' : 'POST';
+        
+        // Converter FormData para objeto
+        const data = {};
+        formData.forEach((value, key) => {
+            if (key === 'is_whatsapp' || key === 'is_primary') {
+                data[key] = $('#' + (key === 'is_primary' ? 'is_primary_phone' : key)).is(':checked');
+            } else {
+                data[key] = value;
+            }
+        });
+        
+        // Desabilitar botão
+        $('#btn-salvar-telefone').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Salvando...');
+        
+        // Limpar erros anteriores
+        $('#formTelefone .form-control, #formTelefone .form-select').removeClass('is-invalid');
+        $('#formTelefone .invalid-feedback').text('');
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                telefoneEditando = id;
-                preencherFormularioTelefone(data.data);
-                $('#modalTelefone').modal('show');
+                $('#modalTelefone').modal('hide');
+                mostrarMensagemSucesso(data.message);
+                
+                // Recarregar a página para atualizar a lista
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                // Mostrar erros de validação
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        let input;
+                        if (field === 'type') {
+                            input = $('#phone_type');
+                        } else if (field === 'notes') {
+                            input = $('#phone_notes');
+                        } else {
+                            input = $('#' + field);
+                        }
+                        input.addClass('is-invalid');
+                        input.siblings('.invalid-feedback').text(data.errors[field][0]);
+                    });
+                } else {
+                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                }
             }
         })
         .catch(error => {
-            console.error('Erro ao carregar telefone:', error);
-            alert('Erro ao carregar dados do telefone');
+            console.error('Erro:', error);
+            alert('Erro ao salvar telefone');
+        })
+        .finally(() => {
+            $('#btn-salvar-telefone').prop('disabled', false).html('<i class="fas fa-save"></i> Salvar');
         });
-}
-
-// Função para preencher formulário
-function preencherFormularioTelefone(phone) {
-    $('#phone-modal-title').text('Editar Telefone');
-    $('#phone_id').val(phone.id);
-    $('#phone').val(phone.phone);
-    $('#phone_type').val(phone.type);
-    $('#is_whatsapp').prop('checked', phone.is_whatsapp);
-    $('#is_primary_phone').prop('checked', phone.is_primary);
-    $('#phone_notes').val(phone.notes || '');
-}
-
-// Função para limpar formulário
-function limparFormularioTelefone() {
-    $('#phone-modal-title').text('Novo Telefone');
-    $('#formTelefone')[0].reset();
-    $('#phone_id').val('');
-    telefoneEditando = null;
-    
-    // Limpar classes de validação
-    $('#formTelefone .form-control, #formTelefone .form-select').removeClass('is-invalid');
-    $('#formTelefone .invalid-feedback').text('');
-}
-
-// Event listener para o formulário
-$('#formTelefone').on('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const isEditing = telefoneEditando !== null;
-    const url = isEditing ? `/client-phones/${telefoneEditando}` : '/client-phones';
-    const method = isEditing ? 'PUT' : 'POST';
-    
-    // Converter FormData para objeto
-    const data = {};
-    formData.forEach((value, key) => {
-        if (key === 'is_whatsapp' || key === 'is_primary') {
-            data[key] = $('#' + (key === 'is_primary' ? 'is_primary_phone' : key)).is(':checked');
-        } else {
-            data[key] = value;
-        }
     });
-    
-    // Desabilitar botão
-    $('#btn-salvar-telefone').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Salvando...');
-    
-    // Limpar erros anteriores
-    $('#formTelefone .form-control, #formTelefone .form-select').removeClass('is-invalid');
-    $('#formTelefone .invalid-feedback').text('');
-    
-    fetch(url, {
-        method: method,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            $('#modalTelefone').modal('hide');
-            mostrarMensagemSucesso(data.message);
-            
-            // Recarregar a página para atualizar a lista
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            // Mostrar erros de validação
-            if (data.errors) {
-                Object.keys(data.errors).forEach(field => {
-                    let input;
-                    if (field === 'type') {
-                        input = $('#phone_type');
-                    } else if (field === 'notes') {
-                        input = $('#phone_notes');
-                    } else {
-                        input = $('#' + field);
-                    }
-                    input.addClass('is-invalid');
-                    input.siblings('.invalid-feedback').text(data.errors[field][0]);
-                });
-            } else {
-                alert('Erro: ' + (data.message || 'Erro desconhecido'));
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao salvar telefone');
-    })
-    .finally(() => {
-        $('#btn-salvar-telefone').prop('disabled', false).html('<i class="fas fa-save"></i> Salvar');
-    });
-});
 
-// Limpar formulário quando modal for fechado
-$('#modalTelefone').on('hidden.bs.modal', function() {
-    limparFormularioTelefone();
-});
-</script>
+    // Limpar formulário quando modal for fechado
+    $('#modalTelefone').on('hidden.bs.modal', function() {
+        limparFormularioTelefone();
+    });
+    </script>
+@endpush
 

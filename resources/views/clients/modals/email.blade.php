@@ -69,121 +69,122 @@
     </div>
 </div>
 
-<script>
-// Variáveis globais para o modal de e-mail
-let emailEditando = null;
+@push('scripts')
+    <script>
+    // Variáveis globais para o modal de e-mail
+    let emailEditando = null;
 
-// Função para abrir modal de edição
-function editarEmail(id) {
-    // Buscar dados do e-mail via AJAX
-    fetch(`/client-emails/${id}`)
+    // Função para abrir modal de edição
+    function editarEmail(id) {
+        // Buscar dados do e-mail via AJAX
+        fetch(`/client-emails/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    emailEditando = id;
+                    preencherFormularioEmail(data.data);
+                    $('#modalEmail').modal('show');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar e-mail:', error);
+                alert('Erro ao carregar dados do e-mail');
+            });
+    }
+
+    // Função para preencher formulário
+    function preencherFormularioEmail(email) {
+        $('#email-modal-title').text('Editar E-mail');
+        $('#email_id').val(email.id);
+        $('#email').val(email.email);
+        $('#type').val(email.type);
+        $('#is_primary').prop('checked', email.is_primary);
+        $('#is_verified').prop('checked', email.is_verified);
+        $('#notes').val(email.notes || '');
+    }
+
+    // Função para limpar formulário
+    function limparFormularioEmail() {
+        $('#email-modal-title').text('Novo E-mail');
+        $('#formEmail')[0].reset();
+        $('#email_id').val('');
+        emailEditando = null;
+        
+        // Limpar classes de validação
+        $('#formEmail .form-control, #formEmail .form-select').removeClass('is-invalid');
+        $('#formEmail .invalid-feedback').text('');
+    }
+
+    // Event listener para o formulário
+    $('#formEmail').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const isEditing = emailEditando !== null;
+        const url = isEditing ? `/client-emails/${emailEditando}` : '/client-emails';
+        const method = isEditing ? 'PUT' : 'POST';
+        
+        // Converter FormData para objeto
+        const data = {};
+        formData.forEach((value, key) => {
+            if (key === 'is_primary' || key === 'is_verified') {
+                data[key] = $('#' + key).is(':checked');
+            } else {
+                data[key] = value;
+            }
+        });
+        
+        // Desabilitar botão
+        $('#btn-salvar-email').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Salvando...');
+        
+        // Limpar erros anteriores
+        $('#formEmail .form-control, #formEmail .form-select').removeClass('is-invalid');
+        $('#formEmail .invalid-feedback').text('');
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                emailEditando = id;
-                preencherFormularioEmail(data.data);
-                $('#modalEmail').modal('show');
+                $('#modalEmail').modal('hide');
+                mostrarMensagemSucesso(data.message);
+                
+                // Recarregar a página para atualizar a lista
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                // Mostrar erros de validação
+                if (data.errors) {
+                    Object.keys(data.errors).forEach(field => {
+                        const input = $('#' + field);
+                        input.addClass('is-invalid');
+                        input.siblings('.invalid-feedback').text(data.errors[field][0]);
+                    });
+                } else {
+                    alert('Erro: ' + (data.message || 'Erro desconhecido'));
+                }
             }
         })
         .catch(error => {
-            console.error('Erro ao carregar e-mail:', error);
-            alert('Erro ao carregar dados do e-mail');
+            console.error('Erro:', error);
+            alert('Erro ao salvar e-mail');
+        })
+        .finally(() => {
+            $('#btn-salvar-email').prop('disabled', false).html('<i class="fas fa-save"></i> Salvar');
         });
-}
-
-// Função para preencher formulário
-function preencherFormularioEmail(email) {
-    $('#email-modal-title').text('Editar E-mail');
-    $('#email_id').val(email.id);
-    $('#email').val(email.email);
-    $('#type').val(email.type);
-    $('#is_primary').prop('checked', email.is_primary);
-    $('#is_verified').prop('checked', email.is_verified);
-    $('#notes').val(email.notes || '');
-}
-
-// Função para limpar formulário
-function limparFormularioEmail() {
-    $('#email-modal-title').text('Novo E-mail');
-    $('#formEmail')[0].reset();
-    $('#email_id').val('');
-    emailEditando = null;
-    
-    // Limpar classes de validação
-    $('#formEmail .form-control, #formEmail .form-select').removeClass('is-invalid');
-    $('#formEmail .invalid-feedback').text('');
-}
-
-// Event listener para o formulário
-$('#formEmail').on('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const isEditing = emailEditando !== null;
-    const url = isEditing ? `/client-emails/${emailEditando}` : '/client-emails';
-    const method = isEditing ? 'PUT' : 'POST';
-    
-    // Converter FormData para objeto
-    const data = {};
-    formData.forEach((value, key) => {
-        if (key === 'is_primary' || key === 'is_verified') {
-            data[key] = $('#' + key).is(':checked');
-        } else {
-            data[key] = value;
-        }
     });
-    
-    // Desabilitar botão
-    $('#btn-salvar-email').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Salvando...');
-    
-    // Limpar erros anteriores
-    $('#formEmail .form-control, #formEmail .form-select').removeClass('is-invalid');
-    $('#formEmail .invalid-feedback').text('');
-    
-    fetch(url, {
-        method: method,
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            $('#modalEmail').modal('hide');
-            mostrarMensagemSucesso(data.message);
-            
-            // Recarregar a página para atualizar a lista
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-        } else {
-            // Mostrar erros de validação
-            if (data.errors) {
-                Object.keys(data.errors).forEach(field => {
-                    const input = $('#' + field);
-                    input.addClass('is-invalid');
-                    input.siblings('.invalid-feedback').text(data.errors[field][0]);
-                });
-            } else {
-                alert('Erro: ' + (data.message || 'Erro desconhecido'));
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao salvar e-mail');
-    })
-    .finally(() => {
-        $('#btn-salvar-email').prop('disabled', false).html('<i class="fas fa-save"></i> Salvar');
+
+    // Limpar formulário quando modal for fechado
+    $('#modalEmail').on('hidden.bs.modal', function() {
+        limparFormularioEmail();
     });
-});
-
-// Limpar formulário quando modal for fechado
-$('#modalEmail').on('hidden.bs.modal', function() {
-    limparFormularioEmail();
-});
-</script>
-
+    </script>
+@endpush

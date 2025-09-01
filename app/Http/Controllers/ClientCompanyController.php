@@ -14,14 +14,14 @@ class ClientCompanyController extends Controller
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'name' => 'required|string|max:255',
-            'cnpj' => 'nullable|string|size:18|unique:client_companies,cnpj,NULL,id,client_id,' . $request->client_id,
+            'cnpj' => 'required|string|size:18|unique:client_companies,cnpj,NULL,id,client_id,' . $request->client_id,
             'type' => 'required|in:clinic,laboratory,hospital,office,other',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:100',
-            'state' => 'nullable|string|size:2',
-            'zip_code' => 'nullable|string|size:9',
-            'phone' => 'nullable|string|max:15',
-            'email' => 'nullable|email|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|size:2',
+            'zip_code' => 'required|string|size:9',
+            'phone' => 'required|string|max:15',
+            'email' => 'required|email|max:255',
             'website' => 'nullable|url|max:255',
             'is_main' => 'boolean',
             'notes' => 'nullable|string|max:1000'
@@ -47,14 +47,14 @@ class ClientCompanyController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'cnpj' => 'nullable|string|size:18|unique:client_companies,cnpj,' . $clientCompany->id . ',id,client_id,' . $clientCompany->client_id,
+            'cnpj' => 'required|string|size:18|unique:client_companies,cnpj,' . $clientCompany->id . ',id,client_id,' . $clientCompany->client_id,
             'type' => 'required|in:clinic,laboratory,hospital,office,other',
-            'address' => 'nullable|string|max:255',
+            'address' => 'required|string|max:255',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|size:2',
             'zip_code' => 'nullable|string|size:9',
-            'phone' => 'nullable|string|max:15',
-            'email' => 'nullable|email|max:255',
+            'phone' => 'required|string|max:15',
+            'email' => 'required|email|max:255',
             'website' => 'nullable|url|max:255',
             'is_main' => 'boolean',
             'notes' => 'nullable|string|max:1000'
@@ -98,6 +98,14 @@ class ClientCompanyController extends Controller
             'success' => true,
             'message' => 'Empresa definida como principal!',
             'data' => $clientCompany->fresh()
+        ]);
+    }
+
+    public function show(ClientCompany $clientCompany): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $clientCompany->load('client')
         ]);
     }
 }

@@ -130,6 +130,8 @@
                         <li><small><strong>Clínicas:</strong> {{ $client->companies->where('type', 'clinic')->count() }} empresa(s)</small></li>
                         <li><small><strong>Laboratórios:</strong> {{ $client->companies->where('type', 'laboratory')->count() }} empresa(s)</small></li>
                         <li><small><strong>Hospitais:</strong> {{ $client->companies->where('type', 'hospital')->count() }} empresa(s)</small></li>
+                        <li><small><strong>Consultórios:</strong> {{ $client->companies->where('type', 'office')->count() }} empresa(s)</small></li>
+                        <li><small><strong>Outros:</strong> {{ $client->companies->where('type', 'other')->count() }} empresa(s)</small></li>
                     </ul>
                 </div>
             </div>
