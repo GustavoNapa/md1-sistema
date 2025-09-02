@@ -78,11 +78,13 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="faturamento-tab" data-bs-toggle="tab" data-bs-target="#faturamento" type="button" role="tab">
                                 Faturamento Mês a Mês
+                                <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->faturamentos->count() }}</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="renovacao-tab" data-bs-toggle="tab" data-bs-target="#renovacao" type="button" role="tab">
                                 Renovação
+                                <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->renovacoes->count() }}</span>
                             </button>
                         </li>
                     </ul>
