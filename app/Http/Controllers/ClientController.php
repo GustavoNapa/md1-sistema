@@ -15,9 +15,28 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::with('inscriptions')->paginate(15);
+        $q = $request->input('q');
+
+        $clientsQuery = Client::with('inscriptions');
+
+        if ($q) {
+            $normalized = preg_replace('/\D/', '', $q);
+
+            $clientsQuery->where(function ($query) use ($q, $normalized) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('email', 'like', "%{$q}%");
+
+                if ($normalized !== '') {
+                    // compara o CPF sem formatação: remove '.', '-' e outros caracteres no banco via REPLACE
+                    $query->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%{$normalized}%"]);
+                }
+            });
+        }
+
+        $clients = $clientsQuery->orderBy('name')->paginate(15)->appends($request->except('page'));
+
         return view('clients.index', compact('clients'));
     }
 

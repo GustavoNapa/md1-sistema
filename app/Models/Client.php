@@ -66,8 +66,20 @@ class Client extends Model
     // Accessors para exibição
     public function getFormattedCpfAttribute()
     {
-        $cpf = $this->cpf;
-        return substr($cpf, 0, 3) . '.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-' . substr($cpf, 9, 2);
+        // Normaliza removendo tudo que não for dígito e formata como ###.###.###-##
+        $cpf = preg_replace('/\D/', '', $this->cpf);
+        if (strlen($cpf) === 11) {
+            return substr($cpf, 0, 3) . '.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-' . substr($cpf, 9, 2);
+        }
+
+        // Se não houver 11 dígitos, retorna o CPF original (possivelmente vazio) sem alterações
+        return $this->cpf;
+    }
+
+    // Mutator: armazena somente os dígitos do CPF
+    public function setCpfAttribute($value)
+    {
+        $this->attributes['cpf'] = $value ? preg_replace('/\D/', '', $value) : null;
     }
 
     public function getFormattedPhoneAttribute()

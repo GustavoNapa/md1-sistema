@@ -12,6 +12,17 @@
                     </a>
                 </div>
                 <div class="card-body">
+                    <form method="GET" action="{{ route('clients.index') }}" class="row g-2 mb-3">
+                        <div class="col-4">
+                            <input type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar por nome, CPF ou email">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-outline-primary">Pesquisar</button>
+                            @if(request('q'))
+                                <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
+                            @endif
+                        </div>
+                    </form>
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
