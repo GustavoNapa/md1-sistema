@@ -9,27 +9,17 @@
                     <h4>Nova Inscrição</h4>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('inscriptions.store') }}">
+                    <form id="inscription-form" method="POST" action="{{ route('inscriptions.store') }}">
                         @csrf
 
                         <!-- Seção Cliente -->
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="mb-3">
-                                    <label for="client_id" class="form-label">Cliente *</label>
-                                    <select class="form-select @error('client_id') is-invalid @enderror" id="client_id" name="client_id" required>
-                                        <option value="">Selecione um cliente</option>
-                                        @foreach($clients as $client)
-                                            <option value="{{ $client->id }}" 
-                                                data-name="{{ $client->name }}"
-                                                data-email="{{ $client->email }}"
-                                                data-phone="{{ $client->phone }}"
-                                                data-cpf="{{ $client->cpf }}"
-                                                {{ old('client_id') == $client->id ? 'selected' : '' }}>
-                                                {{ $client->name }} - {{ $client->email }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <label for="client_search" class="form-label">Cliente *</label>
+                                    <input type="hidden" id="client_id" name="client_id" value="{{ old('client_id') }}">
+                                    <input type="text" autocomplete="off" class="form-control @error('client_id') is-invalid @enderror" id="client_search" name="client_search" placeholder="Busque por nome ou email" required value="{{ old('client_search') }}">
+                                    <div id="client-suggestions" class="list-group" style="position:absolute; left:0; right:0; z-index:1000; max-height:320px; overflow:auto;"></div>
                                     @error('client_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -147,27 +137,12 @@
                                 <div class="mb-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="parcelado" name="parcelado">
-                                        <label class="form-check-label" for="parcelado">Pagamento parcelado?</label>
+                                        <label class="form-check-label" for="parcelado">Pagamento de entrada?</label>
                                     </div>
                                 </div>
                                 <div id="parcelado-fields" style="display:none;">
                                     <h6 class="mt-3">Pagamento de Entrada</h6>
                                     <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label for="forma_pagamento_entrada" class="form-label">Forma de Pagamento *</label>
-                                                <select class="form-select" id="forma_pagamento_entrada" name="forma_pagamento_entrada">
-                                                    <option value="avista">À vista</option>
-                                                    <option value="parcelado">Parcelado</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2" id="parcelas_entrada_group" style="display:none;">
-                                            <div class="mb-3">
-                                                <label for="parcelas_entrada" class="form-label">Parcelas</label>
-                                                <input type="number" class="form-control" id="parcelas_entrada" name="parcelas_entrada" min="2" max="24">
-                                            </div>
-                                        </div>
                                         <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label for="meio_pagamento_entrada" class="form-label">Meio de Pagamento *</label>
@@ -181,8 +156,28 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="mb-3">
+                                                <label for="forma_pagamento_entrada" class="form-label">Forma de Pagamento *</label>
+                                                <select class="form-select" id="forma_pagamento_entrada" name="forma_pagamento_entrada">
+                                                    <option value="avista">À vista</option>
+                                                    <option value="parcelado">Parcelado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2" id="parcelas_entrada_group" style="display:none;">
+                                            <div class="mb-3">
+                                                <label for="parcelas_entrada" class="form-label">Parcelas</label>
+                                                <select class="form-select" id="parcelas_entrada" name="parcelas_entrada">
+                                                    <option value="">--</option>
+                                                    @for($i = 2; $i <= 24; $i++)
+                                                        <option value="{{ $i }}" {{ old('parcelas_entrada') == $i ? 'selected' : '' }}>{{ $i }}x</option>
+                                                    @endfor
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
                                                 <label for="valor_entrada" class="form-label">Valor da Entrada *</label>
-                                                <input type="number" class="form-control @error('valor_entrada') is-invalid @enderror" id="valor_entrada" name="valor_entrada" value="{{ old('valor_entrada') }}" step="0.01" min="0">
+                                                <input type="text" class="form-control @error('valor_entrada') is-invalid @enderror" id="valor_entrada" name="valor_entrada" value="{{ old('valor_entrada') ? number_format(old('valor_entrada'), 2, ',', '.') : '' }}">
                                                 @error('valor_entrada')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
@@ -223,13 +218,18 @@
                                         <div class="col-md-2" id="parcelas_restante_group" style="display:none;">
                                             <div class="mb-3">
                                                 <label for="parcelas_restante" class="form-label">Parcelas</label>
-                                                <input type="number" class="form-control" id="parcelas_restante" name="parcelas_restante" min="2" max="24">
+                                                <select class="form-select" id="parcelas_restante" name="parcelas_restante">
+                                                    <option value="">--</option>
+                                                    @for($i = 2; $i <= 24; $i++)
+                                                        <option value="{{ $i }}" {{ old('parcelas_restante') == $i ? 'selected' : '' }}>{{ $i }}x</option>
+                                                    @endfor
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label for="valor_restante" class="form-label">Valor Restante *</label>
-                                                <input type="number" class="form-control @error('valor_restante') is-invalid @enderror" id="valor_restante" name="valor_restante" value="{{ old('valor_restante') }}" step="0.01" min="0">
+                                                <input type="text" class="form-control @error('valor_restante') is-invalid @enderror" id="valor_restante" name="valor_restante" value="{{ old('valor_restante') }}">
                                                 @error('valor_restante')
                                                     <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
@@ -272,13 +272,18 @@
                                         <div class="col-md-2" id="parcelas_avista_group" style="display:none;">
                                             <div class="mb-3">
                                                 <label for="parcelas_avista" class="form-label">Parcelas</label>
-                                                <input type="number" class="form-control" id="parcelas_avista" name="parcelas_avista" min="2" max="24">
+                                                <select class="form-select" id="parcelas_avista" name="parcelas_avista">
+                                                    <option value="">--</option>
+                                                    @for($i = 2; $i <= 24; $i++)
+                                                        <option value="{{ $i }}" {{ old('parcelas_avista') == $i ? 'selected' : '' }}>{{ $i }}x</option>
+                                                    @endfor
+                                                </select>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label for="valor_avista" class="form-label">Valor *</label>
-                                                <input type="number" class="form-control" id="valor_avista" name="valor_avista" min="0">
+                                                <input type="text" class="form-control" id="valor_avista" name="valor_avista">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
@@ -459,13 +464,112 @@
     toggleParcelas('forma_pagamento_restante', 'parcelas_restante_group');
     toggleParcelas('forma_pagamento_avista', 'parcelas_avista_group');
 document.addEventListener('DOMContentLoaded', function() {
+    // Client search/autocomplete
+    const clients = @json($clients);
+    const clientsData = (clients || []).map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, cpf: c.cpf }));
+    const clientSearchInput = document.getElementById('client_search');
+    const clientIdInput = document.getElementById('client_id');
+    const clientSuggestions = document.getElementById('client-suggestions');
+
+    function clearClientSuggestions() {
+        clientSuggestions.innerHTML = '';
+    }
+
+    function renderClientSuggestions(list) {
+        clientSuggestions.innerHTML = '';
+        list.forEach(c => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action';
+            btn.textContent = c.name + (c.email ? ' - ' + c.email : '');
+            btn.dataset.id = c.id;
+            btn.addEventListener('click', function() {
+                clientIdInput.value = c.id;
+                clientSearchInput.value = btn.textContent;
+                clearClientSuggestions();
+            });
+            clientSuggestions.appendChild(btn);
+        });
+        if (list.length === 0) {
+            const none = document.createElement('div');
+            none.className = 'list-group-item';
+            none.textContent = 'Nenhum cliente encontrado.';
+            clientSuggestions.appendChild(none);
+        }
+    }
+
+    let clientSearchTimeout = null;
+    clientSearchInput.addEventListener('input', function(e) {
+        const q = e.target.value.trim().toLowerCase();
+        clientIdInput.value = '';
+        if (clientSearchTimeout) clearTimeout(clientSearchTimeout);
+        clientSearchTimeout = setTimeout(() => {
+            let matches = [];
+            if (q.length < 2) {
+                // show top clients when query is short (user clicked the field)
+                matches = clientsData.slice(0, 50);
+            } else {
+                matches = clientsData.filter(c => {
+                    return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (String(c.id) === q);
+                }).slice(0, 50);
+            }
+            renderClientSuggestions(matches);
+        }, 150);
+    });
+
+    // Show list when field is focused/clicked (even if empty)
+    clientSearchInput.addEventListener('focus', function() {
+        const q = clientSearchInput.value.trim().toLowerCase();
+        if (q.length < 2) {
+            renderClientSuggestions(clientsData.slice(0, 50));
+        }
+    });
+
+    // Click outside to close suggestions
+    document.addEventListener('click', function(ev) {
+        if (ev.target !== clientSearchInput && !clientSuggestions.contains(ev.target)) {
+            clearClientSuggestions();
+        }
+    });
+
+    // If old client_id exists, populate the search input with client display
+    if (clientIdInput && clientIdInput.value) {
+        const existing = clientsData.find(c => String(c.id) === String(clientIdInput.value));
+        if (existing) {
+            clientSearchInput.value = existing.name + (existing.email ? ' - ' + existing.email : '');
+        }
+    }
     const valorTotalInput = document.getElementById('valor_total');
     function formatMoneyBR(value) {
-        value = value.replace(/[^\d.,]/g, '');
-        if (value === '') return '';
-        let floatValue = parseFloat(value.replace('.', '').replace(',', '.'));
-        if (isNaN(floatValue)) return '';
-        return floatValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (value === null || value === undefined) return '';
+        let s = String(value).trim();
+        if (s === '') return '';
+        // Normalize: if contains both '.' and ',' assume '.' are thousands and ',' is decimal
+        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+            s = s.replace(/\./g, '').replace(',', '.');
+        } else if (s.indexOf(',') > -1) {
+            // only comma present -> decimal separator
+            s = s.replace(',', '.');
+        }
+        // remove any non numeric except dot and minus
+        s = s.replace(/[^0-9.\-]/g, '');
+        const n = parseFloat(s);
+        if (isNaN(n)) return '';
+        return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function parseMoneyBRToNumber(value) {
+        if (value === null || value === undefined) return 0;
+        let s = String(value).trim();
+        if (s === '') return 0;
+        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+            s = s.replace(/\./g, '').replace(',', '.');
+        } else if (s.indexOf(',') > -1) {
+            s = s.replace(',', '.');
+        }
+        s = s.replace(/[^0-9.\-]/g, '');
+        const n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
     }
     valorTotalInput.addEventListener('input', function(e) {
         let v = e.target.value;
@@ -489,6 +593,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 total = p.offer_price;
             }
             valorTotalInput.value = formatMoneyBR(total.toString());
+            // update dependent fields when product changes
+            calcularRestante();
+            // if single payment selected, fill valor_avista
+            const formaAvista = document.getElementById('forma_pagamento_avista');
+            const valorAvistaInput = document.getElementById('valor_avista');
+            if (formaAvista && formaAvista.value === 'avista' && valorAvistaInput) {
+                valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+            }
         } else {
             valorTotalInput.value = '';
         }
@@ -535,13 +647,86 @@ document.addEventListener('DOMContentLoaded', function() {
     const valorEntradaInput = document.getElementById('valor_entrada');
     const valorRestanteInput = document.getElementById('valor_restante');
     function calcularRestante() {
-        const total = parseFloat(valorTotalInput.value) || 0;
-        const entrada = parseFloat(valorEntradaInput.value) || 0;
+        const total = parseMoneyBRToNumber(valorTotalInput.value) || 0;
+        const entrada = parseMoneyBRToNumber(valorEntradaInput.value) || 0;
         const restante = total - entrada;
-        valorRestanteInput.value = restante >= 0 ? restante.toFixed(2) : '';
+    if (valorRestanteInput) valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
+
+        // if remaining payment forma is avista, ensure valor_restante equals restante
+        const formaRestante = document.getElementById('forma_pagamento_restante');
+        if (formaRestante && formaRestante.value === 'avista' && valorRestanteInput) {
+            valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
+        }
+
+        // if single payment forma is avista, update valor_avista
+        const formaAvista = document.getElementById('forma_pagamento_avista');
+        const valorAvistaInput = document.getElementById('valor_avista');
+        if (formaAvista && formaAvista.value === 'avista' && valorAvistaInput) {
+            valorAvistaInput.value = formatMoneyBR(total.toFixed(2));
+        }
     }
     valorTotalInput.addEventListener('input', calcularRestante);
-    valorEntradaInput.addEventListener('input', calcularRestante);
+    // make valor_entrada easy to type: sanitize while typing, format on blur
+    if (valorEntradaInput) {
+        // Live currency mask for pt-BR while typing (last 2 digits are cents)
+        valorEntradaInput.addEventListener('input', function(e) {
+            const el = e.target;
+            // keep only digits
+            let digits = el.value.replace(/\D/g, '');
+            if (!digits) {
+                el.value = '';
+                calcularRestante();
+                return;
+            }
+            // parse as cents (integer)
+            let cents = parseInt(digits, 10);
+            if (isNaN(cents)) { el.value = ''; calcularRestante(); return; }
+            // get reais and centavos
+            let reais = Math.floor(cents / 100);
+            let centPart = (cents % 100).toString().padStart(2, '0');
+            // format reais with thousands separator '.'
+            let reaisFormatted = reais.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            el.value = reaisFormatted + ',' + centPart;
+            // keep caret at the end for simpler UX
+            try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
+            calcularRestante();
+        });
+
+        // ensure formatting on blur (already formatted by input mask) - just trim
+        valorEntradaInput.addEventListener('blur', function(e) {
+            if (e.target.value && e.target.value.trim() !== '') {
+                e.target.value = formatMoneyBR(e.target.value);
+            }
+        });
+    }
+
+    // Auto-fill valor_avista when forma_pagamento_avista is 'avista'
+    const formaPagamentoAvista = document.getElementById('forma_pagamento_avista');
+    const valorAvistaInput = document.getElementById('valor_avista');
+    if (formaPagamentoAvista) {
+        formaPagamentoAvista.addEventListener('change', function() {
+            if (this.value === 'avista' && valorAvistaInput) {
+                valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+            }
+        });
+        // set on load if already selected
+        if (formaPagamentoAvista.value === 'avista' && valorAvistaInput) {
+            valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+        }
+    }
+
+    // When forma_pagamento_restante is avista, ensure valor_restante is total - entrada
+    const formaPagamentoRestante = document.getElementById('forma_pagamento_restante');
+    if (formaPagamentoRestante) {
+        formaPagamentoRestante.addEventListener('change', function() {
+            if (this.value === 'avista' && valorRestanteInput) {
+                calcularRestante();
+            }
+        });
+        if (formaPagamentoRestante.value === 'avista') {
+            calcularRestante();
+        }
+    }
 
     // Exibe campos conforme parcelado ou à vista
     const parceladoCheckbox = document.getElementById('parcelado');
@@ -557,7 +742,80 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     parceladoCheckbox.addEventListener('change', toggleParceladoFields);
+    // Enable/disable inputs in hidden sections to avoid submitting unrelated fields
+    function setSectionDisabled(section, disabled) {
+        if (!section) return;
+        const controls = section.querySelectorAll('input, select, textarea');
+        controls.forEach(c => {
+            c.disabled = disabled;
+        });
+    }
+
+    function toggleParceladoFields() {
+        if (parceladoCheckbox.checked) {
+            parceladoFields.style.display = '';
+            avistaFields.style.display = 'none';
+            setSectionDisabled(parceladoFields, false);
+            setSectionDisabled(avistaFields, true);
+        } else {
+            parceladoFields.style.display = 'none';
+            avistaFields.style.display = '';
+            setSectionDisabled(parceladoFields, true);
+            setSectionDisabled(avistaFields, false);
+        }
+    }
+
+    parceladoCheckbox.addEventListener('change', toggleParceladoFields);
+    // initialize
     toggleParceladoFields();
+    // If user clicks the label or container for valor_entrada while the section is hidden/disabled,
+    // automatically enable parcelado so the field becomes editable (less surprising UX).
+    try {
+        const valorEntradaLabel = document.querySelector('label[for="valor_entrada"]');
+        const valorEntradaContainer = valorEntradaLabel ? valorEntradaLabel.closest('.mb-3') : null;
+        function enableParceladoAndFocus() {
+            if (!parceladoCheckbox.checked) {
+                parceladoCheckbox.checked = true;
+                toggleParceladoFields();
+            }
+            if (valorEntradaInput) {
+                valorEntradaInput.focus();
+            }
+        }
+        if (valorEntradaLabel) {
+            valorEntradaLabel.addEventListener('click', function(e) {
+                enableParceladoAndFocus();
+            });
+        }
+        if (valorEntradaContainer) {
+            valorEntradaContainer.addEventListener('click', function(e) {
+                // if clicking the container and input is disabled, enable parcelado
+                if (valorEntradaInput && valorEntradaInput.disabled) {
+                    enableParceladoAndFocus();
+                }
+            });
+        }
+    } catch (err) {
+        // ignore if DOM structure differs
+    }
+    // Initialize computed values on load
+    calcularRestante();
+
+    // Before sending to backend, convert formatted BR money to numeric (dot decimal)
+    const form = document.getElementById('inscription-form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const fields = ['valor_total', 'valor_avista', 'valor_restante', 'valor_entrada'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.value !== '') {
+                    const n = parseMoneyBRToNumber(el.value);
+                    // set as plain numeric string with dot as decimal separator
+                    el.value = n.toFixed(2);
+                }
+            });
+        });
+    }
 });
 </script>
 @endsection

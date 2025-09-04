@@ -260,133 +260,197 @@ class InscriptionController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            "client_id" => "required|exists:clients,id",
-            "vendor_id" => "nullable|exists:vendors,id",
-            "product_id" => "required|exists:products,id",
-            "class_group" => "nullable|string|max:255",
-            "status" => "required|in:active,paused,cancelled,completed",
-            "classification" => "nullable|string|max:255",
-            "has_medboss" => "boolean",
-            "crmb_number" => "nullable|string|max:255",
-            "start_date" => "nullable|date",
-            "original_end_date" => "nullable|date|after_or_equal:start_date",
-            "actual_end_date" => "nullable|date",
-            "calendar_week" => "nullable|integer|min:1|max:52",
-            "current_week" => "nullable|integer|min:1|max:52",
-            "amount_paid" => "nullable|numeric|min:0",
-            "payment_method" => "nullable|string|max:255",
-            "commercial_notes" => "nullable|string",
-            "general_notes" => "nullable|string",
-            "entry_channel" => "nullable|exists:entry_channels,id",
-            "contrato_assinado" => "boolean",
-            "contrato_na_pasta" => "boolean",
-            // Novos campos obrigatórios
-            "natureza_juridica" => "required|in:pessoa fisica,pessoa juridica",
-            "valor_total" => "required|numeric|min:0",
-            "forma_pagamento_entrada" => "required|in:PIX,Boleto,Cartão 1x,Cartão 2x,Cartão 3x,Cartão 4x,Cartão 5x,Cartão 6x,Cartão 7x,Cartão 8x,Cartão 9x,Cartão 10x,Cartão 11x,Cartão 12x,Cartão Recorrencia,Deposito em conta",
-            "valor_entrada" => "required|numeric|min:0",
-            "data_pagamento_entrada" => "required|date",
-            "forma_pagamento_restante" => "required|in:PIX,Boleto,Cartão 1x,Cartão 2x,Cartão 3x,Cartão 4x,Cartão 5x,Cartão 6x,Cartão 7x,Cartão 8x,Cartão 9x,Cartão 10x,Cartão 11x,Cartão 12x,Cartão Recorrencia,Deposito em conta",
-            "valor_restante" => "required|numeric|min:0",
-            "data_contrato" => "required|date",
-            // Campos de endereço
-            "cep" => "required|string|max:10",
-            "endereco" => "required|string|max:255",
-            "numero_casa" => "required|string|max:20",
-            "complemento" => "nullable|string|max:255",
-            "bairro" => "required|string|max:255",
-            "cidade" => "required|string|max:255",
-            "estado" => "required|string|size:2",
-        ], [
-            "client_id.required" => "Selecione um cliente.",
-            "client_id.exists" => "Cliente não encontrado.",
-            "vendor_id.exists" => "Vendedor não encontrado.",
-            "product_id.required" => "Selecione um produto.",
-            "product_id.exists" => "Produto não encontrado.",
-            "status.required" => "O status é obrigatório.",
-            "status.in" => "Status inválido.",
-            "original_end_date.after_or_equal" => "A data de término deve ser posterior à data de início.",
-            "calendar_week.min" => "Semana deve ser entre 1 e 52.",
-            "calendar_week.max" => "Semana deve ser entre 1 e 52.",
-            "current_week.min" => "Semana deve ser entre 1 e 52.",
-            "current_week.max" => "Semana deve ser entre 1 e 52.",
-            "amount_paid.numeric" => "Valor deve ser numérico.",
-            "amount_paid.min" => "Valor não pode ser negativo.",
-            // Validações dos novos campos
-            "natureza_juridica.required" => "A natureza jurídica é obrigatória.",
-            "natureza_juridica.in" => "Natureza jurídica inválida.",
-            "valor_total.required" => "O valor total é obrigatório.",
-            "valor_total.numeric" => "O valor total deve ser numérico.",
-            "valor_total.min" => "O valor total não pode ser negativo.",
-            "forma_pagamento_entrada.required" => "A forma de pagamento da entrada é obrigatória.",
-            "forma_pagamento_entrada.in" => "Forma de pagamento da entrada inválida.",
-            "valor_entrada.required" => "O valor da entrada é obrigatório.",
-            "valor_entrada.numeric" => "O valor da entrada deve ser numérico.",
-            "valor_entrada.min" => "O valor da entrada não pode ser negativo.",
-            "data_pagamento_entrada.required" => "A data de pagamento da entrada é obrigatória.",
-            "data_pagamento_entrada.date" => "A data de pagamento da entrada deve ser uma data válida.",
-            "forma_pagamento_restante.required" => "A forma de pagamento restante é obrigatória.",
-            "forma_pagamento_restante.in" => "Forma de pagamento restante inválida.",
-            "valor_restante.required" => "O valor restante é obrigatório.",
-            "valor_restante.numeric" => "O valor restante deve ser numérico.",
-            "valor_restante.min" => "O valor restante não pode ser negativo.",
-            "data_contrato.required" => "A data do contrato é obrigatória.",
-            "data_contrato.date" => "A data do contrato deve ser uma data válida.",
-            // Validações de endereço
-            "cep.required" => "O CEP é obrigatório.",
-            "endereco.required" => "O endereço é obrigatório.",
-            "numero_casa.required" => "O número da casa é obrigatório.",
-            "bairro.required" => "O bairro é obrigatório.",
-            "cidade.required" => "A cidade é obrigatória.",
-            "estado.required" => "O estado é obrigatório.",
-            "estado.size" => "O estado deve ter 2 caracteres.",
-        ]);
+        // Log incoming request for debugging
+        Log::info('InscriptionController@store called', ['input' => $request->all()]);
 
-        // Buscar dados do cliente para preencher cpf_cnpj
-        $client = Client::find($validated['client_id']);
-        $validated['cpf_cnpj'] = $client->cpf;
+        try {
+            // dynamic validation: support 'parcelado' checkbox vs single avista payment
+            $paymentPlatformNames = \App\Models\PaymentPlatform::pluck('name')->toArray();
+            $platformsRule = count($paymentPlatformNames) ? 'in:' . implode(',', $paymentPlatformNames) : 'string';
 
-        $inscription = Inscription::create($validated);
+            // Normalize incoming payment platform inputs (accept case-insensitive values e.g. 'pix' or 'PIX')
+            $normalizePlatform = function ($value) use ($paymentPlatformNames) {
+                if ($value === null || $value === '') return $value;
+                foreach ($paymentPlatformNames as $p) {
+                    if (strcasecmp($p, $value) === 0) return $p;
+                }
+                return $value;
+            };
 
-        // Criar endereço
-        $client->addresses()->create([
-            'cep' => $validated['cep'],
-            'endereco' => $validated['endereco'],
-            'numero_casa' => $validated['numero_casa'],
-            'complemento' => $validated['complemento'],
-            'bairro' => $validated['bairro'],
-            'cidade' => $validated['cidade'],
-            'estado' => $validated['estado'],
-        ]);
+            $toNormalize = ['meio_pagamento_entrada', 'meio_pagamento_restante', 'meio_pagamento_avista'];
+            $merged = [];
+            foreach ($toNormalize as $key) {
+                if ($request->has($key) && $request->input($key) !== null) {
+                    $merged[$key] = $normalizePlatform($request->input($key));
+                }
+            }
+            if (!empty($merged)) {
+                $request->merge($merged);
+            }
 
-        // Criar pagamentos
-        // Pagamento de Entrada
-        $inscription->payments()->create([
-            'tipo' => 'Entrada',
-            'forma_pagamento' => $validated['forma_pagamento_entrada'],
-            'valor' => $validated['valor_entrada'],
-            'data_pagamento' => $validated['data_pagamento_entrada'],
-            'status' => 'pendente',
-        ]);
+            $isParcelado = $request->boolean('parcelado');
 
-        // Pagamento Restante
-        $inscription->payments()->create([
-            'tipo' => 'Pagamento Restante',
-            'forma_pagamento' => $validated['forma_pagamento_restante'],
-            'valor' => $validated['valor_restante'],
-            'data_pagamento' => $validated['data_contrato'],
-            'status' => 'pendente',
-        ]);
+            $rules = [
+                "client_id" => "required|exists:clients,id",
+                "vendor_id" => "nullable|exists:vendors,id",
+                "product_id" => "required|exists:products,id",
+                "class_group" => "nullable|string|max:255",
+                "status" => "required|in:active,paused,cancelled,completed",
+                "classification" => "nullable|string|max:255",
+                "has_medboss" => "boolean",
+                "crmb_number" => "nullable|string|max:255",
+                "start_date" => "nullable|date",
+                "original_end_date" => "nullable|date|after_or_equal:start_date",
+                "actual_end_date" => "nullable|date",
+                "calendar_week" => "nullable|integer|min:1|max:52",
+                "current_week" => "nullable|integer|min:1|max:52",
+                "amount_paid" => "nullable|numeric|min:0",
+                "payment_method" => "nullable|string|max:255",
+                "commercial_notes" => "nullable|string",
+                "general_notes" => "nullable|string",
+                "entry_channel" => "nullable|exists:entry_channels,id",
+                "contrato_assinado" => "boolean",
+                "contrato_na_pasta" => "boolean",
+                // Novos campos obrigatórios
+                "natureza_juridica" => "required|in:pessoa fisica,pessoa juridica",
+                "valor_total" => "required|numeric|min:0",
+                // Campos de endereço
+                "cep" => "required|string|max:10",
+                "endereco" => "required|string|max:255",
+                "numero_casa" => "required|string|max:20",
+                "complemento" => "nullable|string|max:255",
+                "bairro" => "required|string|max:255",
+                "cidade" => "required|string|max:255",
+                "estado" => "required|string|size:2",
+            ];
 
-        // Recarregar a inscrição com todos os relacionamentos antes do webhook
-        $inscription->load('client.addresses');
+            if ($isParcelado) {
+                $rules = array_merge($rules, [
+                    "meio_pagamento_entrada" => $platformsRule,
+                    "valor_entrada" => "required|numeric|min:0",
+                    "data_pagamento_entrada" => "required|date",
+                    "meio_pagamento_restante" => $platformsRule,
+                    "forma_pagamento_restante" => "required|in:avista,parcelado",
+                    "valor_restante" => "required|numeric|min:0",
+                    "data_contrato" => "required|date",
+                ]);
+            } else {
+                $rules = array_merge($rules, [
+                    "meio_pagamento_avista" => $platformsRule,
+                    "forma_pagamento_avista" => "required|in:avista,parcelado",
+                    "valor_avista" => "required|numeric|min:0",
+                    "data_pagamento_avista" => "required|date",
+                ]);
+            }
 
-        // Disparar evento para webhook
-        \App\Events\InscriptionCreated::dispatch($inscription);
+            $validated = $request->validate($rules, [
+                "client_id.required" => "Selecione um cliente.",
+                "client_id.exists" => "Cliente não encontrado.",
+                "vendor_id.exists" => "Vendedor não encontrado.",
+                "product_id.required" => "Selecione um produto.",
+                "product_id.exists" => "Produto não encontrado.",
+                "status.required" => "O status é obrigatório.",
+                "status.in" => "Status inválido.",
+                "original_end_date.after_or_equal" => "A data de término deve ser posterior à data de início.",
+                "calendar_week.min" => "Semana deve ser entre 1 e 52.",
+                "calendar_week.max" => "Semana deve ser entre 1 e 52.",
+                "current_week.min" => "Semana deve ser entre 1 e 52.",
+                "current_week.max" => "Semana deve ser entre 1 e 52.",
+                "amount_paid.numeric" => "Valor deve ser numérico.",
+                "amount_paid.min" => "Valor não pode ser negativo.",
+                // Validações dos novos campos
+                "natureza_juridica.required" => "A natureza jurídica é obrigatória.",
+                "natureza_juridica.in" => "Natureza jurídica inválida.",
+                "valor_total.required" => "O valor total é obrigatório.",
+                "valor_total.numeric" => "O valor total deve ser numérico.",
+                "valor_total.min" => "O valor total não pode ser negativo.",
+                "data_contrato.required" => "A data do contrato é obrigatória.",
+                "data_contrato.date" => "A data do contrato deve ser uma data válida.",
+                // Validações de endereço
+                "cep.required" => "O CEP é obrigatório.",
+                "endereco.required" => "O endereço é obrigatório.",
+                "numero_casa.required" => "O número da casa é obrigatório.",
+                "bairro.required" => "O bairro é obrigatório.",
+                "cidade.required" => "A cidade é obrigatória.",
+                "estado.required" => "O estado é obrigatório.",
+                "estado.size" => "O estado deve ter 2 caracteres.",
+            ]);
 
-        return redirect()->route("inscriptions.show", $inscription)
-            ->with("success", "Inscrição criada com sucesso!");
+            // Buscar dados do cliente para preencher cpf_cnpj
+            $client = Client::find($validated['client_id']);
+            $validated['cpf_cnpj'] = $client->cpf;
+
+            $inscription = Inscription::create($validated);
+
+            // Log sanitized validated data (remove sensitive fields)
+            $validatedForLog = $validated;
+            if (isset($validatedForLog['cpf_cnpj'])) unset($validatedForLog['cpf_cnpj']);
+            Log::info('Inscription created (pre-relations)', ['id' => $inscription->id, 'validated' => $validatedForLog]);
+
+            // Criar endereço
+            $address = $client->addresses()->create([
+                'cep' => $validated['cep'],
+                'endereco' => $validated['endereco'],
+                'numero_casa' => $validated['numero_casa'],
+                'complemento' => $validated['complemento'],
+                'bairro' => $validated['bairro'],
+                'cidade' => $validated['cidade'],
+                'estado' => $validated['estado'],
+            ]);
+            Log::info('Client address created', ['address_id' => $address->id, 'client_id' => $client->id, 'inscription_id' => $inscription->id]);
+
+            // Criar pagamentos conforme modo escolhido
+            if ($isParcelado) {
+                // Pagamento de Entrada
+                $paymentEntry = $inscription->payments()->create([
+                    'tipo' => 'Entrada',
+                    'forma_pagamento' => $validated['meio_pagamento_entrada'] ?? null,
+                    'valor' => $validated['valor_entrada'],
+                    'data_pagamento' => $validated['data_pagamento_entrada'],
+                    'status' => 'pendente',
+                ]);
+                Log::info('Payment created', ['payment_id' => $paymentEntry->id, 'tipo' => 'Entrada', 'inscription_id' => $inscription->id]);
+
+                // Pagamento Restante
+                $paymentRest = $inscription->payments()->create([
+                    'tipo' => 'Pagamento Restante',
+                    'forma_pagamento' => $validated['meio_pagamento_restante'] ?? null,
+                    'valor' => $validated['valor_restante'],
+                    'data_pagamento' => $validated['data_contrato'],
+                    'status' => 'pendente',
+                ]);
+                Log::info('Payment created', ['payment_id' => $paymentRest->id, 'tipo' => 'Pagamento Restante', 'inscription_id' => $inscription->id]);
+            } else {
+                // Pagamento Único (à vista)
+                $payment = $inscription->payments()->create([
+                    'tipo' => 'Pagamento Único',
+                    'forma_pagamento' => $validated['meio_pagamento_avista'] ?? null,
+                    'valor' => $validated['valor_avista'],
+                    'data_pagamento' => $validated['data_pagamento_avista'],
+                    'status' => 'pendente',
+                ]);
+                Log::info('Payment created', ['payment_id' => $payment->id, 'tipo' => 'Pagamento Único', 'inscription_id' => $inscription->id]);
+            }
+
+            // Recarregar a inscrição com todos os relacionamentos antes do webhook
+            $inscription->load('client.addresses');
+
+            // Disparar evento para webhook
+            \App\Events\InscriptionCreated::dispatch($inscription);
+
+            Log::info('Inscription processing finished', ['id' => $inscription->id]);
+
+            return redirect()->route("inscriptions.show", $inscription)
+                ->with("success", "Inscrição criada com sucesso!");
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log validation errors and rethrow to keep Laravel's default behavior
+            Log::warning('Validation failed creating inscription', ['errors' => $e->errors(), 'input' => $request->all()]);
+            throw $e;
+        } catch (\Exception $e) {
+            // Log any unexpected exception and return back with a generic message
+            Log::error('Error creating inscription: ' . $e->getMessage(), ['trace' => $e->getTraceAsString(), 'input' => $request->all()]);
+            return back()->withInput()->with('error', 'Ocorreu um erro ao criar a inscrição. Verifique os logs.');
+        }
     }
 
     /**
