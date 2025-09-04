@@ -10,19 +10,110 @@ use App\Events\InscriptionCreated;
 use App\Events\InscriptionUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class InscriptionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $inscriptions = Inscription::with(["client", "vendor", "product"])
-            ->orderBy("created_at", "desc")
-            ->paginate(15);
+        $query = Inscription::with(["client", "vendor", "product"]);
 
-        return view("inscriptions.index", compact("inscriptions"));
+        // filtros
+        if ($clientName = $request->input('client_name')) {
+            $query->whereHas('client', function ($q) use ($clientName) {
+                $q->where('name', 'like', "%{$clientName}%");
+            });
+        }
+
+        if ($vendorId = $request->input('vendor_id')) {
+            $query->where('vendor_id', $vendorId);
+        }
+
+        if ($productId = $request->input('product_id')) {
+            $query->where('product_id', $productId);
+        }
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($classGroup = $request->input('class_group')) {
+            $query->where('class_group', 'like', "%{$classGroup}%");
+        }
+
+        // range de datas sobre start_date (aceita dd/mm/YYYY ou YYYY-mm-dd)
+        $from = $request->input('start_date_from');
+        $to = $request->input('start_date_to');
+
+        $parseDate = function ($val) {
+            if (!$val) return null;
+            // formato ISO enviado por date inputs
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) {
+                try { return Carbon::createFromFormat('Y-m-d', $val); } catch (\Exception $e) { return null; }
+            }
+            // formato brasileiro dd/mm/YYYY
+            if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $val)) {
+                try { return Carbon::createFromFormat('d/m/Y', $val); } catch (\Exception $e) { return null; }
+            }
+            // tentativa genérica
+            try { return new Carbon($val); } catch (\Exception $e) { return null; }
+        };
+
+        $fromDate = $parseDate($from);
+        $toDate = $parseDate($to);
+
+        if ($fromDate) {
+            $query->whereDate('start_date', '>=', $fromDate->format('Y-m-d'));
+        }
+        if ($toDate) {
+            $query->whereDate('start_date', '<=', $toDate->format('Y-m-d'));
+        }
+
+        // ordenação
+        $order = $request->input('order_by', 'date_desc');
+        switch ($order) {
+            case 'date_asc':
+                $query->orderBy('start_date', 'asc');
+                break;
+            case 'date_desc':
+                $query->orderBy('start_date', 'desc');
+                break;
+            case 'value_asc':
+                $query->orderBy('valor_total', 'asc');
+                break;
+            case 'value_desc':
+                $query->orderBy('valor_total', 'desc');
+                break;
+            case 'name_asc':
+                $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
+                      ->orderBy('clients.name', 'asc')
+                      ->select('inscriptions.*');
+                break;
+            case 'name_desc':
+                $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
+                      ->orderBy('clients.name', 'desc')
+                      ->select('inscriptions.*');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $inscriptions = $query->paginate(15)->appends($request->except('page'));
+
+        // dados para filtros (dropdowns)
+        $vendors = Vendor::where('active', true)->orderBy('name')->get();
+        $products = Product::where('is_active', true)->orderBy('name')->get();
+        $statusOptions = self::getStatusOptions();
+
+    // preparar valores para exibição no formato brasileiro (dd/mm/YYYY)
+    $displayStartFrom = $fromDate ? $fromDate->format('d/m/Y') : ($from && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $from) ? $from : null);
+    $displayStartTo = $toDate ? $toDate->format('d/m/Y') : ($to && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $to) ? $to : null);
+
+    return view("inscriptions.index", compact("inscriptions", "vendors", "products", "statusOptions", "displayStartFrom", "displayStartTo"));
     }
 
     /**

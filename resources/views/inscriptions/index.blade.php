@@ -25,6 +25,7 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    
                     @if(session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}
@@ -34,6 +35,63 @@
 
                     <!-- Visualização em Tabela (padrão) -->
                     <div id="tableView" class="view-container">
+                        <form method="GET" action="{{ route('inscriptions.index') }}" class="row g-2 mb-3">
+                            <div class="col-md-3">
+                                <input type="text" name="client_name" value="{{ request('client_name') }}" class="form-control" placeholder="Nome do cliente">
+                            </div>
+                            <div class="col-md-2">
+                                <select name="vendor_id" class="form-select">
+                                    <option value="">Todos os vendedores</option>
+                                    @foreach($vendors ?? [] as $vendor)
+                                        <option value="{{ $vendor->id }}" @if(request('vendor_id') == $vendor->id) selected @endif>{{ $vendor->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="product_id" class="form-select">
+                                    <option value="">Todos os produtos</option>
+                                    @foreach($products ?? [] as $product)
+                                        <option value="{{ $product->id }}" @if(request('product_id') == $product->id) selected @endif>{{ $product->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="status" class="form-select">
+                                    <option value="">Todos os status</option>
+                                    @foreach($statusOptions ?? [] as $key => $label)
+                                        <option value="{{ $key }}" @if(request('status') == $key) selected @endif>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="text" name="class_group" value="{{ request('class_group') }}" class="form-control" placeholder="Turma">
+                            </div>
+
+                            <div class="col-md-6 mt-2">
+                                <div class="input-group">
+                                    <span class="input-group-text">De</span>
+                                        <input type="text" name="start_date_from" value="{{ old('start_date_from', $displayStartFrom ?? request('start_date_from')) }}" class="form-control date-br" placeholder="dd/mm/yyyy">
+                                    <span class="input-group-text">Até</span>
+                                        <input type="text" name="start_date_to" value="{{ old('start_date_to', $displayStartTo ?? request('start_date_to')) }}" class="form-control date-br" placeholder="dd/mm/yyyy">
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 mt-2">
+                                <select name="order_by" class="form-select">
+                                    <option value="date_desc" @if(request('order_by')=='date_desc') selected @endif>Data (mais recentes)</option>
+                                    <option value="date_asc" @if(request('order_by')=='date_asc') selected @endif>Data (mais antigas)</option>
+                                    <option value="value_desc" @if(request('order_by')=='value_desc') selected @endif>Valor (maior)</option>
+                                    <option value="value_asc" @if(request('order_by')=='value_asc') selected @endif>Valor (menor)</option>
+                                    <option value="name_asc" @if(request('order_by')=='name_asc') selected @endif>Nome (A-Z)</option>
+                                    <option value="name_desc" @if(request('order_by')=='name_desc') selected @endif>Nome (Z-A)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2 mt-2">
+                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                                <a href="{{ route('inscriptions.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
+                            </div>
+                        </form>
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -207,6 +265,15 @@
 @endsection
 
 @section('scripts')
+    <!-- flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- flatpickr locale PT (Português/Brasil) -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+    <!-- Inputmask for date typing mask -->
+    <script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const viewModeSelect = document.getElementById('viewMode');
@@ -338,6 +405,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (countElement) {
             countElement.textContent = `${cards.length} ${cards.length === 1 ? 'item' : 'itens'}`;
         }
+    }
+
+    // Inicializar flatpickr nos campos de data com formato brasileiro
+    if (window.flatpickr) {
+        flatpickr('.date-br', {
+            dateFormat: 'd/m/Y',
+            allowInput: true,
+            locale: 'pt'
+        });
+    }
+    // Inicializar máscara de entrada para dd/mm/YYYY
+    if (window.Inputmask) {
+        var elements = document.querySelectorAll('.date-br');
+        Inputmask({'mask': '99/99/9999', 'placeholder': 'dd/mm/aaaa', 'clearIncomplete': false}).mask(elements);
     }
 
 });
