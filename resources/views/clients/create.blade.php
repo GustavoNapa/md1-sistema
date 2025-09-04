@@ -48,10 +48,10 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="phone" class="form-label">Telefone / WhatsApp</label>
+                                    <label for="phone" class="form-label">Telefone / WhatsApp *</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" 
                                            id="phone" name="phone" value="{{ old('phone') }}"
-                                           placeholder="(11) 99999-9999" maxlength="15">
+                                           placeholder="(11) 99999-9999" maxlength="15" required>
                                     <div class="form-text">Formato: (11) 99999-9999</div>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
