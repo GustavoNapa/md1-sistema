@@ -72,9 +72,15 @@ class InscriptionController extends Controller
             $query->whereDate('start_date', '<=', $toDate->format('Y-m-d'));
         }
 
-        // ordenação
-        $order = $request->input('order_by', 'date_desc');
+        // ordenação: padrão agora é por created_at (mais recentes)
+        $order = $request->input('order_by', 'created_at_desc');
         switch ($order) {
+            case 'created_at_asc':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'created_at_desc':
+                $query->orderBy('created_at', 'desc');
+                break;
             case 'date_asc':
                 $query->orderBy('start_date', 'asc');
                 break;
@@ -98,6 +104,7 @@ class InscriptionController extends Controller
                       ->select('inscriptions.*');
                 break;
             default:
+                // fallback para created_at desc
                 $query->orderBy('created_at', 'desc');
                 break;
         }

@@ -76,10 +76,12 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-2 mt-2">
+                            <div class="col-md-3 mt-2">
                                 <select name="order_by" class="form-select">
-                                    <option value="date_desc" @if(request('order_by')=='date_desc') selected @endif>Data (mais recentes)</option>
-                                    <option value="date_asc" @if(request('order_by')=='date_asc') selected @endif>Data (mais antigas)</option>
+                                    <option value="created_at_desc" @if(request('order_by', 'created_at_desc')=='created_at_desc') selected @endif>Criação (mais recentes)</option>
+                                    <option value="created_at_asc" @if(request('order_by')=='created_at_asc') selected @endif>Criação (mais antigas)</option>
+                                    <option value="date_desc" @if(request('order_by')=='date_desc') selected @endif>Data Início (mais recentes)</option>
+                                    <option value="date_asc" @if(request('order_by')=='date_asc') selected @endif>Data Início (mais antigas)</option>
                                     <option value="value_desc" @if(request('order_by')=='value_desc') selected @endif>Valor (maior)</option>
                                     <option value="value_asc" @if(request('order_by')=='value_asc') selected @endif>Valor (menor)</option>
                                     <option value="name_asc" @if(request('order_by')=='name_asc') selected @endif>Nome (A-Z)</option>
@@ -88,7 +90,7 @@
                             </div>
 
                             <div class="col-md-2 mt-2">
-                                <button type="submit" class="btn btn-primary">Filtrar</button>
+                                <button type="submit" class="btn btn-outline-primary">Filtrar</button>
                                 <a href="{{ route('inscriptions.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
                             </div>
                         </form>
@@ -121,7 +123,7 @@
                                                 </span>
                                             </td>
                                             <td>{{ $inscription->vendor->name ?? '-' }}</td>
-                                            <td>{{ $inscription->valor_total }}</td>
+                                            <td>R$ {{ number_format($inscription->valor_total ?? 0, 2, ',', '.') }}</td>
                                             <td>{{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group" aria-label="Ações da inscrição">
