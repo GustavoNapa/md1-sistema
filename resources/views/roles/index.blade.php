@@ -16,6 +16,15 @@
                     <h5 class="card-title mb-0">Lista de Cargos</h5>
                 </div>
                 <div class="card-body">
+                    <form method="GET" action="{{ route('roles.index') }}" class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="roles-search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar cargos por nome">
+                                <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                                <button class="btn btn-outline-danger" type="button" id="clear-roles-search">Limpar</button>
+                            </div>
+                        </div>
+                    </form>
                     @if($roles->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -136,6 +145,14 @@
                     <div class="mb-3">
                         <label class="form-label">Permissões</label>
                         <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <div class="row mb-2">
+                                <div class="col-md-8">
+                                    <input type="text" id="permissions-search" class="form-control form-control-sm" placeholder="Buscar permissões">
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-permissions-search">Limpar</button>
+                                </div>
+                            </div>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" id="selectAllPermissions" onclick="toggleAllPermissions()">
                                 <label class="form-check-label" for="selectAllPermissions">Selecionar todos</label>
@@ -226,13 +243,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Keep a global set of selected permission ids to preserve selection across filtering
+let rolePermissionsSelected = new Set();
+
 function loadPermissions(selectedIds) {
     const permissionsList = document.getElementById('permissions-list');
     permissionsList.innerHTML = '';
     const permissions = @json($permissions);
-    selectedIds = Array.isArray(selectedIds) ? selectedIds : [];
-    let allChecked = permissions.length > 0 && selectedIds.length === permissions.length;
-    permissions.forEach(function(permission) {
+    // Merge incoming selectedIds into the global set (used when editing a role)
+    if (Array.isArray(selectedIds) && selectedIds.length > 0) {
+        selectedIds.forEach(id => rolePermissionsSelected.add(Number(id)));
+    }
+
+    const searchTerm = (document.getElementById('permissions-search') && document.getElementById('permissions-search').value || '').toLowerCase().trim();
+
+    // Ordena as permissões para que as já selecionadas (ativadas para o cargo) apareçam primeiro
+    permissions.sort(function(a, b) {
+        const aSelected = rolePermissionsSelected.has(Number(a.id)) ? 0 : 1;
+        const bSelected = rolePermissionsSelected.has(Number(b.id)) ? 0 : 1;
+        if (aSelected !== bSelected) return aSelected - bSelected;
+        return a.name.localeCompare(b.name);
+    });
+
+    // Se houver termo de busca, filtra a lista
+    const filtered = searchTerm ? permissions.filter(p => p.name.toLowerCase().includes(searchTerm)) : permissions;
+
+    filtered.forEach(function(permission) {
         const div = document.createElement('div');
         div.className = 'form-check';
         const input = document.createElement('input');
@@ -241,9 +277,17 @@ function loadPermissions(selectedIds) {
         input.name = 'permissions[]';
         input.value = permission.id;
         input.id = 'permission' + permission.id;
-        if (selectedIds.includes(permission.id)) {
+        if (rolePermissionsSelected.has(Number(permission.id))) {
             input.checked = true;
         }
+        // update global set when user toggles a checkbox
+        input.addEventListener('change', function() {
+            const idNum = Number(permission.id);
+            if (this.checked) rolePermissionsSelected.add(idNum);
+            else rolePermissionsSelected.delete(idNum);
+            // update selectAll checkbox state
+            updateSelectAllState(searchTerm, permissions);
+        });
         const label = document.createElement('label');
         label.className = 'form-check-label';
         label.htmlFor = input.id;
@@ -253,10 +297,16 @@ function loadPermissions(selectedIds) {
         permissionsList.appendChild(div);
     });
     // Marca ou desmarca o 'Selecionar todos'
+    updateSelectAllState(searchTerm, permissions);
+}
+
+function updateSelectAllState(searchTerm, permissions) {
     const selectAll = document.getElementById('selectAllPermissions');
-    if (selectAll) {
-        selectAll.checked = allChecked;
-    }
+    if (!selectAll) return;
+    const visible = searchTerm ? permissions.filter(p => p.name.toLowerCase().includes(searchTerm)) : permissions;
+    const visibleCount = visible.length;
+    const visibleSelected = visible.filter(p => rolePermissionsSelected.has(Number(p.id))).length;
+    selectAll.checked = visibleCount > 0 && visibleSelected === visibleCount;
 }
 
 function editRole(id) {
@@ -346,6 +396,40 @@ function toggleAllPermissions() {
         cb.checked = checked;
     });
 }
+
+// Wire clear search buttons and permission search input
+document.addEventListener('DOMContentLoaded', function() {
+    const clearRoles = document.getElementById('clear-roles-search');
+    if (clearRoles) {
+        clearRoles.addEventListener('click', function() {
+            const rolesSearch = document.getElementById('roles-search');
+            if (rolesSearch) rolesSearch.value = '';
+            // submit the parent form to clear filters
+            const form = rolesSearch.closest('form');
+            if (form) form.submit();
+        });
+    }
+
+    const permissionsSearch = document.getElementById('permissions-search');
+    if (permissionsSearch) {
+        permissionsSearch.addEventListener('input', function() {
+            // reload permissions with current selections preserved
+            // gather currently checked permission ids
+            const checked = Array.from(document.querySelectorAll('#permissions-list input[type=checkbox]:checked')).map(i => parseInt(i.value));
+            loadPermissions(checked);
+        });
+    }
+
+    const clearPermissions = document.getElementById('clear-permissions-search');
+    if (clearPermissions) {
+        clearPermissions.addEventListener('click', function() {
+            const ps = document.getElementById('permissions-search');
+            if (ps) ps.value = '';
+            const checked = Array.from(document.querySelectorAll('#permissions-list input[type=checkbox]:checked')).map(i => parseInt(i.value));
+            loadPermissions(checked);
+        });
+    }
+});
 </script>
 @endsection
 

@@ -22,7 +22,14 @@ class RoleController extends Controller
             return response()->json(Role::orderBy('name')->get(['id', 'name']));
         }
         
-        $roles = Role::with("permissions")->paginate(15);
+        $q = $request->input('q');
+
+        $rolesQuery = Role::with("permissions");
+        if ($q) {
+            $rolesQuery->where('name', 'like', "%{$q}%");
+        }
+
+        $roles = $rolesQuery->orderBy('name')->paginate(15)->appends($request->except('page'));
         $permissions = Permission::orderBy('name')->get();
 
         Log::info('Fetching roles and permissions');
@@ -35,7 +42,7 @@ class RoleController extends Controller
      */
     public function create(): View
     {
-        $permissions = Permission::all();
+    $permissions = Permission::orderBy('name')->get();
 
         Log::info('Fetching permissions for role creation');
 
@@ -106,7 +113,8 @@ class RoleController extends Controller
      */
     public function edit(Role $role): View
     {
-        $permissions = Permission::all();
+    // carregar permissões ordenadas por nome para consistência
+    $permissions = Permission::orderBy('name')->get();
         $role->load('permissions');
 
         Log::info('Fetching permissions for role editing', ['role' => $role]);
