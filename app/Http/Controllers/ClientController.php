@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Specialty;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
@@ -19,25 +20,62 @@ class ClientController extends Controller
     {
         $q = $request->input('q');
 
-        $clientsQuery = Client::with('inscriptions');
+    $clientsQuery = Client::with('inscriptions')->withCount('inscriptions');
 
         if ($q) {
             $normalized = preg_replace('/\D/', '', $q);
 
             $clientsQuery->where(function ($query) use ($q, $normalized) {
                 $query->where('name', 'like', "%{$q}%")
-                      ->orWhere('email', 'like', "%{$q}%");
+                      ->orWhere('email', 'like', "%{$q}%")
+                      ->orWhere('phone', 'like', "%{$q}%");
 
                 if ($normalized !== '') {
-                    // compara o CPF sem formatação: remove '.', '-' e outros caracteres no banco via REPLACE
+                    // compara o CPF sem formatação
                     $query->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%{$normalized}%"]);
+                    // compara o telefone sem formatação: remove parênteses, traços, espaços e pontos
+                    $query->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE ?", ["%{$normalized}%"]);
                 }
             });
         }
 
-        $clients = $clientsQuery->orderBy('name')->paginate(15)->appends($request->except('page'));
+        // filtro por status (ativo/inativo)
+        if ($status = $request->input('status')) {
+            if ($status === 'active') {
+                $clientsQuery->where('active', true);
+            } elseif ($status === 'inactive') {
+                $clientsQuery->where('active', false);
+            }
+        }
 
-        return view('clients.index', compact('clients'));
+        // filtro por especialidade
+        if ($specialty = $request->input('specialty')) {
+            $clientsQuery->where('specialty', $specialty);
+        }
+
+        // ordenação
+        $order = $request->input('order_by', 'name_asc');
+        switch ($order) {
+            case 'name_desc':
+                $clientsQuery->orderBy('name', 'desc');
+                break;
+            case 'inscriptions_asc':
+                $clientsQuery->orderBy('inscriptions_count', 'asc');
+                break;
+            case 'inscriptions_desc':
+                $clientsQuery->orderBy('inscriptions_count', 'desc');
+                break;
+            case 'name_asc':
+            default:
+                $clientsQuery->orderBy('name', 'asc');
+                break;
+        }
+
+        $clients = $clientsQuery->paginate(15)->appends($request->except('page'));
+
+        $specialties = Specialty::active()->orderByName()->pluck('name', 'name');
+
+        return view('clients.index', compact('clients', 'specialties'));
     }
 
     /**

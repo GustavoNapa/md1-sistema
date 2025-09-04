@@ -13,14 +13,35 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{{ route('clients.index') }}" class="row g-2 mb-3">
-                        <div class="col-4">
-                            <input type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar por nome, CPF ou email">
+                        <div class="col-md-4">
+                            <input type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar por nome, CPF, email ou telefone">
+                        </div>
+                        <div class="col-md-2">
+                            <select name="status" class="form-select">
+                                <option value="">Todos os status</option>
+                                <option value="active" @if(request('status')=='active') selected @endif>Ativo</option>
+                                <option value="inactive" @if(request('status')=='inactive') selected @endif>Inativo</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="specialty" class="form-select">
+                                <option value="">Todas as especialidades</option>
+                                @foreach($specialties ?? [] as $sp)
+                                    <option value="{{ $sp }}" @if(request('specialty') == $sp) selected @endif>{{ $sp }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="order_by" class="form-select">
+                                <option value="name_asc" @if(request('order_by')=='name_asc') selected @endif>Nome (A-Z)</option>
+                                <option value="name_desc" @if(request('order_by')=='name_desc') selected @endif>Nome (Z-A)</option>
+                                <option value="inscriptions_desc" @if(request('order_by')=='inscriptions_desc') selected @endif>Inscrições (maior)</option>
+                                <option value="inscriptions_asc" @if(request('order_by')=='inscriptions_asc') selected @endif>Inscrições (menor)</option>
+                            </select>
                         </div>
                         <div class="col-auto">
                             <button type="submit" class="btn btn-outline-primary">Pesquisar</button>
-                            @if(request('q'))
-                                <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
-                            @endif
+                            <a href="{{ route('clients.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
                         </div>
                     </form>
                     @if(session('success'))
