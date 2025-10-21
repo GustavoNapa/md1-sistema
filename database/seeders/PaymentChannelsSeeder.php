@@ -14,13 +14,13 @@ class PaymentChannelsSeeder extends Seeder
     {
         $now = now();
         $channels = [
-            ['name' => 'Pagcorp', 'description' => 'Plataforma Pagcorp', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Conta Bancária', 'description' => 'Pagamento via conta bancária (TED/PIX/Transferência)', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Outro', 'description' => 'Outro canal de pagamento', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'name' => 'Pagcorp', 'description' => 'Plataforma Pagcorp', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'name' => 'Conta Bancária', 'description' => 'Pagamento via conta bancária (TED/PIX/Transferência)', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'name' => 'Outro', 'description' => 'Outro canal de pagamento', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
         ];
 
         foreach ($channels as $ch) {
-            DB::table('payment_channels')->updateOrInsert(['name' => $ch['name']], $ch);
+            DB::table('payment_channels')->updateOrInsert(['id' => $ch['id']], $ch);
         }
     }
 }

@@ -453,7 +453,8 @@ class InscriptionController extends Controller
                     'forma_pagamento' => $validated['meio_pagamento_entrada'] ?? $validated['payment_means'] ?? null,
                     'payment_channel' => $validated['payment_location'] ?? null,
                     // try to link channel id if exists
-                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
+                    // prefer per-section channel id, fallback to inscription-level payment_location
+                    'payment_channel_id' => isset($validated['payment_channel_entrada']) ? \App\Models\PaymentChannel::where('name', $validated['payment_channel_entrada'])->value('id') : (isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null),
                     'valor' => $validated['valor_entrada'],
                     'data_pagamento' => $validated['data_pagamento_entrada'],
                     'status' => 'pendente',
@@ -465,7 +466,7 @@ class InscriptionController extends Controller
                     'tipo' => 'Pagamento Restante',
                     'forma_pagamento' => $validated['meio_pagamento_restante'] ?? $validated['payment_means'] ?? null,
                     'payment_channel' => $validated['payment_location'] ?? null,
-                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
+                    'payment_channel_id' => isset($validated['payment_channel_restante']) ? \App\Models\PaymentChannel::where('name', $validated['payment_channel_restante'])->value('id') : (isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null),
                     'valor' => $validated['valor_restante'],
                     'data_pagamento' => $validated['data_contrato'],
                     'status' => 'pendente',
@@ -477,7 +478,7 @@ class InscriptionController extends Controller
                     'tipo' => 'Pagamento Único',
                     'forma_pagamento' => $validated['meio_pagamento_avista'] ?? $validated['payment_means'] ?? null,
                     'payment_channel' => $validated['payment_location'] ?? null,
-                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
+                    'payment_channel_id' => isset($validated['payment_channel_avista']) ? \App\Models\PaymentChannel::where('name', $validated['payment_channel_avista'])->value('id') : (isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null),
                     'valor' => $validated['valor_avista'],
                     'data_pagamento' => $validated['data_pagamento_avista'],
                     'status' => 'pendente',
