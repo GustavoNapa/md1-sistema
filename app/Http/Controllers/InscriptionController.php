@@ -258,8 +258,9 @@ class InscriptionController extends Controller
         $products = Product::where("is_active", true)->orderBy("name")->get();
         $entryChannels = \App\Models\EntryChannel::all();
         $paymentPlatforms = \App\Models\PaymentPlatform::all();
+        $paymentChannels = \App\Models\PaymentChannel::where('active', true)->orderBy('name')->get();
         
-        return view("inscriptions.create", compact("clients", "vendors", "products", "entryChannels", "paymentPlatforms"));
+        return view("inscriptions.create", compact("clients", "vendors", "products", "entryChannels", "paymentPlatforms", "paymentChannels"));
     }
 
     /**
@@ -295,6 +296,26 @@ class InscriptionController extends Controller
                 $request->merge($merged);
             }
 
+            // Normalize payment channel (Pagamento no) if provided
+            $paymentChannelNames = \App\Models\PaymentChannel::pluck('name')->toArray();
+            $normalizePaymentChannel = function ($value) use ($paymentChannelNames) {
+                if ($value === null || $value === '') return $value;
+                foreach ($paymentChannelNames as $p) {
+                    if (strcasecmp($p, $value) === 0) return $p;
+                }
+                return $value;
+            };
+            $toNormalizeChannels = ['payment_location', 'payment_channel_entrada', 'payment_channel_restante', 'payment_channel_avista'];
+            $mergedChannels = [];
+            foreach ($toNormalizeChannels as $key) {
+                if ($request->has($key) && $request->input($key) !== null) {
+                    $mergedChannels[$key] = $normalizePaymentChannel($request->input($key));
+                }
+            }
+            if (!empty($mergedChannels)) {
+                $request->merge($mergedChannels);
+            }
+
             $isParcelado = $request->boolean('parcelado');
 
             $rules = [
@@ -313,6 +334,12 @@ class InscriptionController extends Controller
                 "current_week" => "nullable|integer|min:1|max:52",
                 "amount_paid" => "nullable|numeric|min:0",
                 "payment_method" => "nullable|string|max:255",
+                "payment_location" => "nullable|string|max:255",
+                "payment_means" => "nullable|string|max:255",
+                // per-section payment channel fields (where payment was made)
+                "payment_channel_entrada" => "nullable|string|max:255",
+                "payment_channel_restante" => "nullable|string|max:255",
+                "payment_channel_avista" => "nullable|string|max:255",
                 "commercial_notes" => "nullable|string",
                 "general_notes" => "nullable|string",
                 "entry_channel" => "nullable|exists:entry_channels,id",
@@ -334,9 +361,11 @@ class InscriptionController extends Controller
             if ($isParcelado) {
                 $rules = array_merge($rules, [
                     "meio_pagamento_entrada" => $platformsRule,
+                    "payment_channel_entrada" => "nullable|string|max:255",
                     "valor_entrada" => "required|numeric|min:0",
                     "data_pagamento_entrada" => "required|date",
                     "meio_pagamento_restante" => $platformsRule,
+                    "payment_channel_restante" => "nullable|string|max:255",
                     "forma_pagamento_restante" => "required|in:avista,parcelado",
                     "valor_restante" => "required|numeric|min:0",
                     "data_contrato" => "required|date",
@@ -344,6 +373,7 @@ class InscriptionController extends Controller
             } else {
                 $rules = array_merge($rules, [
                     "meio_pagamento_avista" => $platformsRule,
+                    "payment_channel_avista" => "nullable|string|max:255",
                     "forma_pagamento_avista" => "required|in:avista,parcelado",
                     "valor_avista" => "required|numeric|min:0",
                     "data_pagamento_avista" => "required|date",
@@ -387,6 +417,15 @@ class InscriptionController extends Controller
             $client = Client::find($validated['client_id']);
             $validated['cpf_cnpj'] = $client->cpf;
 
+            // Map inscription-level payment fields (prefer per-section first)
+            if ($isParcelado) {
+                $validated['payment_means'] = $validated['meio_pagamento_entrada'] ?? $validated['meio_pagamento_restante'] ?? null;
+                $validated['payment_location'] = $validated['payment_channel_entrada'] ?? $validated['payment_channel_restante'] ?? null;
+            } else {
+                $validated['payment_means'] = $validated['meio_pagamento_avista'] ?? null;
+                $validated['payment_location'] = $validated['payment_channel_avista'] ?? null;
+            }
+
             $inscription = Inscription::create($validated);
 
             // Log sanitized validated data (remove sensitive fields)
@@ -411,7 +450,10 @@ class InscriptionController extends Controller
                 // Pagamento de Entrada
                 $paymentEntry = $inscription->payments()->create([
                     'tipo' => 'Entrada',
-                    'forma_pagamento' => $validated['meio_pagamento_entrada'] ?? null,
+                    'forma_pagamento' => $validated['meio_pagamento_entrada'] ?? $validated['payment_means'] ?? null,
+                    'payment_channel' => $validated['payment_location'] ?? null,
+                    // try to link channel id if exists
+                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
                     'valor' => $validated['valor_entrada'],
                     'data_pagamento' => $validated['data_pagamento_entrada'],
                     'status' => 'pendente',
@@ -421,7 +463,9 @@ class InscriptionController extends Controller
                 // Pagamento Restante
                 $paymentRest = $inscription->payments()->create([
                     'tipo' => 'Pagamento Restante',
-                    'forma_pagamento' => $validated['meio_pagamento_restante'] ?? null,
+                    'forma_pagamento' => $validated['meio_pagamento_restante'] ?? $validated['payment_means'] ?? null,
+                    'payment_channel' => $validated['payment_location'] ?? null,
+                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
                     'valor' => $validated['valor_restante'],
                     'data_pagamento' => $validated['data_contrato'],
                     'status' => 'pendente',
@@ -431,7 +475,9 @@ class InscriptionController extends Controller
                 // Pagamento Único (à vista)
                 $payment = $inscription->payments()->create([
                     'tipo' => 'Pagamento Único',
-                    'forma_pagamento' => $validated['meio_pagamento_avista'] ?? null,
+                    'forma_pagamento' => $validated['meio_pagamento_avista'] ?? $validated['payment_means'] ?? null,
+                    'payment_channel' => $validated['payment_location'] ?? null,
+                    'payment_channel_id' => isset($validated['payment_location']) ? \App\Models\PaymentChannel::where('name', $validated['payment_location'])->value('id') : null,
                     'valor' => $validated['valor_avista'],
                     'data_pagamento' => $validated['data_pagamento_avista'],
                     'status' => 'pendente',

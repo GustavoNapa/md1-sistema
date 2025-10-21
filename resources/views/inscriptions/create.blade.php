@@ -145,11 +145,22 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label for="meio_pagamento_entrada" class="form-label">Meio de Pagamento *</label>
+                                                <label for="meio_pagamento_entrada" class="form-label">Pagamento no</label>
                                                 <select class="form-select" id="meio_pagamento_entrada" name="meio_pagamento_entrada">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}">{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_entrada') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="payment_channel_entrada" class="form-label">Meio de pagamento</label>
+                                                <select class="form-select" id="payment_channel_entrada" name="payment_channel_entrada">
+                                                    <option value="">Selecione</option>
+                                                    @foreach($paymentChannels as $channel)
+                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_entrada') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -197,11 +208,22 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label for="meio_pagamento_restante" class="form-label">Meio de Pagamento *</label>
+                                                <label for="meio_pagamento_restante" class="form-label">Pagamento no</label>
                                                 <select class="form-select" id="meio_pagamento_restante" name="meio_pagamento_restante">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}">{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_restante') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="payment_channel_restante" class="form-label">Meio de pagamento</label>
+                                                <select class="form-select" id="payment_channel_restante" name="payment_channel_restante">
+                                                    <option value="">Selecione</option>
+                                                    @foreach($paymentChannels as $channel)
+                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_restante') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -251,11 +273,22 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label for="meio_pagamento_avista" class="form-label">Meio de Pagamento *</label>
+                                                <label for="meio_pagamento_avista" class="form-label">Pagamento no</label>
                                                 <select class="form-select" id="meio_pagamento_avista" name="meio_pagamento_avista">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}">{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_avista') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="payment_channel_avista" class="form-label">Meio de pagamento</label>
+                                                <select class="form-select" id="payment_channel_avista" name="payment_channel_avista">
+                                                    <option value="">Selecione</option>
+                                                    @foreach($paymentChannels as $channel)
+                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_avista') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>

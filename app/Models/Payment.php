@@ -15,6 +15,8 @@ class Payment extends Model
         'valor',
         'data_pagamento',
         'forma_pagamento',
+        'payment_channel',
+        'payment_channel_id',
         'status',
         'observacoes'
     ];
@@ -27,5 +29,10 @@ class Payment extends Model
     public function inscription()
     {
         return $this->belongsTo(Inscription::class);
+    }
+
+    public function channel()
+    {
+        return $this->belongsTo(PaymentChannel::class, 'payment_channel_id');
     }
 }
