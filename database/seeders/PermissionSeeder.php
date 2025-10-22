@@ -258,6 +258,11 @@ class PermissionSeeder extends Seeder
                     'whatsapp.conversations', 'whatsapp.messages', 'whatsapp.sendMessage', 'whatsapp.markAsRead', 'whatsapp.possibleMatches', 'whatsapp.associate', 'whatsapp.unlink',
                 ],
             ],
+            // adicionar role de Administrador com todas as permissões
+            'Administrador' => [
+                'name' => 'Administrador',
+                'permissions' => array_keys($permissions),
+            ],
         ];
 
         foreach ($roles as $slug => $roleData) {

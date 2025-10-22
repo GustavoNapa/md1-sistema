@@ -177,17 +177,6 @@
                                                 </select>
                                             </div>
                                         </div>
-                                        <div class="col-md-2" id="parcelas_entrada_group" style="display:none;">
-                                            <div class="mb-3">
-                                                <label for="parcelas_entrada" class="form-label">Parcelas</label>
-                                                <select class="form-select" id="parcelas_entrada" name="parcelas_entrada">
-                                                    <option value="">--</option>
-                                                    @for($i = 2; $i <= 24; $i++)
-                                                        <option value="{{ $i }}" {{ old('parcelas_entrada') == $i ? 'selected' : '' }}>{{ $i }}x</option>
-                                                    @endfor
-                                                </select>
-                                            </div>
-                                        </div>
                                         <div class="col-md-4">
                                             <div class="mb-3">
                                                 <label for="valor_entrada" class="form-label">Valor da Entrada *</label>
@@ -240,17 +229,6 @@
                                                 <label for="forma_pagamento_restante" class="form-label">Forma de Pagamento *</label>
                                                 <select class="form-select" id="forma_pagamento_restante" name="forma_pagamento_restante">
                                                     <option value="">Selecione meio primeiro</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2" id="parcelas_restante_group" style="display:none;">
-                                            <div class="mb-3">
-                                                <label for="parcelas_restante" class="form-label">Parcelas</label>
-                                                <select class="form-select" id="parcelas_restante" name="parcelas_restante">
-                                                    <option value="">--</option>
-                                                    @for($i = 2; $i <= 24; $i++)
-                                                        <option value="{{ $i }}" {{ old('parcelas_restante') == $i ? 'selected' : '' }}>{{ $i }}x</option>
-                                                    @endfor
                                                 </select>
                                             </div>
                                         </div>
@@ -308,17 +286,6 @@
                                                 <label for="forma_pagamento_avista" class="form-label">Forma de Pagamento *</label>
                                                 <select class="form-select" id="forma_pagamento_avista" name="forma_pagamento_avista">
                                                     <option value="">Selecione meio primeiro</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2" id="parcelas_avista_group" style="display:none;">
-                                            <div class="mb-3">
-                                                <label for="parcelas_avista" class="form-label">Parcelas</label>
-                                                <select class="form-select" id="parcelas_avista" name="parcelas_avista">
-                                                    <option value="">--</option>
-                                                    @for($i = 2; $i <= 24; $i++)
-                                                        <option value="{{ $i }}" {{ old('parcelas_avista') == $i ? 'selected' : '' }}>{{ $i }}x</option>
-                                                    @endfor
                                                 </select>
                                             </div>
                                         </div>
@@ -488,42 +455,6 @@
 </div>
 
 <script>
-    // Exibe campo de parcelas se forma de pagamento for parcelado
-    function toggleParcelas(selectId, groupId, parcelasSelectId) {
-        const select = document.getElementById(selectId);
-        const group = document.getElementById(groupId);
-        const parcelasSelect = parcelasSelectId ? document.getElementById(parcelasSelectId) : null;
-
-        function update() {
-            const val = select ? select.value : '';
-            const n = val === '' ? 0 : Number(val);
-            if (!isNaN(n) && n > 1) {
-                if (group) group.style.display = '';
-                // se houver select de parcelas, selecionar o mesmo número
-                if (parcelasSelect) {
-                    // se opção existir, seleciona; caso contrário, adiciona temporariamente
-                    const opt = parcelasSelect.querySelector(`option[value="${n}"]`);
-                    if (opt) {
-                        parcelasSelect.value = n;
-                    } else {
-                        // tenta adicionar uma opção correspondente
-                        const o = document.createElement('option');
-                        o.value = n;
-                        o.text = n + 'x';
-                        parcelasSelect.appendChild(o);
-                        parcelasSelect.value = n;
-                    }
-                }
-            } else {
-                if (group) group.style.display = 'none';
-            }
-        }
-        if (select) {
-            select.addEventListener('change', update);
-            update();
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         // Client search/autocomplete
         const clients = @json($clients);
@@ -889,7 +820,8 @@
             methodsByChannel[key].push({ id: m.id, name: m.name, installments: m.installments });
         });
 
-        function populateFormaSelect(channelSelectId, formaSelectId, parcelasGroupId, parcelasSelectId, oldValue) {
+        // populateFormaSelect agora recebe apenas (channelSelectId, formaSelectId, oldValue)
+        function populateFormaSelect(channelSelectId, formaSelectId, oldValue) {
             const channelSel = document.getElementById(channelSelectId);
             const formaSel = document.getElementById(formaSelectId);
             if (!channelSel || !formaSel) return;
@@ -903,7 +835,6 @@
                     opt.value = '';
                     opt.textContent = 'Nenhuma forma cadastrada';
                     formaSel.appendChild(opt);
-                    // trigger change
                     formaSel.dispatchEvent(new Event('change'));
                     return;
                 }
@@ -913,11 +844,13 @@
                 formaSel.appendChild(placeholder);
                 list.forEach(m => {
                     const o = document.createElement('option');
+                    // armazenamos o número de parcelas (installments) como value quando aplicável,
+                    // caso contrário armazenamos o nome (legacy)
                     o.value = m.installments ?? m.name;
                     o.textContent = m.name;
                     formaSel.appendChild(o);
                 });
-                // tenta restaurar valor antigo (oldValue pode ser número ou string)
+                // restorar valor antigo (oldValue pode ser número ou string)
                 if (oldValue) {
                     formaSel.value = oldValue;
                 }
@@ -929,23 +862,15 @@
             rebuild();
         }
 
-        // Inicializa para cada trio presente no formulário
-        populateFormaSelect('payment_channel_entrada', 'forma_pagamento_entrada', 'parcelas_entrada_group', 'parcelas_entrada', {!! json_encode(old('forma_pagamento_entrada', '')) !!});
-        populateFormaSelect('payment_channel_restante', 'forma_pagamento_restante', 'parcelas_restante_group', 'parcelas_restante', {!! json_encode(old('forma_pagamento_restante', '')) !!});
-        populateFormaSelect('payment_channel_avista', 'forma_pagamento_avista', 'parcelas_avista_group', 'parcelas_avista', {!! json_encode(old('forma_pagamento_avista', '')) !!});
+        // Chamadas atualizadas: não passamos mais ids de parcelas
+        populateFormaSelect('payment_channel_entrada', 'forma_pagamento_entrada', {!! json_encode(old('forma_pagamento_entrada', '')) !!});
+        populateFormaSelect('payment_channel_restante', 'forma_pagamento_restante', {!! json_encode(old('forma_pagamento_restante', '')) !!});
+        populateFormaSelect('payment_channel_avista', 'forma_pagamento_avista', {!! json_encode(old('forma_pagamento_avista', '')) !!});
 
-        // ativar toggleParcelas com base nos selects populados
-        toggleParcelas('forma_pagamento_entrada', 'parcelas_entrada_group', 'parcelas_entrada');
-        toggleParcelas('forma_pagamento_restante', 'parcelas_restante_group', 'parcelas_restante');
-        toggleParcelas('forma_pagamento_avista', 'parcelas_avista_group', 'parcelas_avista');
-
-        // se houver valores antigos de channel, disparar change para popular automaticamente
+        // Disparar change inicial nos canais para popular formas
         ['payment_channel_entrada','payment_channel_restante','payment_channel_avista'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) {
-                // disparar evento para forçar populações iniciais
-                el.dispatchEvent(new Event('change'));
-            }
+            if (el) el.dispatchEvent(new Event('change'));
         });
     })();
 </script>

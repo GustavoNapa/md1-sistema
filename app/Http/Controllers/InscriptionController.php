@@ -538,8 +538,12 @@ class InscriptionController extends Controller
         $vendors = Vendor::where("active", true)->orderBy("name")->get();
         $products = Product::where("is_active", true)->orderBy("name")->get();
         $entryChannels = \App\Models\EntryChannel::all();
+
+        // adicionar dados de meios/plataformas de pagamento para a view de edit
+        $paymentPlatforms = \App\Models\PaymentPlatform::all();
+        $paymentChannels = \App\Models\PaymentChannel::where('active', true)->orderBy('name')->get();
         
-        return view("inscriptions.edit", compact("inscription", "clients", "vendors", "products", "entryChannels"));
+        return view("inscriptions.edit", compact("inscription", "clients", "vendors", "products", "entryChannels", "paymentPlatforms", "paymentChannels"));
     }
 
     /**

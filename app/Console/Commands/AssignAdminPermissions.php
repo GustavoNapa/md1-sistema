@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Console\Command;
+use Spatie\Permission\Models\Role; // <--- usar Spatie Role
 
 class AssignAdminPermissions extends Command
 {
@@ -29,48 +29,47 @@ class AssignAdminPermissions extends Command
     {
         // Listar todos os usuários
         $this->info('Usuários no sistema:');
-        $users = User::with('role')->get();
-        
+        $users = User::with('roles')->get(); // carregar relação roles do Spatie
+
         foreach ($users as $user) {
-            $roleName = $user->role ? $user->role->name : 'Sem role';
-            $this->line("ID: {$user->id} | Nome: {$user->name} | Email: {$user->email} | Role: {$roleName}");
+            $roleNames = $user->roles->pluck('name')->join(', ') ?: 'Sem role';
+            $this->line("ID: {$user->id} | Nome: {$user->name} | Email: {$user->email} | Role(s): {$roleNames}");
         }
-        
+
         // Se um email foi fornecido via opção
         $email = $this->option('email');
-        
+
         if (!$email) {
             $email = $this->ask('Digite o email do usuário que deve receber permissões de admin');
         }
-        
+
         $user = User::where('email', $email)->first();
-        
+
         if (!$user) {
             $this->error("Usuário com email {$email} não encontrado!");
             return 1;
         }
-        
-        // Buscar role de administrador
+
+        // Buscar role de administrador (Spatie)
         $adminRole = Role::where('name', 'Administrador')->first();
-        
+
         if (!$adminRole) {
             $this->error('Role de Administrador não encontrada! Execute o seeder primeiro.');
             return 1;
         }
-        
-        // Atribuir role de admin ao usuário
-        $user->role_id = $adminRole->id;
-        $user->save();
-        
+
+        // Atribuir role de admin ao usuário via Spatie
+        $user->assignRole($adminRole->name);
+
         $this->info("Permissões de administrador atribuídas com sucesso ao usuário: {$user->name} ({$user->email})");
-        
-        // Mostrar permissões do usuário
-        $permissions = $user->getPermissions();
+
+        // Mostrar permissões do usuário (Spatie)
+        $permissions = $user->getAllPermissions();
         $this->info('Permissões do usuário:');
         foreach ($permissions as $permission) {
-            $this->line("- {$permission->name} ({$permission->slug})");
+            $this->line("- {$permission->name}");
         }
-        
+
         return 0;
     }
 }

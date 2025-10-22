@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table("inscriptions", function (Blueprint $table) {
-            $table->unsignedBigInteger("entry_channel")->nullable()->after("status");
-            $table->foreign("entry_channel")->references("id")->on("entry_channels")->onDelete("set null");
-        });
+        if (!Schema::hasColumn('inscriptions', 'entry_channel')) {
+            Schema::table("inscriptions", function (Blueprint $table) {
+                $table->unsignedBigInteger("entry_channel")->nullable()->after("status");
+                $table->foreign("entry_channel")->references("id")->on("entry_channels")->onDelete("set null");
+            });
+        }
     }
 
     /**
@@ -22,10 +24,14 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table("inscriptions", function (Blueprint $table) {
-            $table->dropForeign(["entry_channel"]);
-            $table->dropColumn("entry_channel");
-        });
+        if (Schema::hasColumn('inscriptions', 'entry_channel')) {
+            Schema::table("inscriptions", function (Blueprint $table) {
+                // dropForeign só deve ser chamado se a FK existir; em muitos casos dropForeign(['entry_channel']) funciona.
+                // Em ambientes onde o nome da constraint é diferente, esse comando pode falhar — ajuste se necessário.
+                $table->dropForeign(["entry_channel"]);
+                $table->dropColumn("entry_channel");
+            });
+        }
     }
 };
 
