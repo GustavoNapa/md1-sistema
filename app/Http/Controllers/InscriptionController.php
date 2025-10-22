@@ -486,11 +486,12 @@ class InscriptionController extends Controller
                 Log::info('Payment created', ['payment_id' => $payment->id, 'tipo' => 'Pagamento Único', 'inscription_id' => $inscription->id]);
             }
 
-            // Recarregar a inscrição com todos os relacionamentos antes do webhook
-            $inscription->load('client.addresses');
+            // Recarregar a inscrição com relacionamentos necessários para o webhook
+            $inscription->load(['client.addresses', 'product.webhooks', 'payments']);
 
-            // Disparar evento para webhook
-            \App\Events\InscriptionCreated::dispatch($inscription);
+            // Disparar evento (mantém compatibilidade) e também o job do webhook com tipo explícito
+            \App\Events\InscriptionCreated::dispatch($inscription, 'inscricao.created');
+            \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.created');
 
             Log::info('Inscription processing finished', ['id' => $inscription->id]);
 
@@ -592,8 +593,10 @@ class InscriptionController extends Controller
 
         $inscription->update($validated);
 
-        // Disparar evento para webhook
-        \App\Events\InscriptionUpdated::dispatch($inscription);
+        // Recarregar relacionamentos necessários e disparar webhook job
+        $inscription->load(['client.addresses', 'product.webhooks', 'payments']);
+        \App\Events\InscriptionUpdated::dispatch($inscription, 'inscricao.updated');
+        \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.updated');
 
         return redirect()->route("inscriptions.show", $inscription)
             ->with("success", "Inscrição atualizada com sucesso!");

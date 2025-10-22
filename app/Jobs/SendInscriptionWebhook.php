@@ -4,6 +4,8 @@ namespace App\Jobs;
 
 use App\Models\Inscription;
 use App\Models\WebhookLog;
+use App\Models\PaymentPlatform;
+use App\Models\PaymentChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -123,22 +125,81 @@ class SendInscriptionWebhook implements ShouldQueue
     {
         $client = $this->inscription->client;
         $address = $client->addresses()->latest()->first();
-        
-        // Log para debug se não houver endereço
+
+        // Resolve plataformas / canais legíveis com fallback
+        $resolvePlatform = function ($val) {
+            if (!$val) return null;
+            // se id numérico, buscar PaymentPlatform
+            if (is_numeric($val)) {
+                return PaymentPlatform::find($val)?->toArray();
+            }
+            // tentar achar por id string numérica
+            if (ctype_digit((string)$val)) {
+                return PaymentPlatform::find((int)$val)?->toArray();
+            }
+            // buscar por name
+            return PaymentPlatform::where('name', $val)->first()?->toArray();
+        };
+
+        $resolveChannel = function ($val) {
+            if (!$val) return null;
+            if (is_numeric($val)) {
+                return PaymentChannel::find($val)?->toArray();
+            }
+            if (ctype_digit((string)$val)) {
+                return PaymentChannel::find((int)$val)?->toArray();
+            }
+            return PaymentChannel::where('name', $val)->first()?->toArray();
+        };
+
+        // Tenta resolver forma (payment channel method) por payment_channel_id + installments/name
+        $resolveMethod = function ($channelId, $formaVal) {
+            if (!$channelId || $formaVal === null || $formaVal === '') return null;
+            // if numeric -> search installments
+            if (is_numeric($formaVal)) {
+                $m = \DB::table('payment_channel_methods')
+                    ->where('payment_channel_id', $channelId)
+                    ->where('installments', (int)$formaVal)
+                    ->first();
+                if ($m) return (array)$m;
+            }
+            // try match by name
+            $m = \DB::table('payment_channel_methods')
+                ->where('payment_channel_id', $channelId)
+                ->where('name', $formaVal)
+                ->first();
+            if ($m) return (array)$m;
+
+            return null;
+        };
+
+        // identificar plataformas/canais/formas para avista/entrada/restante
+        $pl_avista = $resolvePlatform($this->inscription->meio_pagamento_avista ?? $this->inscription->payment_means ?? null);
+        $ch_avista = $resolveChannel($this->inscription->payment_channel_avista ?? $this->inscription->payment_location ?? null);
+        $method_avista = $resolveMethod($ch_avista['id'] ?? null, $this->inscription->forma_pagamento_avista ?? null);
+
+        $pl_entrada = $resolvePlatform($this->inscription->meio_pagamento_entrada ?? null);
+        $ch_entrada = $resolveChannel($this->inscription->payment_channel_entrada ?? null);
+        $method_entrada = $resolveMethod($ch_entrada['id'] ?? null, $this->inscription->forma_pagamento_entrada ?? null);
+
+        $pl_rest = $resolvePlatform($this->inscription->meio_pagamento_restante ?? null);
+        $ch_rest = $resolveChannel($this->inscription->payment_channel_restante ?? null);
+        $method_rest = $resolveMethod($ch_rest['id'] ?? null, $this->inscription->forma_pagamento_restante ?? null);
+
+        // Log de aviso se endereço não existir
         if (!$address) {
             Log::warning('Nenhum endereço encontrado para o cliente no SendInscriptionWebhook', [
-                'client_id' => $client->id,
-                'client_name' => $client->name,
+                'client_id' => $client->id ?? null,
                 'inscription_id' => $this->inscription->id
             ]);
         }
-        
+
         return [
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->toIso8601String(),
             'event_type' => $this->eventType,
             'status' => $this->inscription->status,
-            'event' => 'inscription_updated',
-            'client' => $client->toArray(),
+            'event' => $this->eventType === 'inscricao.created' ? 'inscription_created' : 'inscription_updated',
+            'client' => $client?->toArray(),
             'inscription' => $this->inscription->toArray(),
             'mapping' => [
                 'Nome' => 'contact_name',
@@ -163,6 +224,9 @@ class SendInscriptionWebhook implements ShouldQueue
                 'Pagamento_entrada' => 'contact_pagamento_entrada',
                 'Pagamento_restante' => 'contact_pagamento_restante',
                 'Data_pagamento_entrada' => 'contact_data_pagamento_entra',
+                'PaymentPlatform_avista' => 'contact_payment_platform_avista',
+                'PaymentChannel_avista' => 'contact_payment_channel_avista',
+                'PaymentMethod_avista' => 'contact_payment_method_avista',
             ],
             'body' => [
                 "contact_name" => $client->name,
@@ -173,10 +237,11 @@ class SendInscriptionWebhook implements ShouldQueue
                 "deal_status" => strtoupper($this->inscription->status),
                 "contact_natureza_juridica" => [$this->inscription->natureza_juridica],
                 "contact_cpfcnpj" => $this->inscription->cpf_cnpj,
-                "contact_produto" => number_format($this->inscription->valor_total, 0, '', ''),
-                "contact_forma_pagamento_entr" => $this->inscription->forma_pagamento_entrada,
-                "contact_parcelas_cartao" => $this->inscription->forma_pagamento_restante,
-                "contact_data_contrato" => $this->inscription->data_contrato?->format('d/m/Y'),
+                "contact_produto" => number_format($this->inscription->valor_total ?? 0, 0, '', ''),
+                // formas antigas (podem ser id ou installments)
+                "contact_forma_pagamento_entr" => $this->inscription->forma_pagamento_entrada ?? null,
+                "contact_parcelas_cartao" => $this->inscription->forma_pagamento_restante ?? null,
+                "contact_data_contrato" => $this->inscription->data_contrato?->format('d/m/Y') ?? null,
                 "contact_endereco" => $address?->endereco,
                 "contact_numero_casa" => $address?->numero_casa,
                 "contact_complemento" => $address?->complemento,
@@ -184,9 +249,19 @@ class SendInscriptionWebhook implements ShouldQueue
                 "contact_cidade" => $address?->cidade,
                 "contact_estado" => $address?->estado,
                 "contact_cep" => $address?->cep,
-                "contact_pagamento_entrada" => (int)$this->inscription->valor_entrada,
-                "contact_pagamento_restante" => (int)$this->inscription->valor_restante,
-                "contact_data_pagamento_entra" => $this->inscription->data_pagamento_entrada?->format('d/m/Y')
+                "contact_pagamento_entrada" => (float) ($this->inscription->valor_entrada ?? 0),
+                "contact_pagamento_restante" => (float) ($this->inscription->valor_restante ?? 0),
+                "contact_data_pagamento_entra" => $this->inscription->data_pagamento_entrada?->format('d/m/Y') ?? null,
+                // Novos campos com objetos legíveis
+                "contact_payment_platform_avista" => $pl_avista,
+                "contact_payment_channel_avista" => $ch_avista,
+                "contact_payment_method_avista" => $method_avista,
+                "contact_payment_platform_entrada" => $pl_entrada,
+                "contact_payment_channel_entrada" => $ch_entrada,
+                "contact_payment_method_entrada" => $method_entrada,
+                "contact_payment_platform_restante" => $pl_rest,
+                "contact_payment_channel_restante" => $ch_rest,
+                "contact_payment_method_restante" => $method_rest,
             ]
         ];
     }

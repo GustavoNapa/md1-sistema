@@ -3,37 +3,31 @@
 namespace App\Events;
 
 use App\Models\Inscription;
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\InteractsWithSockets;
 
 class InscriptionCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $inscription;
+    public $eventType; // ex: 'inscricao.created'
 
     /**
      * Create a new event instance.
      */
-    public function __construct(Inscription $inscription)
+    public function __construct(Inscription $inscription, string $eventType = 'inscricao.created')
     {
         $this->inscription = $inscription;
+        $this->eventType = $eventType;
     }
 
     /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * (kept for compatibility; not used for broadcasting by default)
      */
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('channel-name'),
-        ];
+        return [];
     }
 }
