@@ -187,6 +187,35 @@ class SendInscriptionWebhook implements ShouldQueue
         $ch_rest = $resolveChannel($this->inscription->payment_channel_restante ?? null);
         $method_rest = $resolveMethod($ch_rest['id'] ?? null, $this->inscription->forma_pagamento_restante ?? null);
 
+        // Garantir contact_phone não seja nulo: tenta client->phone, fallback para última phone relation, email ou ''
+        $contactPhone = null;
+        if (!empty($client->phone)) {
+            $contactPhone = (string) $client->phone;
+        } else {
+            // Se o model Client tiver relação phones, tentar buscar o último número
+            if (method_exists($client, 'phones')) {
+                try {
+                    $latestPhone = $client->phones()->whereNotNull('number')->orderBy('created_at', 'desc')->value('number');
+                    if ($latestPhone) {
+                        $contactPhone = (string) $latestPhone;
+                    }
+                } catch (\Throwable $e) {
+                    // não falhar aqui; apenas logar
+                    Log::debug('Erro ao recuperar phones relation do cliente no webhook: ' . $e->getMessage());
+                }
+            }
+        }
+        // fallback final: email ou string vazia (nunca null)
+        if (empty($contactPhone)) {
+            if (!empty($client->email)) {
+                $contactPhone = (string) $client->email;
+                Log::warning("Nenhum telefone encontrado para client_id {$client->id}; usando email como fallback no webhook payload.");
+            } else {
+                $contactPhone = '';
+                Log::warning("Nenhum telefone ou email encontrado para client_id {$client->id}; usando string vazia para contact_phone no webhook payload.");
+            }
+        }
+
         // Log de aviso se endereço não existir
         if (!$address) {
             Log::warning('Nenhum endereço encontrado para o cliente no SendInscriptionWebhook', [
@@ -232,7 +261,7 @@ class SendInscriptionWebhook implements ShouldQueue
             'body' => [
                 "contact_name" => $client->name,
                 "contact_email" => $client->email,
-                "contact_phone" => $client->phone,
+                "contact_phone" => $contactPhone, // nunca null
                 "deal_stage" => "Sistema MD1",
                 "deal_user" => auth()->user()->email ?? 'sistema@md1.com',
                 "deal_status" => strtoupper($this->inscription->status),
