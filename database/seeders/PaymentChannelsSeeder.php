@@ -14,9 +14,9 @@ class PaymentChannelsSeeder extends Seeder
     {
         $now = now();
         $channels = [
-            ['id' => 1, 'name' => 'Pagcorp', 'description' => 'Plataforma Pagcorp', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'name' => 'Conta Bancária', 'description' => 'Pagamento via conta bancária (TED/PIX/Transferência)', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'name' => 'Outro', 'description' => 'Outro canal de pagamento', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'name' => 'Pix', 'description' => 'Canal de pagamento via Pix', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'name' => 'Cartão de Crédito', 'description' => 'Canal de pagamento via cartão de crédito', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'name' => 'Boleto Bancário', 'description' => 'Canal de pagamento via boleto bancário', 'active' => true, 'created_at' => $now, 'updated_at' => $now]
         ];
 
         foreach ($channels as $ch) {

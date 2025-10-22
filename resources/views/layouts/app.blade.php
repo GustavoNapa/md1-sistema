@@ -20,6 +20,8 @@
 
     <!-- Custom Fonts CSS -->
     <link href="{{ asset("css/custom-fonts.css") }}" rel="stylesheet">
+    <!-- Scripts -->
+    @vite(["resources/sass/app.scss", "resources/js/app.js"])
 
     <style>
         html, body {
@@ -148,7 +150,7 @@
                         @guest
                             @if (Route::has("login"))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route("login") }}">{{ __("app.login") }}</a>
+                                    <a class="nav-link" href="{{ route("login") }}">{{ __("Entrar") }}</a>
                                 </li>
                             @endif
                         @else
@@ -257,8 +259,5 @@
     
     @stack('scripts')
     @yield("scripts")
-    <!-- Scripts -->
-    @vite(["resources/sass/app.scss", "resources/js/app.js"])
 </body>
 </html>
-

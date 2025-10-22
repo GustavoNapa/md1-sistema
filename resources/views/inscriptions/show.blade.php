@@ -1,5 +1,7 @@
 @php
     use Carbon\Carbon;
+    use App\Models\PaymentPlatform;
+    use App\Models\PaymentChannel;
 @endphp
 @extends('layouts.app')
 
@@ -334,6 +336,48 @@
                                     <i class="fas fa-plus"></i> Novo Pagamento
                                 </button>
                             </div>
+
+                            <!-- Resumo rápido dos meios e formas usados nessa inscrição -->
+                            <div class="mb-3">
+                                <h6>Meios/Plataformas</h6>
+                                @php
+                                    $pl_avista = $inscription->meio_pagamento_avista ? PaymentPlatform::find($inscription->meio_pagamento_avista) : null;
+                                    $ch_avista = $inscription->payment_channel_avista ? PaymentChannel::find($inscription->payment_channel_avista) : null;
+
+                                    $pl_entrada = $inscription->meio_pagamento_entrada ? PaymentPlatform::find($inscription->meio_pagamento_entrada) : null;
+                                    $ch_entrada = $inscription->payment_channel_entrada ? PaymentChannel::find($inscription->payment_channel_entrada) : null;
+
+                                    $pl_rest = $inscription->meio_pagamento_restante ? PaymentPlatform::find($inscription->meio_pagamento_restante) : null;
+                                    $ch_rest = $inscription->payment_channel_restante ? PaymentChannel::find($inscription->payment_channel_restante) : null;
+
+                                    function formatForma($val) {
+                                        if ($val === null || $val === '') return 'N/A';
+                                        if (is_numeric($val)) {
+                                            return ((int)$val === 1) ? 'À vista' : ((int)$val) . 'x';
+                                        }
+                                        return (string)$val;
+                                    }
+                                @endphp
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>Pagamento Único - Plataforma:</strong> {{ $pl_avista?->name ?? 'N/A' }}</p>
+                                        <p><strong>Canal:</strong> {{ $ch_avista?->name ?? 'N/A' }}</p>
+                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_avista ?? '') }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Entrada - Plataforma:</strong> {{ $pl_entrada?->name ?? 'N/A' }}</p>
+                                        <p><strong>Canal:</strong> {{ $ch_entrada?->name ?? 'N/A' }}</p>
+                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_entrada ?? '') }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>Restante - Plataforma:</strong> {{ $pl_rest?->name ?? 'N/A' }}</p>
+                                        <p><strong>Canal:</strong> {{ $ch_rest?->name ?? 'N/A' }}</p>
+                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_restante ?? '') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if($inscription->payments->count() > 0)
                                 <div class="table-responsive">
                                     <table class="table table-sm">

@@ -293,6 +293,55 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5>Informações de Pagamento</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="meio_pagamento_avista" class="form-label">Pagamento no (Plataforma)</label>
+                                                    <select class="form-select" id="meio_pagamento_avista" name="meio_pagamento_avista">
+                                                        <option value="">Selecione</option>
+                                                        @foreach($paymentPlatforms as $platform)
+                                                            <option value="{{ $platform->id }}" {{ old('meio_pagamento_avista', $inscription->meio_pagamento_avista) == $platform->id ? 'selected' : '' }}>
+                                                                {{ $platform->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="payment_channel_avista" class="form-label">Meio de pagamento (Canal)</label>
+                                                    <select class="form-select" id="payment_channel_avista" name="payment_channel_avista">
+                                                        <option value="">Selecione</option>
+                                                        @foreach($paymentChannels as $channel)
+                                                            <option value="{{ $channel->id }}" {{ old('payment_channel_avista', $inscription->payment_channel_avista) == $channel->id ? 'selected' : '' }}>
+                                                                {{ $channel->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="forma_pagamento_avista" class="form-label">Forma de Pagamento</label>
+                                                    <select class="form-select" id="forma_pagamento_avista" name="forma_pagamento_avista">
+                                                        <option value="">Selecione meio primeiro</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- ...pode adicionar campos adicionais conforme necessário... -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('inscriptions.index') }}" class="btn btn-secondary">
                                 Cancelar
@@ -308,3 +357,56 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+	// popula formas a partir do DB (mesma lógica do create)
+	(function(){
+		const methods = @json(\Illuminate\Support\Facades\DB::table('payment_channel_methods')->orderBy('installments')->get()->map(function($m){ return (array)$m;}));
+		const methodsByChannel = {};
+		methods.forEach(m => {
+			const key = String(m.payment_channel_id);
+			if (!methodsByChannel[key]) methodsByChannel[key] = [];
+			methodsByChannel[key].push({ id: m.id, name: m.name, installments: m.installments });
+		});
+
+		function populateFormaSelect(channelSelectId, formaSelectId, oldValue) {
+			const channelSel = document.getElementById(channelSelectId);
+			const formaSel = document.getElementById(formaSelectId);
+			if (!channelSel || !formaSel) return;
+
+			function rebuild() {
+				const chId = channelSel.value;
+				formaSel.innerHTML = '';
+				const list = methodsByChannel[String(chId)] || [];
+				if (list.length === 0) {
+					const opt = document.createElement('option');
+					opt.value = '';
+					opt.textContent = 'Nenhuma forma cadastrada';
+					formaSel.appendChild(opt);
+					return;
+				}
+				const placeholder = document.createElement('option');
+				placeholder.value = '';
+				placeholder.textContent = 'Selecione a forma';
+				formaSel.appendChild(placeholder);
+				list.forEach(m => {
+					const o = document.createElement('option');
+					o.value = m.installments ?? m.name;
+					o.textContent = m.name;
+					formaSel.appendChild(o);
+				});
+				if (oldValue) formaSel.value = oldValue;
+			}
+
+			channelSel.addEventListener('change', rebuild);
+			rebuild();
+		}
+
+		populateFormaSelect('payment_channel_avista','forma_pagamento_avista',{!! json_encode(old('forma_pagamento_avista', $inscription->forma_pagamento_avista ?? '')) !!});
+		// disparar change inicial
+		const ch = document.getElementById('payment_channel_avista');
+		if (ch) ch.dispatchEvent(new Event('change'));
+	})();
+</script>
+@endpush

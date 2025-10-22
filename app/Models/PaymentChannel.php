@@ -9,5 +9,5 @@ class PaymentChannel extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'active'];
+    protected $fillable = ['name', 'description'];
 }

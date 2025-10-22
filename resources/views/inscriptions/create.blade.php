@@ -149,7 +149,9 @@
                                                 <select class="form-select" id="meio_pagamento_entrada" name="meio_pagamento_entrada">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_entrada') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->id }}" {{ old('meio_pagamento_entrada') == $platform->id ? 'selected' : '' }}>
+                                                            {{ $platform->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -160,7 +162,9 @@
                                                 <select class="form-select" id="payment_channel_entrada" name="payment_channel_entrada">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentChannels as $channel)
-                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_entrada') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
+                                                        <option value="{{ $channel->id }}" {{ old('payment_channel_entrada') == $channel->id ? 'selected' : '' }}>
+                                                            {{ $channel->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -169,8 +173,7 @@
                                             <div class="mb-3">
                                                 <label for="forma_pagamento_entrada" class="form-label">Forma de Pagamento *</label>
                                                 <select class="form-select" id="forma_pagamento_entrada" name="forma_pagamento_entrada">
-                                                    <option value="avista">À vista</option>
-                                                    <option value="parcelado">Parcelado</option>
+                                                    <option value="">Selecione meio primeiro</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -212,7 +215,9 @@
                                                 <select class="form-select" id="meio_pagamento_restante" name="meio_pagamento_restante">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_restante') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->id }}" {{ old('meio_pagamento_restante') == $platform->id ? 'selected' : '' }}>
+                                                            {{ $platform->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -223,7 +228,9 @@
                                                 <select class="form-select" id="payment_channel_restante" name="payment_channel_restante">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentChannels as $channel)
-                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_restante') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
+                                                        <option value="{{ $channel->id }}" {{ old('payment_channel_restante') == $channel->id ? 'selected' : '' }}>
+                                                            {{ $channel->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -232,8 +239,7 @@
                                             <div class="mb-3">
                                                 <label for="forma_pagamento_restante" class="form-label">Forma de Pagamento *</label>
                                                 <select class="form-select" id="forma_pagamento_restante" name="forma_pagamento_restante">
-                                                    <option value="avista">À vista</option>
-                                                    <option value="parcelado">Parcelado</option>
+                                                    <option value="">Selecione meio primeiro</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -277,7 +283,9 @@
                                                 <select class="form-select" id="meio_pagamento_avista" name="meio_pagamento_avista">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentPlatforms as $platform)
-                                                        <option value="{{ $platform->name }}" {{ old('meio_pagamento_avista') == $platform->name ? 'selected' : '' }}>{{ $platform->name }}</option>
+                                                        <option value="{{ $platform->id }}" {{ old('meio_pagamento_avista') == $platform->id ? 'selected' : '' }}>
+                                                            {{ $platform->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -288,7 +296,9 @@
                                                 <select class="form-select" id="payment_channel_avista" name="payment_channel_avista">
                                                     <option value="">Selecione</option>
                                                     @foreach($paymentChannels as $channel)
-                                                        <option value="{{ $channel->name }}" {{ old('payment_channel_avista') == $channel->name ? 'selected' : '' }}>{{ $channel->name }}</option>
+                                                        <option value="{{ $channel->id }}" {{ old('payment_channel_avista') == $channel->id ? 'selected' : '' }}>
+                                                            {{ $channel->name }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -297,8 +307,7 @@
                                             <div class="mb-3">
                                                 <label for="forma_pagamento_avista" class="form-label">Forma de Pagamento *</label>
                                                 <select class="form-select" id="forma_pagamento_avista" name="forma_pagamento_avista">
-                                                    <option value="avista">À vista</option>
-                                                    <option value="parcelado">Parcelado</option>
+                                                    <option value="">Selecione meio primeiro</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -480,375 +489,464 @@
 
 <script>
     // Exibe campo de parcelas se forma de pagamento for parcelado
-    function toggleParcelas(selectId, groupId) {
+    function toggleParcelas(selectId, groupId, parcelasSelectId) {
         const select = document.getElementById(selectId);
         const group = document.getElementById(groupId);
+        const parcelasSelect = parcelasSelectId ? document.getElementById(parcelasSelectId) : null;
+
         function update() {
-            if (select.value === 'parcelado') {
-                group.style.display = '';
+            const val = select ? select.value : '';
+            const n = val === '' ? 0 : Number(val);
+            if (!isNaN(n) && n > 1) {
+                if (group) group.style.display = '';
+                // se houver select de parcelas, selecionar o mesmo número
+                if (parcelasSelect) {
+                    // se opção existir, seleciona; caso contrário, adiciona temporariamente
+                    const opt = parcelasSelect.querySelector(`option[value="${n}"]`);
+                    if (opt) {
+                        parcelasSelect.value = n;
+                    } else {
+                        // tenta adicionar uma opção correspondente
+                        const o = document.createElement('option');
+                        o.value = n;
+                        o.text = n + 'x';
+                        parcelasSelect.appendChild(o);
+                        parcelasSelect.value = n;
+                    }
+                }
             } else {
-                group.style.display = 'none';
+                if (group) group.style.display = 'none';
             }
         }
-        select.addEventListener('change', update);
-        update();
-    }
-    toggleParcelas('forma_pagamento_entrada', 'parcelas_entrada_group');
-    toggleParcelas('forma_pagamento_restante', 'parcelas_restante_group');
-    toggleParcelas('forma_pagamento_avista', 'parcelas_avista_group');
-document.addEventListener('DOMContentLoaded', function() {
-    // Client search/autocomplete
-    const clients = @json($clients);
-    const clientsData = (clients || []).map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, cpf: c.cpf }));
-    const clientSearchInput = document.getElementById('client_search');
-    const clientIdInput = document.getElementById('client_id');
-    const clientSuggestions = document.getElementById('client-suggestions');
-
-    function clearClientSuggestions() {
-        clientSuggestions.innerHTML = '';
+        if (select) {
+            select.addEventListener('change', update);
+            update();
+        }
     }
 
-    function renderClientSuggestions(list) {
-        clientSuggestions.innerHTML = '';
-        list.forEach(c => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'list-group-item list-group-item-action';
-            btn.textContent = c.name + (c.email ? ' - ' + c.email : '');
-            btn.dataset.id = c.id;
-            btn.addEventListener('click', function() {
-                clientIdInput.value = c.id;
-                clientSearchInput.value = btn.textContent;
-                clearClientSuggestions();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Client search/autocomplete
+        const clients = @json($clients);
+        const clientsData = (clients || []).map(c => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, cpf: c.cpf }));
+        const clientSearchInput = document.getElementById('client_search');
+        const clientIdInput = document.getElementById('client_id');
+        const clientSuggestions = document.getElementById('client-suggestions');
+
+        function clearClientSuggestions() {
+            clientSuggestions.innerHTML = '';
+        }
+
+        function renderClientSuggestions(list) {
+            clientSuggestions.innerHTML = '';
+            list.forEach(c => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'list-group-item list-group-item-action';
+                btn.textContent = c.name + (c.email ? ' - ' + c.email : '');
+                btn.dataset.id = c.id;
+                btn.addEventListener('click', function() {
+                    clientIdInput.value = c.id;
+                    clientSearchInput.value = btn.textContent;
+                    clearClientSuggestions();
+                });
+                clientSuggestions.appendChild(btn);
             });
-            clientSuggestions.appendChild(btn);
+            if (list.length === 0) {
+                const none = document.createElement('div');
+                none.className = 'list-group-item';
+                none.textContent = 'Nenhum cliente encontrado.';
+                clientSuggestions.appendChild(none);
+            }
+        }
+
+        let clientSearchTimeout = null;
+        clientSearchInput.addEventListener('input', function(e) {
+            const q = e.target.value.trim().toLowerCase();
+            clientIdInput.value = '';
+            if (clientSearchTimeout) clearTimeout(clientSearchTimeout);
+            clientSearchTimeout = setTimeout(() => {
+                let matches = [];
+                if (q.length < 2) {
+                    // show top clients when query is short (user clicked the field)
+                    matches = clientsData.slice(0, 50);
+                } else {
+                    matches = clientsData.filter(c => {
+                        return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (String(c.id) === q);
+                    }).slice(0, 50);
+                }
+                renderClientSuggestions(matches);
+            }, 150);
         });
-        if (list.length === 0) {
-            const none = document.createElement('div');
-            none.className = 'list-group-item';
-            none.textContent = 'Nenhum cliente encontrado.';
-            clientSuggestions.appendChild(none);
-        }
-    }
 
-    let clientSearchTimeout = null;
-    clientSearchInput.addEventListener('input', function(e) {
-        const q = e.target.value.trim().toLowerCase();
-        clientIdInput.value = '';
-        if (clientSearchTimeout) clearTimeout(clientSearchTimeout);
-        clientSearchTimeout = setTimeout(() => {
-            let matches = [];
+        // Show list when field is focused/clicked (even if empty)
+        clientSearchInput.addEventListener('focus', function() {
+            const q = clientSearchInput.value.trim().toLowerCase();
             if (q.length < 2) {
-                // show top clients when query is short (user clicked the field)
-                matches = clientsData.slice(0, 50);
+                renderClientSuggestions(clientsData.slice(0, 50));
+            }
+        });
+
+        // Click outside to close suggestions
+        document.addEventListener('click', function(ev) {
+            if (ev.target !== clientSearchInput && !clientSuggestions.contains(ev.target)) {
+                clearClientSuggestions();
+            }
+        });
+
+        // If old client_id exists, populate the search input with client display
+        if (clientIdInput && clientIdInput.value) {
+            const existing = clientsData.find(c => String(c.id) === String(clientIdInput.value));
+            if (existing) {
+                clientSearchInput.value = existing.name + (existing.email ? ' - ' + existing.email : '');
+            }
+        }
+        const valorTotalInput = document.getElementById('valor_total');
+        function formatMoneyBR(value) {
+            if (value === null || value === undefined) return '';
+            let s = String(value).trim();
+            if (s === '') return '';
+            // Normalize: if contains both '.' and ',' assume '.' are thousands and ',' is decimal
+            if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else if (s.indexOf(',') > -1) {
+                // only comma present -> decimal separator
+                s = s.replace(',', '.');
+            }
+            // remove any non numeric except dot and minus
+            s = s.replace(/[^0-9.\-]/g, '');
+            const n = parseFloat(s);
+            if (isNaN(n)) return '';
+            return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function parseMoneyBRToNumber(value) {
+            if (value === null || value === undefined) return 0;
+            let s = String(value).trim();
+            if (s === '') return 0;
+            if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else if (s.indexOf(',') > -1) {
+                s = s.replace(',', '.');
+            }
+            s = s.replace(/[^0-9.\-]/g, '');
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
+        }
+        valorTotalInput.addEventListener('input', function(e) {
+            let v = e.target.value;
+            e.target.value = formatMoneyBR(v);
+        });
+
+        const productSelect = document.getElementById('product_id');
+        const productPrices = {};
+        @foreach($products as $product)
+            productPrices[{{ $product->id }}] = {
+                price: {{ $product->price }},
+                offer_price: {{ $product->offer_price ?? 'null' }}
+            };
+        @endforeach
+        productSelect.addEventListener('change', function() {
+            const selectedId = this.value;
+            if (productPrices[selectedId]) {
+                const p = productPrices[selectedId];
+                let total = p.price;
+                if (p.offer_price && p.offer_price > 0 && p.offer_price < p.price) {
+                    total = p.offer_price;
+                }
+                valorTotalInput.value = formatMoneyBR(total.toString());
+                // update dependent fields when product changes
+                calcularRestante();
+                // if single payment selected, fill valor_avista
+                const formaAvista = document.getElementById('forma_pagamento_avista');
+                const valorAvistaInput = document.getElementById('valor_avista');
+                if (formaAvista && formaAvista.value === 'avista' && valorAvistaInput) {
+                    valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+                }
             } else {
-                matches = clientsData.filter(c => {
-                    return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (String(c.id) === q);
-                }).slice(0, 50);
+                valorTotalInput.value = '';
             }
-            renderClientSuggestions(matches);
-        }, 150);
-    });
+        });
 
-    // Show list when field is focused/clicked (even if empty)
-    clientSearchInput.addEventListener('focus', function() {
-        const q = clientSearchInput.value.trim().toLowerCase();
-        if (q.length < 2) {
-            renderClientSuggestions(clientsData.slice(0, 50));
-        }
-    });
-
-    // Click outside to close suggestions
-    document.addEventListener('click', function(ev) {
-        if (ev.target !== clientSearchInput && !clientSuggestions.contains(ev.target)) {
-            clearClientSuggestions();
-        }
-    });
-
-    // If old client_id exists, populate the search input with client display
-    if (clientIdInput && clientIdInput.value) {
-        const existing = clientsData.find(c => String(c.id) === String(clientIdInput.value));
-        if (existing) {
-            clientSearchInput.value = existing.name + (existing.email ? ' - ' + existing.email : '');
-        }
-    }
-    const valorTotalInput = document.getElementById('valor_total');
-    function formatMoneyBR(value) {
-        if (value === null || value === undefined) return '';
-        let s = String(value).trim();
-        if (s === '') return '';
-        // Normalize: if contains both '.' and ',' assume '.' are thousands and ',' is decimal
-        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
-            s = s.replace(/\./g, '').replace(',', '.');
-        } else if (s.indexOf(',') > -1) {
-            // only comma present -> decimal separator
-            s = s.replace(',', '.');
-        }
-        // remove any non numeric except dot and minus
-        s = s.replace(/[^0-9.\-]/g, '');
-        const n = parseFloat(s);
-        if (isNaN(n)) return '';
-        return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function parseMoneyBRToNumber(value) {
-        if (value === null || value === undefined) return 0;
-        let s = String(value).trim();
-        if (s === '') return 0;
-        if (s.indexOf(',') > -1 && s.indexOf('.') > -1) {
-            s = s.replace(/\./g, '').replace(',', '.');
-        } else if (s.indexOf(',') > -1) {
-            s = s.replace(',', '.');
-        }
-        s = s.replace(/[^0-9.\-]/g, '');
-        const n = parseFloat(s);
-        return isNaN(n) ? 0 : n;
-    }
-    valorTotalInput.addEventListener('input', function(e) {
-        let v = e.target.value;
-        e.target.value = formatMoneyBR(v);
-    });
-
-    const productSelect = document.getElementById('product_id');
-    const productPrices = {};
-    @foreach($products as $product)
-        productPrices[{{ $product->id }}] = {
-            price: {{ $product->price }},
-            offer_price: {{ $product->offer_price ?? 'null' }}
-        };
-    @endforeach
-    productSelect.addEventListener('change', function() {
-        const selectedId = this.value;
-        if (productPrices[selectedId]) {
-            const p = productPrices[selectedId];
-            let total = p.price;
-            if (p.offer_price && p.offer_price > 0 && p.offer_price < p.price) {
-                total = p.offer_price;
+        const cepInput = document.getElementById('cep');
+        cepInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
             }
-            valorTotalInput.value = formatMoneyBR(total.toString());
-            // update dependent fields when product changes
-            calcularRestante();
-            // if single payment selected, fill valor_avista
+            e.target.value = value;
+        });
+        cepInput.addEventListener('input', function(e) {
+            const cep = cepInput.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                const loading = document.getElementById('cep-loading');
+                loading.style.display = 'inline-block';
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        loading.style.display = 'none';
+                        if (!('erro' in data)) {
+                            document.getElementById('endereco').value = data.logradouro || '';
+                            document.getElementById('bairro').value = data.bairro || '';
+                            document.getElementById('cidade').value = data.localidade || '';
+                            document.getElementById('estado').value = data.uf || '';
+                            document.getElementById('numero_casa').focus();
+                        } else {
+                            document.getElementById('endereco').value = '';
+                            document.getElementById('bairro').value = '';
+                            document.getElementById('cidade').value = '';
+                            document.getElementById('estado').value = '';
+                            alert('CEP não encontrado.');
+                        }
+                    })
+                    .catch(() => {
+                        loading.style.display = 'none';
+                        alert('Erro ao buscar o CEP.');
+                    });
+            }
+        });
+
+        const valorEntradaInput = document.getElementById('valor_entrada');
+        const valorRestanteInput = document.getElementById('valor_restante');
+        function calcularRestante() {
+            const total = parseMoneyBRToNumber(valorTotalInput.value) || 0;
+            const entrada = parseMoneyBRToNumber(valorEntradaInput.value) || 0;
+            const restante = total - entrada;
+        if (valorRestanteInput) valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
+
+            // if remaining payment forma is avista, ensure valor_restante equals restante
+            const formaRestante = document.getElementById('forma_pagamento_restante');
+            if (formaRestante && formaRestante.value === 'avista' && valorRestanteInput) {
+                valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
+            }
+
+            // if single payment forma is avista, update valor_avista
             const formaAvista = document.getElementById('forma_pagamento_avista');
             const valorAvistaInput = document.getElementById('valor_avista');
             if (formaAvista && formaAvista.value === 'avista' && valorAvistaInput) {
-                valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+                valorAvistaInput.value = formatMoneyBR(total.toFixed(2));
             }
-        } else {
-            valorTotalInput.value = '';
         }
-    });
+        valorTotalInput.addEventListener('input', calcularRestante);
+        // make valor_entrada easy to type: sanitize while typing, format on blur
+        if (valorEntradaInput) {
+            // Live currency mask for pt-BR while typing (last 2 digits are cents)
+            valorEntradaInput.addEventListener('input', function(e) {
+                const el = e.target;
+                // keep only digits
+                let digits = el.value.replace(/\D/g, '');
+                if (!digits) {
+                    el.value = '';
+                    calcularRestante();
+                    return;
+                }
+                // parse as cents (integer)
+                let cents = parseInt(digits, 10);
+                if (isNaN(cents)) { el.value = ''; calcularRestante(); return; }
+                // get reais and centavos
+                let reais = Math.floor(cents / 100);
+                let centPart = (cents % 100).toString().padStart(2, '0');
+                // format reais with thousands separator '.'
+                let reaisFormatted = reais.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                el.value = reaisFormatted + ',' + centPart;
+                // keep caret at the end for simpler UX
+                try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
+                calcularRestante();
+            });
 
-    const cepInput = document.getElementById('cep');
-    cepInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 5) {
-            value = value.substring(0, 5) + '-' + value.substring(5, 8);
-        }
-        e.target.value = value;
-    });
-    cepInput.addEventListener('input', function(e) {
-        const cep = cepInput.value.replace(/\D/g, '');
-        if (cep.length === 8) {
-            const loading = document.getElementById('cep-loading');
-            loading.style.display = 'inline-block';
-            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                .then(response => response.json())
-                .then(data => {
-                    loading.style.display = 'none';
-                    if (!('erro' in data)) {
-                        document.getElementById('endereco').value = data.logradouro || '';
-                        document.getElementById('bairro').value = data.bairro || '';
-                        document.getElementById('cidade').value = data.localidade || '';
-                        document.getElementById('estado').value = data.uf || '';
-                        document.getElementById('numero_casa').focus();
-                    } else {
-                        document.getElementById('endereco').value = '';
-                        document.getElementById('bairro').value = '';
-                        document.getElementById('cidade').value = '';
-                        document.getElementById('estado').value = '';
-                        alert('CEP não encontrado.');
-                    }
-                })
-                .catch(() => {
-                    loading.style.display = 'none';
-                    alert('Erro ao buscar o CEP.');
-                });
-        }
-    });
-
-    const valorEntradaInput = document.getElementById('valor_entrada');
-    const valorRestanteInput = document.getElementById('valor_restante');
-    function calcularRestante() {
-        const total = parseMoneyBRToNumber(valorTotalInput.value) || 0;
-        const entrada = parseMoneyBRToNumber(valorEntradaInput.value) || 0;
-        const restante = total - entrada;
-    if (valorRestanteInput) valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
-
-        // if remaining payment forma is avista, ensure valor_restante equals restante
-        const formaRestante = document.getElementById('forma_pagamento_restante');
-        if (formaRestante && formaRestante.value === 'avista' && valorRestanteInput) {
-            valorRestanteInput.value = restante >= 0 ? formatMoneyBR(restante.toFixed(2)) : '';
+            // ensure formatting on blur (already formatted by input mask) - just trim
+            valorEntradaInput.addEventListener('blur', function(e) {
+                if (e.target.value && e.target.value.trim() !== '') {
+                    e.target.value = formatMoneyBR(e.target.value);
+                }
+            });
         }
 
-        // if single payment forma is avista, update valor_avista
-        const formaAvista = document.getElementById('forma_pagamento_avista');
+        // Auto-fill valor_avista when forma_pagamento_avista is 'avista'
+        const formaPagamentoAvista = document.getElementById('forma_pagamento_avista');
         const valorAvistaInput = document.getElementById('valor_avista');
-        if (formaAvista && formaAvista.value === 'avista' && valorAvistaInput) {
-            valorAvistaInput.value = formatMoneyBR(total.toFixed(2));
-        }
-    }
-    valorTotalInput.addEventListener('input', calcularRestante);
-    // make valor_entrada easy to type: sanitize while typing, format on blur
-    if (valorEntradaInput) {
-        // Live currency mask for pt-BR while typing (last 2 digits are cents)
-        valorEntradaInput.addEventListener('input', function(e) {
-            const el = e.target;
-            // keep only digits
-            let digits = el.value.replace(/\D/g, '');
-            if (!digits) {
-                el.value = '';
-                calcularRestante();
-                return;
-            }
-            // parse as cents (integer)
-            let cents = parseInt(digits, 10);
-            if (isNaN(cents)) { el.value = ''; calcularRestante(); return; }
-            // get reais and centavos
-            let reais = Math.floor(cents / 100);
-            let centPart = (cents % 100).toString().padStart(2, '0');
-            // format reais with thousands separator '.'
-            let reaisFormatted = reais.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            el.value = reaisFormatted + ',' + centPart;
-            // keep caret at the end for simpler UX
-            try { el.setSelectionRange(el.value.length, el.value.length); } catch (err) {}
-            calcularRestante();
-        });
-
-        // ensure formatting on blur (already formatted by input mask) - just trim
-        valorEntradaInput.addEventListener('blur', function(e) {
-            if (e.target.value && e.target.value.trim() !== '') {
-                e.target.value = formatMoneyBR(e.target.value);
-            }
-        });
-    }
-
-    // Auto-fill valor_avista when forma_pagamento_avista is 'avista'
-    const formaPagamentoAvista = document.getElementById('forma_pagamento_avista');
-    const valorAvistaInput = document.getElementById('valor_avista');
-    if (formaPagamentoAvista) {
-        formaPagamentoAvista.addEventListener('change', function() {
-            if (this.value === 'avista' && valorAvistaInput) {
+        if (formaPagamentoAvista) {
+            formaPagamentoAvista.addEventListener('change', function() {
+                if (this.value === 'avista' && valorAvistaInput) {
+                    valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
+                }
+            });
+            // set on load if already selected
+            if (formaPagamentoAvista.value === 'avista' && valorAvistaInput) {
                 valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
             }
-        });
-        // set on load if already selected
-        if (formaPagamentoAvista.value === 'avista' && valorAvistaInput) {
-            valorAvistaInput.value = formatMoneyBR(parseMoneyBRToNumber(valorTotalInput.value).toFixed(2));
         }
-    }
 
-    // When forma_pagamento_restante is avista, ensure valor_restante is total - entrada
-    const formaPagamentoRestante = document.getElementById('forma_pagamento_restante');
-    if (formaPagamentoRestante) {
-        formaPagamentoRestante.addEventListener('change', function() {
-            if (this.value === 'avista' && valorRestanteInput) {
+        // When forma_pagamento_restante is avista, ensure valor_restante is total - entrada
+        const formaPagamentoRestante = document.getElementById('forma_pagamento_restante');
+        if (formaPagamentoRestante) {
+            formaPagamentoRestante.addEventListener('change', function() {
+                if (this.value === 'avista' && valorRestanteInput) {
+                    calcularRestante();
+                }
+            });
+            if (formaPagamentoRestante.value === 'avista') {
                 calcularRestante();
             }
-        });
-        if (formaPagamentoRestante.value === 'avista') {
-            calcularRestante();
         }
-    }
 
-    // Exibe campos conforme parcelado ou à vista
-    const parceladoCheckbox = document.getElementById('parcelado');
-    const parceladoFields = document.getElementById('parcelado-fields');
-    const avistaFields = document.getElementById('avista-fields');
-    function toggleParceladoFields() {
-        if (parceladoCheckbox.checked) {
-            parceladoFields.style.display = '';
-            avistaFields.style.display = 'none';
-        } else {
-            parceladoFields.style.display = 'none';
-            avistaFields.style.display = '';
-        }
-    }
-    parceladoCheckbox.addEventListener('change', toggleParceladoFields);
-    // Enable/disable inputs in hidden sections to avoid submitting unrelated fields
-    function setSectionDisabled(section, disabled) {
-        if (!section) return;
-        const controls = section.querySelectorAll('input, select, textarea');
-        controls.forEach(c => {
-            c.disabled = disabled;
-        });
-    }
-
-    function toggleParceladoFields() {
-        if (parceladoCheckbox.checked) {
-            parceladoFields.style.display = '';
-            avistaFields.style.display = 'none';
-            setSectionDisabled(parceladoFields, false);
-            setSectionDisabled(avistaFields, true);
-        } else {
-            parceladoFields.style.display = 'none';
-            avistaFields.style.display = '';
-            setSectionDisabled(parceladoFields, true);
-            setSectionDisabled(avistaFields, false);
-        }
-    }
-
-    parceladoCheckbox.addEventListener('change', toggleParceladoFields);
-    // initialize
-    toggleParceladoFields();
-    // If user clicks the label or container for valor_entrada while the section is hidden/disabled,
-    // automatically enable parcelado so the field becomes editable (less surprising UX).
-    try {
-        const valorEntradaLabel = document.querySelector('label[for="valor_entrada"]');
-        const valorEntradaContainer = valorEntradaLabel ? valorEntradaLabel.closest('.mb-3') : null;
-        function enableParceladoAndFocus() {
-            if (!parceladoCheckbox.checked) {
-                parceladoCheckbox.checked = true;
-                toggleParceladoFields();
-            }
-            if (valorEntradaInput) {
-                valorEntradaInput.focus();
+        // Exibe campos conforme parcelado ou à vista
+        const parceladoCheckbox = document.getElementById('parcelado');
+        const parceladoFields = document.getElementById('parcelado-fields');
+        const avistaFields = document.getElementById('avista-fields');
+        function toggleParceladoFields() {
+            if (parceladoCheckbox.checked) {
+                parceladoFields.style.display = '';
+                avistaFields.style.display = 'none';
+            } else {
+                parceladoFields.style.display = 'none';
+                avistaFields.style.display = '';
             }
         }
-        if (valorEntradaLabel) {
-            valorEntradaLabel.addEventListener('click', function(e) {
-                enableParceladoAndFocus();
+        parceladoCheckbox.addEventListener('change', toggleParceladoFields);
+        // Enable/disable inputs in hidden sections to avoid submitting unrelated fields
+        function setSectionDisabled(section, disabled) {
+            if (!section) return;
+            const controls = section.querySelectorAll('input, select, textarea');
+            controls.forEach(c => {
+                c.disabled = disabled;
             });
         }
-        if (valorEntradaContainer) {
-            valorEntradaContainer.addEventListener('click', function(e) {
-                // if clicking the container and input is disabled, enable parcelado
-                if (valorEntradaInput && valorEntradaInput.disabled) {
+
+        function toggleParceladoFields() {
+            if (parceladoCheckbox.checked) {
+                parceladoFields.style.display = '';
+                avistaFields.style.display = 'none';
+                setSectionDisabled(parceladoFields, false);
+                setSectionDisabled(avistaFields, true);
+            } else {
+                parceladoFields.style.display = 'none';
+                avistaFields.style.display = '';
+                setSectionDisabled(parceladoFields, true);
+                setSectionDisabled(avistaFields, false);
+            }
+        }
+
+        parceladoCheckbox.addEventListener('change', toggleParceladoFields);
+        // initialize
+        toggleParceladoFields();
+        // If user clicks the label or container for valor_entrada while the section is hidden/disabled,
+        // automatically enable parcelado so the field becomes editable (less surprising UX).
+        try {
+            const valorEntradaLabel = document.querySelector('label[for="valor_entrada"]');
+            const valorEntradaContainer = valorEntradaLabel ? valorEntradaLabel.closest('.mb-3') : null;
+            function enableParceladoAndFocus() {
+                if (!parceladoCheckbox.checked) {
+                    parceladoCheckbox.checked = true;
+                    toggleParceladoFields();
+                }
+                if (valorEntradaInput) {
+                    valorEntradaInput.focus();
+                }
+            }
+            if (valorEntradaLabel) {
+                valorEntradaLabel.addEventListener('click', function(e) {
                     enableParceladoAndFocus();
-                }
+                });
+            }
+            if (valorEntradaContainer) {
+                valorEntradaContainer.addEventListener('click', function(e) {
+                    // if clicking the container and input is disabled, enable parcelado
+                    if (valorEntradaInput && valorEntradaInput.disabled) {
+                        enableParceladoAndFocus();
+                    }
+                });
+            }
+        } catch (err) {
+            // ignore if DOM structure differs
+        }
+        // Initialize computed values on load
+        calcularRestante();
+
+        // Before sending to backend, convert formatted BR money to numeric (dot decimal)
+        const form = document.getElementById('inscription-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const fields = ['valor_total', 'valor_avista', 'valor_restante', 'valor_entrada'];
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.value !== '') {
+                        const n = parseMoneyBRToNumber(el.value);
+                        // set as plain numeric string with dot as decimal separator
+                        el.value = n.toFixed(2);
+                    }
+                });
             });
         }
-    } catch (err) {
-        // ignore if DOM structure differs
-    }
-    // Initialize computed values on load
-    calcularRestante();
+    });
 
-    // Before sending to backend, convert formatted BR money to numeric (dot decimal)
-    const form = document.getElementById('inscription-form');
-    if (form) {
-        form.addEventListener('submit', function() {
-            const fields = ['valor_total', 'valor_avista', 'valor_restante', 'valor_entrada'];
-            fields.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && el.value !== '') {
-                    const n = parseMoneyBRToNumber(el.value);
-                    // set as plain numeric string with dot as decimal separator
-                    el.value = n.toFixed(2);
-                }
-            });
+    // Constrói mapa de formas por canal a partir do banco
+    (function() {
+        const methods = @json(\Illuminate\Support\Facades\DB::table('payment_channel_methods')->orderBy('installments')->get()->map(function($m){ return (array)$m;}));
+        const methodsByChannel = {};
+        methods.forEach(m => {
+            const key = String(m.payment_channel_id);
+            if (!methodsByChannel[key]) methodsByChannel[key] = [];
+            methodsByChannel[key].push({ id: m.id, name: m.name, installments: m.installments });
         });
-    }
-});
+
+        function populateFormaSelect(channelSelectId, formaSelectId, parcelasGroupId, parcelasSelectId, oldValue) {
+            const channelSel = document.getElementById(channelSelectId);
+            const formaSel = document.getElementById(formaSelectId);
+            if (!channelSel || !formaSel) return;
+
+            function rebuild() {
+                const chId = channelSel.value;
+                formaSel.innerHTML = '';
+                const list = methodsByChannel[String(chId)] || [];
+                if (list.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.value = '';
+                    opt.textContent = 'Nenhuma forma cadastrada';
+                    formaSel.appendChild(opt);
+                    // trigger change
+                    formaSel.dispatchEvent(new Event('change'));
+                    return;
+                }
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Selecione a forma';
+                formaSel.appendChild(placeholder);
+                list.forEach(m => {
+                    const o = document.createElement('option');
+                    o.value = m.installments ?? m.name;
+                    o.textContent = m.name;
+                    formaSel.appendChild(o);
+                });
+                // tenta restaurar valor antigo (oldValue pode ser número ou string)
+                if (oldValue) {
+                    formaSel.value = oldValue;
+                }
+                formaSel.dispatchEvent(new Event('change'));
+            }
+
+            channelSel.addEventListener('change', rebuild);
+            // inicializa agora
+            rebuild();
+        }
+
+        // Inicializa para cada trio presente no formulário
+        populateFormaSelect('payment_channel_entrada', 'forma_pagamento_entrada', 'parcelas_entrada_group', 'parcelas_entrada', {!! json_encode(old('forma_pagamento_entrada', '')) !!});
+        populateFormaSelect('payment_channel_restante', 'forma_pagamento_restante', 'parcelas_restante_group', 'parcelas_restante', {!! json_encode(old('forma_pagamento_restante', '')) !!});
+        populateFormaSelect('payment_channel_avista', 'forma_pagamento_avista', 'parcelas_avista_group', 'parcelas_avista', {!! json_encode(old('forma_pagamento_avista', '')) !!});
+
+        // ativar toggleParcelas com base nos selects populados
+        toggleParcelas('forma_pagamento_entrada', 'parcelas_entrada_group', 'parcelas_entrada');
+        toggleParcelas('forma_pagamento_restante', 'parcelas_restante_group', 'parcelas_restante');
+        toggleParcelas('forma_pagamento_avista', 'parcelas_avista_group', 'parcelas_avista');
+
+        // se houver valores antigos de channel, disparar change para popular automaticamente
+        ['payment_channel_entrada','payment_channel_restante','payment_channel_avista'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                // disparar evento para forçar populações iniciais
+                el.dispatchEvent(new Event('change'));
+            }
+        });
+    })();
 </script>
 @endsection
