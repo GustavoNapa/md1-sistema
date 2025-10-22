@@ -6,6 +6,7 @@ use App\Models\Inscription;
 use App\Models\WebhookLog;
 use App\Models\PaymentPlatform;
 use App\Models\PaymentChannel;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -251,7 +252,7 @@ class SendInscriptionWebhook implements ShouldQueue
                 "contact_cep" => $address?->cep,
                 "contact_pagamento_entrada" => (float) ($this->inscription->valor_entrada ?? 0),
                 "contact_pagamento_restante" => (float) ($this->inscription->valor_restante ?? 0),
-                "contact_data_pagamento_entra" => $this->inscription->data_pagamento_entrada?->format('d/m/Y') ?? null,
+                "contact_data_pagamento_entra" => $this->inscription->data_pagamento_entrada?->format('d/m/Y') ?? Carbon::now()->format('d/m/Y'),
                 // Novos campos com objetos legíveis
                 "contact_payment_platform_avista" => $pl_avista,
                 "contact_payment_channel_avista" => $ch_avista,
