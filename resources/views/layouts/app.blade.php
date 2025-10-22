@@ -243,6 +243,23 @@
                     </div>
                 @endif
 
+                {{-- ADDED: resumo de validação com links para cada campo --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" id="validation-summary">
+                        <strong>Foram encontrados erros no formulário:</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach ($errors->messages() as $field => $messages)
+                                <li>
+                                    <a href="#" class="validation-link" data-field="{{ $field }}">
+                                        <small><strong>{{ $field }}</strong></small>: {{ implode(' • ', $messages) }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @yield("content")
             </div>
         </main>
@@ -256,7 +273,84 @@
     
     <!-- jQuery Mask Plugin -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    
+
+    {{-- ADDED: script para navegar/realçar campos de erro ao clicar no resumo --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function findFieldElement(field) {
+                if (!field) return null;
+                // Try common selectors: id, name, name with [] (arrays), fallback replacing dots with underscores
+                const candidates = [
+                    `#${CSS.escape(field)}`,
+                    `[name="${field}"]`,
+                    `[name="${field}[]"]`,
+                    `[name="${field}"]`,
+                    `#${CSS.escape(field.replace(/\./g, '_'))}`,
+                    `[name="${field.replace(/\./g, '_')}"]`
+                ];
+                for (const sel of candidates) {
+                    try {
+                        const el = document.querySelector(sel);
+                        if (el) return el;
+                    } catch (e) {
+                        // ignore malformed selectors
+                    }
+                }
+                // Last attempt: treat only the last segment (e.g. addresses.0.cep -> cep)
+                const parts = field.split('.');
+                if (parts.length > 1) {
+                    const short = parts[parts.length - 1];
+                    const el = document.querySelector(`#${CSS.escape(short)}`) || document.querySelector(`[name="${short}"]`);
+                    if (el) return el;
+                }
+                return null;
+            }
+
+            function openContainingTab(el) {
+                if (!el) return;
+                const tabPane = el.closest('.tab-pane');
+                if (tabPane && tabPane.id) {
+                    // Find a tab button that targets this pane
+                    const tabButton = document.querySelector(`[data-bs-target="#${tabPane.id}"], [data-bs-target="#${tabPane.id}"]`);
+                    if (tabButton) {
+                        try {
+                            // Use Bootstrap's tab show via click for compatibility
+                            tabButton.click();
+                        } catch (e) {
+                            // fallback: remove/show classes manually
+                            tabButton.classList.add('active');
+                        }
+                    }
+                }
+            }
+
+            document.querySelectorAll('.validation-link').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const field = this.dataset.field;
+                    const el = findFieldElement(field);
+                    if (!el) {
+                        console.warn('Campo de validação não encontrado no DOM:', field);
+                        return;
+                    }
+
+                    // If inside a tab, open it first
+                    openContainingTab(el);
+
+                    // Scroll to field and focus
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    try { el.focus({ preventScroll: true }); } catch (err) {}
+
+                    // Apply temporary highlight
+                    el.classList.add('border', 'border-danger', 'rounded');
+                    setTimeout(() => {
+                        el.classList.remove('border', 'border-danger', 'rounded');
+                    }, 3500);
+                });
+            });
+        });
+    </script>
+
     @stack('scripts')
     @yield("scripts")
 </body>

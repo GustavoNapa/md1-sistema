@@ -337,9 +337,9 @@ class InscriptionController extends Controller
                 "payment_location" => "nullable|string|max:255",
                 "payment_means" => "nullable|string|max:255",
                 // per-section payment channel fields (where payment was made)
-                "payment_channel_entrada" => "nullable|string|max:255",
-                "payment_channel_restante" => "nullable|string|max:255",
-                "payment_channel_avista" => "nullable|string|max:255",
+                "payment_channel_entrada" => "nullable",
+                "payment_channel_restante" => "nullable",
+                "payment_channel_avista" => "nullable",
                 "commercial_notes" => "nullable|string",
                 "general_notes" => "nullable|string",
                 "entry_channel" => "nullable|exists:entry_channels,id",
@@ -360,21 +360,24 @@ class InscriptionController extends Controller
 
             if ($isParcelado) {
                 $rules = array_merge($rules, [
-                    "meio_pagamento_entrada" => $platformsRule,
-                    "payment_channel_entrada" => "nullable|string|max:255",
+                    // aceitar id ou nome; vamos normalizar após validar
+                    "meio_pagamento_entrada" => "nullable",
+                    "payment_channel_entrada" => "nullable",
                     "valor_entrada" => "required|numeric|min:0",
                     "data_pagamento_entrada" => "required|date",
-                    "meio_pagamento_restante" => $platformsRule,
-                    "payment_channel_restante" => "nullable|string|max:255",
-                    "forma_pagamento_restante" => "required|in:avista,parcelado",
+                    // aceitar id ou nome; vamos normalizar após validar
+                    "meio_pagamento_restante" => "nullable",
+                    "payment_channel_restante" => "nullable",
+                    // forma pode ser 'avista'/'parcelado' ou um número/descricao vindo do payment_channel_methods (ex: '8' ou '8x')
+                    "forma_pagamento_restante" => "required|string|max:255",
                     "valor_restante" => "required|numeric|min:0",
                     "data_contrato" => "required|date",
                 ]);
             } else {
                 $rules = array_merge($rules, [
-                    "meio_pagamento_avista" => $platformsRule,
-                    "payment_channel_avista" => "nullable|string|max:255",
-                    "forma_pagamento_avista" => "required|in:avista,parcelado",
+                    "meio_pagamento_avista" => "nullable",
+                    "payment_channel_avista" => "nullable",
+                    "forma_pagamento_avista" => "required|string|max:255",
                     "valor_avista" => "required|numeric|min:0",
                     "data_pagamento_avista" => "required|date",
                 ]);
@@ -412,6 +415,30 @@ class InscriptionController extends Controller
                 "estado.required" => "O estado é obrigatório.",
                 "estado.size" => "O estado deve ter 2 caracteres.",
             ]);
+
+            // --- Normalização pós-validação: aceitar IDs (numéricos) ou nomes para plataformas e canais ---
+            // Se o front enviar IDs para meio_pagamento_* converte para o nome correspondente
+            $platformFields = ['meio_pagamento_entrada', 'meio_pagamento_restante', 'meio_pagamento_avista'];
+            foreach ($platformFields as $f) {
+                if (isset($validated[$f]) && is_numeric($validated[$f])) {
+                    $pp = \App\Models\PaymentPlatform::find((int)$validated[$f]);
+                    if ($pp) {
+                        $validated[$f] = $pp->name; // mantém compatibilidade com o resto do código
+                    }
+                }
+            }
+
+            // Se o front enviar IDs para payment_channel_* converte para o name correspondente
+            $channelFields = ['payment_channel_entrada', 'payment_channel_restante', 'payment_channel_avista', 'payment_location'];
+            foreach ($channelFields as $f) {
+                if (isset($validated[$f]) && is_numeric($validated[$f])) {
+                    $pc = \App\Models\PaymentChannel::find((int)$validated[$f]);
+                    if ($pc) {
+                        $validated[$f] = $pc->name; // o código posterior busca por name para obter id
+                    }
+                }
+            }
+            // --- fim normalização ---
 
             // Buscar dados do cliente para preencher cpf_cnpj
             $client = Client::find($validated['client_id']);
@@ -490,7 +517,7 @@ class InscriptionController extends Controller
             $inscription->load(['client.addresses', 'product.webhooks', 'payments']);
 
             // Disparar evento (mantém compatibilidade) e também o job do webhook com tipo explícito
-            \App\Events\InscriptionCreated::dispatch($inscription, 'inscricao.created');
+            // \App\Events\InscriptionCreated::dispatch($inscription, 'inscricao.created');
             \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.created');
 
             Log::info('Inscription processing finished', ['id' => $inscription->id]);
@@ -595,7 +622,7 @@ class InscriptionController extends Controller
 
         // Recarregar relacionamentos necessários e disparar webhook job
         $inscription->load(['client.addresses', 'product.webhooks', 'payments']);
-        \App\Events\InscriptionUpdated::dispatch($inscription, 'inscricao.updated');
+        // \App\Events\InscriptionUpdated::dispatch($inscription, 'inscricao.updated');
         \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.updated');
 
         return redirect()->route("inscriptions.show", $inscription)
