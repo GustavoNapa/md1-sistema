@@ -92,6 +92,13 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
+        // Normaliza media_faturamento antes da validação para evitar inserir formato BR no DB
+        if ($request->has('media_faturamento')) {
+            $request->merge([
+                'media_faturamento' => $this->normalizeBrazilianDecimal($request->input('media_faturamento'))
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:clients',
@@ -160,6 +167,12 @@ class ClientController extends Controller
      */
     public function update(Request $request, Client $client)
     {
+        // Normaliza media_faturamento antes da validação para evitar inserir formato BR no DB
+        if ($request->has('media_faturamento')) {
+            $request->merge([
+                'media_faturamento' => $this->normalizeBrazilianDecimal($request->input('media_faturamento'))
+            ]);
+        }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:clients,cpf,' . $client->id,
@@ -205,5 +218,19 @@ class ClientController extends Controller
 
         return redirect()->route('clients.index')
             ->with('success', 'Cliente removido com sucesso!');
+    }
+
+    /**
+     * Normaliza um número decimal no formato brasileiro para o formato padrão.
+     */
+    private function normalizeBrazilianDecimal($value)
+    {
+        // Remove todos os caracteres que não são dígitos ou vírgulas
+        $value = preg_replace('/[^\d,]/', '', $value);
+
+        // Substitui a vírgula por um ponto
+        $value = str_replace(',', '.', $value);
+
+        return $value;
     }
 }
