@@ -18,6 +18,7 @@ class PaymentPlatformsSeeder extends Seeder
             ['id' => 2, 'name' => 'Hotmart', 'description' => 'Plataforma Hotmart', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 3, 'name' => 'Asaas', 'description' => 'Plataforma Asaas', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 4, 'name' => 'GMC Pay', 'description' => 'Plataforma GMC Pay', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'name' => 'pagcorp', 'description' => 'Plataforma pagcorp', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         foreach ($platforms as $p) {

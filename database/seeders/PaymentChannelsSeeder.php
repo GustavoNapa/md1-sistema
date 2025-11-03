@@ -16,7 +16,8 @@ class PaymentChannelsSeeder extends Seeder
         $channels = [
             ['id' => 1, 'name' => 'Pix', 'description' => 'Canal de pagamento via Pix', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
             ['id' => 3, 'name' => 'Cartão de Crédito', 'description' => 'Canal de pagamento via cartão de crédito', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'name' => 'Boleto Bancário', 'description' => 'Canal de pagamento via boleto bancário', 'active' => true, 'created_at' => $now, 'updated_at' => $now]
+            ['id' => 4, 'name' => 'Boleto Bancário', 'description' => 'Canal de pagamento via boleto bancário', 'active' => true, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'name' => 'Cartão 12x', 'description' => 'Canal de pagamento via cartão de crédito em 12 parcelas', 'active' => true, 'created_at' => $now, 'updated_at' => $now]
         ];
 
         foreach ($channels as $ch) {

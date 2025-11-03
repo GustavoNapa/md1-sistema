@@ -127,6 +127,10 @@ class Inscription extends Model
         return $this->hasMany(InscriptionDocument::class);
     }
 
+    public function contractDocuments()
+    {
+        return $this->hasMany(Document::class);
+    }
 
     public function bonuses()
     {

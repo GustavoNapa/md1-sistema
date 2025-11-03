@@ -72,6 +72,12 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="contrato-tab" data-bs-toggle="tab" data-bs-target="#contrato" type="button" role="tab">
+                                Contrato 
+                                <span class="badge bg-info rounded-pill ms-1">{{ $inscription->contractDocuments->count() }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="bonus-tab" data-bs-toggle="tab" data-bs-target="#bonus" type="button" role="tab">
                                 Bônus 
                                 <span class="badge bg-primary rounded-pill ms-1">{{ $inscription->bonuses->count() }}</span>
@@ -706,6 +712,72 @@
                                             </div>
                                         @endif
                                     </div>
+                                </div>
+
+                                <!-- Contrato Tab -->
+                                <div class="tab-pane fade" id="contrato" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-file-contract"></i> Documentos de Contrato
+                                        </h6>
+                                        <button class="btn btn-sm btn-primary" onclick="abrirModalContratoDocumento()">
+                                            <i class="fas fa-plus"></i> Adicionar Documento
+                                        </button>
+                                    </div>
+
+                                    @if($inscription->contractDocuments->count() > 0)
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 5%"><i class="fas fa-file"></i></th>
+                                                        <th style="width: 30%">Nome</th>
+                                                        <th style="width: 25%">Título</th>
+                                                        <th style="width: 15%">Tipo</th>
+                                                        <th style="width: 10%">Tamanho</th>
+                                                        <th style="width: 15%">Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($inscription->contractDocuments as $doc)
+                                                        <tr>
+                                                            <td class="text-center">
+                                                                <i class="{{ $doc->icon_class }}"></i>
+                                                            </td>
+                                                            <td>{{ $doc->nome ?? 'N/A' }}</td>
+                                                            <td>{{ $doc->title ?? 'N/A' }}</td>
+                                                            <td>{{ $doc->file_type ?? 'N/A' }}</td>
+                                                            <td>{{ $doc->formatted_file_size }}</td>
+                                                            <td>
+                                                                @if($doc->file_web_view)
+                                                                    <a href="{{ $doc->file_web_view }}" target="_blank" class="btn btn-sm btn-info" title="Visualizar">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                @endif
+                                                                @if($doc->file_path)
+                                                                    <a href="{{ asset('storage/' . $doc->file_path) }}" download class="btn btn-sm btn-success" title="Baixar">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                @elseif($doc->file_web_view)
+                                                                    <a href="{{ $doc->file_web_view }}" download class="btn btn-sm btn-success" title="Baixar">
+                                                                        <i class="fas fa-download"></i>
+                                                                    </a>
+                                                                @endif
+                                                                <button class="btn btn-sm btn-danger" onclick="excluirContratoDocumento({{ $doc->id }})" title="Excluir">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <div class="text-center py-4 text-muted">
+                                            <i class="fas fa-file-contract fa-3x mb-3"></i>
+                                            <p>Nenhum documento de contrato cadastrado para esta inscrição.</p>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <!-- Bônus Tab -->
@@ -1814,6 +1886,38 @@
             setTimeout(() => {
                 alert.alert('close');
             }, 3000);
+        }
+
+        // Funções para modal de contrato documento
+        function abrirModalContratoDocumento() {
+            alert('Funcionalidade de adicionar documento de contrato será implementada.');
+            // TODO: Implementar modal para adicionar documento
+        }
+
+        function excluirContratoDocumento(documentId) {
+            if (confirm('Tem certeza que deseja excluir este documento?')) {
+                fetch(`/inscriptions/{{ $inscription->id }}/contract-documents/${documentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        mostrarAlerta('Documento excluído com sucesso!', 'success');
+                        location.reload();
+                    } else {
+                        mostrarAlerta('Erro ao excluir documento: ' + (data.message || 'Erro desconhecido'), 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarAlerta('Erro ao excluir documento', 'danger');
+                });
+            }
         }
     </script>
 @endpush

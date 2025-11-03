@@ -120,6 +120,14 @@ Route::middleware("auth")->group(function () {
         Route::post("/{document}/toggle-verification", [App\Http\Controllers\InscriptionDocumentController::class, "toggleVerification"])->name("documents.toggle-verification");
     });
     
+    // Rotas para documentos de contrato das inscrições
+    Route::prefix("inscriptions/{inscription}/contract-documents")->name("contract-documents.")->group(function () {
+        Route::get("/", [App\Http\Controllers\ContractDocumentController::class, "index"])->name("index");
+        Route::post("/", [App\Http\Controllers\ContractDocumentController::class, "store"])->name("store");
+        Route::put("/{document}", [App\Http\Controllers\ContractDocumentController::class, "update"])->name("update");
+        Route::delete("/{document}", [App\Http\Controllers\ContractDocumentController::class, "destroy"])->name("destroy");
+    });
+    
     // Rotas para faturamentos das inscrições
     Route::prefix("inscriptions/{inscription}/faturamentos")->name("faturamentos.")->group(function () {
         Route::get("/", [App\Http\Controllers\FaturamentoController::class, "index"])->name("index");
