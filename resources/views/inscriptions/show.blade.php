@@ -645,61 +645,82 @@
                                     <!-- Lista de Documentos -->
                                     <div id="documentos-container">
                                         @if($inscription->documents->count() > 0)
-                                            <div class="row" id="documentos-grid">
-                                                @foreach($inscription->documents as $document)
-                                                <div class="col-md-6 mb-3" data-document-id="{{ $document->id }}">
-                                                    <div class="card h-100">
-                                                        <div class="card-body">
-                                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                                <h6 class="card-title mb-1">
-                                                                    <i class="{{ $document->icon_class }}"></i>
-                                                                    {{ $document->title }}
-                                                                </h6>
-                                                                <div class="dropdown">
-                                                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
-                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                    </button>
-                                                                    <ul class="dropdown-menu">
-                                                                        @if($document->getDownloadUrl())
-                                                                        <li><a class="dropdown-item" href="{{ $document->getDownloadUrl() }}" target="_blank">
-                                                                            <i class="fas fa-download"></i> Download/Abrir
-                                                                        </a></li>
-                                                                        @endif
-                                                                        <li><a class="dropdown-item" href="#" onclick="editarDocumento({{ $document->id }})">
-                                                                            <i class="fas fa-edit"></i> Editar
-                                                                        </a></li>
-                                                                        <li><a class="dropdown-item" href="#" onclick="toggleVerificacao({{ $document->id }})">
-                                                                            <i class="fas fa-{{ $document->is_verified ? 'times' : 'check' }}"></i> 
-                                                                            {{ $document->is_verified ? 'Remover Verificação' : 'Marcar como Verificado' }}
-                                                                        </a></li>
-                                                                        <li><hr class="dropdown-divider"></li>
-                                                                        <li><a class="dropdown-item text-danger" href="#" onclick="excluirDocumento({{ $document->id }})">
-                                                                            <i class="fas fa-trash"></i> Excluir
-                                                                        </a></li>
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div class="mb-2">
-                                                                <span class="badge bg-primary">{{ $document->category_label }}</span>
-                                                                <span class="badge {{ $document->status_badge_class }}">{{ $document->status_label }}</span>
-                                                                <span class="badge bg-light text-dark">{{ $document->type_label }}</span>
-                                                            </div>
-                                                            
-                                                            @if($document->description)
-                                                            <p class="card-text small text-muted mb-2">{{ Str::limit($document->description, 100) }}</p>
-                                                            @endif
-                                                            
-                                                            <div class="small text-muted">
-                                                                @if($document->type === 'upload')
-                                                                <div><i class="fas fa-hdd"></i> {{ $document->formatted_file_size }}</div>
+                                            <div class="table-responsive">
+                                                <table class="table table-hover" id="documentos-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Nome</th>
+                                                            <th>Título</th>
+                                                            <th>Data de Criação</th>
+                                                            <th>URL de Assinatura</th>
+                                                            <th style="width: 150px;">Ações</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach($inscription->documents as $document)
+                                                        <tr>
+                                                            <td>
+                                                                <i class="{{ $document->icon_class ?? 'fas fa-file' }}"></i>
+                                                                {{ $document->nome ?? 'N/A' }}
+                                                            </td>
+                                                            <td>{{ $document->title ?? 'N/A' }}</td>
+                                                            <td>{{ $document->created_at ? $document->created_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                                            <td>
+                                                                @if($document->sign_url)
+                                                                    <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;" title="{{ $document->sign_url }}">
+                                                                        {{ $document->sign_url }}
+                                                                    </small>
+                                                                @else
+                                                                    <span class="text-muted">-</span>
                                                                 @endif
-                                                                <div><i class="fas fa-calendar"></i> {{ $document->created_at->format('d/m/Y H:i') }}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @endforeach
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group btn-group-sm" role="group">
+                                                                    @if($document->sign_url)
+                                                                        <button type="button" 
+                                                                                class="btn btn-outline-primary" 
+                                                                                onclick="copiarUrlContrato('{{ $document->sign_url }}')"
+                                                                                title="Copiar URL do Contrato"
+                                                                                data-bs-toggle="tooltip">
+                                                                            <i class="fas fa-copy"></i>
+                                                                        </button>
+                                                                        <a href="{{ $document->sign_url }}" 
+                                                                           target="_blank" 
+                                                                           class="btn btn-outline-success"
+                                                                           title="Abrir URL do Contrato"
+                                                                           data-bs-toggle="tooltip">
+                                                                            <i class="fas fa-external-link-alt"></i>
+                                                                        </a>
+                                                                    @endif
+                                                                    @if($document->getDownloadUrl())
+                                                                        <a href="{{ $document->getDownloadUrl() }}" 
+                                                                           target="_blank" 
+                                                                           class="btn btn-outline-info"
+                                                                           title="Download/Abrir Documento"
+                                                                           data-bs-toggle="tooltip">
+                                                                            <i class="fas fa-download"></i>
+                                                                        </a>
+                                                                    @endif
+                                                                    <button type="button" 
+                                                                            class="btn btn-outline-secondary"
+                                                                            onclick="editarDocumento({{ $document->id }})"
+                                                                            title="Editar Documento"
+                                                                            data-bs-toggle="tooltip">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </button>
+                                                                    <button type="button" 
+                                                                            class="btn btn-outline-danger"
+                                                                            onclick="excluirDocumento({{ $document->id }})"
+                                                                            title="Excluir Documento"
+                                                                            data-bs-toggle="tooltip">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         @else
                                             <div class="text-center py-5 text-muted" id="documentos-empty">
@@ -1679,6 +1700,8 @@
                     })
                     .then(response => {
                         if (!response.ok) {
+
+
                             return response.json().then(errorData => {
                                 throw new Error(errorData.message || "Erro ao excluir faturamento.");
                             });
@@ -1919,5 +1942,51 @@
                 });
             }
         }
+
+        // Função para copiar URL do contrato
+        window.copiarUrlContrato = function(url) {
+            if (!url) {
+                mostrarAlerta('URL não disponível', 'warning');
+                return;
+            }
+
+            // Criar elemento temporário para copiar
+            const tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // Para dispositivos móveis
+
+            try {
+                // Tentar usar a API moderna do Clipboard
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(url).then(function() {
+                        mostrarAlerta('URL do contrato copiada com sucesso!', 'success');
+                    }).catch(function(err) {
+                        // Fallback para método antigo
+                        document.execCommand('copy');
+                        mostrarAlerta('URL do contrato copiada com sucesso!', 'success');
+                    });
+                } else {
+                    // Fallback para navegadores antigos
+                    document.execCommand('copy');
+                    mostrarAlerta('URL do contrato copiada com sucesso!', 'success');
+                }
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                mostrarAlerta('Erro ao copiar URL', 'danger');
+            }
+
+            document.body.removeChild(tempInput);
+        };
+
+        // Inicializar tooltips do Bootstrap quando o DOM carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
     </script>
 @endpush

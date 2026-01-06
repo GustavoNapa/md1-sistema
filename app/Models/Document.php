@@ -17,7 +17,8 @@ class Document extends Model
         'file_type',
         'file_size',
         'file_web_view',
-        'token'
+        'token',
+        'sign_url'
     ];
 
     public function inscription()
@@ -61,5 +62,23 @@ class Document extends Model
             'zip', 'rar', 'application/zip', 'application/x-rar-compressed' => 'fas fa-file-archive text-dark',
             default => 'fas fa-file text-muted'
         };
+    }
+
+    /**
+     * Get download URL
+     */
+    public function getDownloadUrl()
+    {
+        // Se tiver file_web_view, retornar
+        if ($this->file_web_view) {
+            return $this->file_web_view;
+        }
+
+        // Se tiver file_path, gerar URL de storage
+        if ($this->file_path) {
+            return \Storage::url($this->file_path);
+        }
+
+        return null;
     }
 }

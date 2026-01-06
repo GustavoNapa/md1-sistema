@@ -188,9 +188,9 @@ if (Feature::active('{{ $feature['key'] }}')) {
                             
                             <div class="mb-3">
                                 <label class="form-label small">Blade Template:</label>
-                                <pre class="bg-light p-2 rounded small"><code>@feature('{{ $feature['key'] }}')
+                                <pre class="bg-light p-2 rounded small"><code>@{{ '@feature' }}('{{ $feature['key'] }}')
     &lt;!-- Conteúdo da funcionalidade --&gt;
-@endfeature</code></pre>
+@{{ '@endfeature' }}</code></pre>
                             </div>
                             
                             <div class="mb-3">
