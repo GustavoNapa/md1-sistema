@@ -7,9 +7,14 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="page-title mb-0">Clientes</h4>
-                    <a href="{{ route('clients.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Novo Cliente
-                    </a>
+                    <div>
+                        <a href="{{ route('clients.kanban') }}" class="btn btn-info me-2">
+                            <i class="fas fa-columns"></i> Visualização Kanban
+                        </a>
+                        <a href="{{ route('clients.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Novo Cliente
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{{ route('clients.index') }}" class="row g-2 mb-3">

@@ -221,6 +221,135 @@ class ClientController extends Controller
     }
 
     /**
+     * Display kanban view for clients.
+     */
+    public function kanban(Request $request)
+    {
+        $q = $request->input('q');
+
+        $clientsQuery = Client::with(['inscriptions' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->withCount('inscriptions');
+
+        if ($q) {
+            $normalized = preg_replace('/\D/', '', $q);
+
+            $clientsQuery->where(function ($query) use ($q, $normalized) {
+                $query->where('name', 'like', "%{$q}%")
+                      ->orWhere('email', 'like', "%{$q}%")
+                      ->orWhere('phone', 'like', "%{$q}%");
+
+                if ($normalized !== '') {
+                    $query->orWhereRaw("REPLACE(REPLACE(REPLACE(cpf, '.', ''), '-', ''), ' ', '') LIKE ?", ["%{$normalized}%"]);
+                    $query->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, '(', ''), ')', ''), '-', ''), ' ', ''), '.', '') LIKE ?", ["%{$normalized}%"]);
+                }
+            });
+        }
+
+        // filtro por status (ativo/inativo)
+        if ($status = $request->input('status')) {
+            if ($status === 'active') {
+                $clientsQuery->where('active', true);
+            } elseif ($status === 'inactive') {
+                $clientsQuery->where('active', false);
+            }
+        }
+
+        // filtro por especialidade
+        if ($specialty = $request->input('specialty')) {
+            $clientsQuery->where('specialty', $specialty);
+        }
+
+        $clients = $clientsQuery->orderBy('name', 'asc')->get();
+
+        // Agrupar clientes por status das inscrições
+        $leadClients = [];
+        $activeClients = [];
+        $inactiveClients = [];
+        $completedClients = [];
+
+        foreach ($clients as $client) {
+            if ($client->inscriptions->isEmpty()) {
+                $leadClients[] = $client;
+            } else {
+                $hasActive = false;
+                $hasCompleted = false;
+                
+                foreach ($client->inscriptions as $inscription) {
+                    if (in_array($inscription->status, ['active', 'pending'])) {
+                        $hasActive = true;
+                    }
+                    if (in_array($inscription->status, ['completed', 'cancelled'])) {
+                        $hasCompleted = true;
+                    }
+                }
+
+                if ($hasActive) {
+                    $activeClients[] = $client;
+                } elseif ($hasCompleted) {
+                    $completedClients[] = $client;
+                } elseif (!$client->active) {
+                    $inactiveClients[] = $client;
+                }
+            }
+        }
+
+        $specialties = \App\Models\Specialty::active()->orderByName()->pluck('name', 'name');
+
+        return view('clients.kanban', compact('leadClients', 'activeClients', 'inactiveClients', 'completedClients', 'specialties'));
+    }
+
+    /**
+     * Update client status based on kanban column.
+     */
+    public function updateKanbanStatus(Request $request, Client $client)
+    {
+        $request->validate([
+            'column' => 'required|in:lead,active,completed,inactive'
+        ]);
+
+        $column = $request->input('column');
+
+        // Atualizar status do cliente baseado na coluna
+        switch ($column) {
+            case 'lead':
+                // Cliente volta a ser lead - não precisa fazer nada específico
+                // mas garantimos que está ativo
+                $client->active = true;
+                $client->save();
+                break;
+
+            case 'active':
+                // Cliente ativo - garantir que está ativo
+                $client->active = true;
+                $client->save();
+                break;
+
+            case 'completed':
+                // Cliente concluído - manter ativo mas indicar conclusão
+                $client->active = true;
+                $client->save();
+                break;
+
+            case 'inactive':
+                // Cliente inativo
+                $client->active = false;
+                $client->save();
+                break;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cliente movido com sucesso!',
+            'client' => [
+                'id' => $client->id,
+                'name' => $client->name,
+                'active' => $client->active
+            ]
+        ]);
+    }
+
+    /**
      * Normaliza um número decimal no formato brasileiro para o formato padrão.
      */
     private function normalizeBrazilianDecimal($value)

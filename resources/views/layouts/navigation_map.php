@@ -4,6 +4,12 @@ return [
 
     'Gestão de Clientes e Inscrições' => [
         [
+            'name' => 'Leads',
+            'route' => 'leads.index',
+            'permission' => 'leads.index',
+            'icon' => 'fas fa-user-plus',
+        ],
+        [
             'name' => 'Clientes',
             'route' => 'clients.index',
             'permission' => 'clients.index',

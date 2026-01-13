@@ -7,6 +7,8 @@ use App\Http\Controllers\ClientCompanyController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\PipelineController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -45,8 +47,21 @@ Auth::routes(["register" => false]);
 Route::middleware("auth")->group(function () {
     Route::get("/home", [App\Http\Controllers\HomeController::class, "index"])->name("home");
     
+    // Rotas de Leads e Pipelines
+    Route::resource("leads", LeadController::class);
+    Route::post("/leads/{lead}/move-stage", [LeadController::class, "moveStage"])->name("leads.move-stage");
+    Route::post("/leads/{lead}/change-pipeline", [LeadController::class, "changePipeline"])->name("leads.change-pipeline");
+    Route::get("/leads-without-pipeline", [LeadController::class, "withoutPipeline"])->name("leads.without-pipeline");
+    Route::get("/leads-archived", [LeadController::class, "archived"])->name("leads.archived");
+    Route::post("/leads/{lead}/archive", [LeadController::class, "archive"])->name("leads.archive");
+    Route::post("/leads/{lead}/restore", [LeadController::class, "restoreLead"])->name("leads.restore");
+    Route::post("/leads/{lead}/assign-pipeline", [LeadController::class, "assignPipeline"])->name("leads.assign-pipeline");
+    Route::resource("pipelines", PipelineController::class);
+    
     // Rotas de Clientes
     Route::resource("clients", ClientController::class);
+    Route::get("/clients-kanban", [ClientController::class, "kanban"])->name("clients.kanban");
+    Route::post("/clients/{client}/update-kanban-status", [ClientController::class, "updateKanbanStatus"])->name("clients.update-kanban-status");
     
     // Rotas para E-mails dos Clientes
     Route::post("/client-emails", [ClientEmailController::class, "store"])->name("client-emails.store");
@@ -241,7 +256,7 @@ Route::post('feature-flags/{featureKey}/toggle', [FeatureFlagController::class, 
 
 
 
-Route::resource("feature-flags", \App\Http\Controllers\FeatureFlagController::class);
+Route::resource("feature-flags", FeatureFlagController::class);
 Route::resource('payment_platforms', App\Http\Controllers\PaymentPlatformController::class);
 
 

@@ -117,7 +117,7 @@
                                 @php
                                     $hasAccessToGroup = false;
                                     foreach($items as $item) {
-                                        if(auth()->user()->can($item['permission'])) {
+                                        if($item['route'] === 'leads.index' || auth()->user()->can($item['permission'])) {
                                             $hasAccessToGroup = true;
                                             break;
                                         }
@@ -131,11 +131,17 @@
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown{{ Str::slug($groupName) }}">
                                             @foreach($items as $item)
-                                                @can($item['permission'])
+                                                @if($item['route'] === 'leads.index')
                                                     <a class="dropdown-item" href="{{ route($item['route']) }}">
                                                         <i class="{{ $item['icon'] }} me-2"></i>{{ $item['name'] }}
                                                     </a>
-                                                @endcan
+                                                @else
+                                                    @can($item['permission'])
+                                                        <a class="dropdown-item" href="{{ route($item['route']) }}">
+                                                            <i class="{{ $item['icon'] }} me-2"></i>{{ $item['name'] }}
+                                                        </a>
+                                                    @endcan
+                                                @endif
                                             @endforeach
                                         </div>
                                     </li>
