@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->string('nome')->nullable()->after('inscription_id');
-            $table->string('file_web_view')->nullable()->after('file_size');
-            $table->string('token')->nullable()->after('file_web_view');
+            if (!Schema::hasColumn('documents', 'nome')) {
+                $table->string('nome')->nullable()->after('inscription_id');
+            }
+            if (!Schema::hasColumn('documents', 'file_web_view')) {
+                $table->string('file_web_view')->nullable()->after('file_size');
+            }
+            if (!Schema::hasColumn('documents', 'token')) {
+                $table->string('token')->nullable()->after('file_web_view');
+            }
         });
     }
 
