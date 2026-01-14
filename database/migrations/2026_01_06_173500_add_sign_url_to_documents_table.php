@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('documents', function (Blueprint $table) {
-            $table->string('sign_url')->nullable()->after('file_web_view');
+            if (!Schema::hasColumn('documents', 'sign_url')) {
+                $table->string('sign_url')->nullable()->after('file_web_view');
+            }
         });
     }
 
