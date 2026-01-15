@@ -46,6 +46,30 @@ class Lead extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function histories()
+    {
+        return $this->hasMany(LeadHistory::class)->orderBy('created_at', 'desc');
+    }
+
+    public function customFieldValues()
+    {
+        return $this->hasMany(LeadCustomFieldValue::class);
+    }
+
+    public function getCustomFieldValue($fieldIdentifier)
+    {
+        $field = CustomField::where('identifier', $fieldIdentifier)->first();
+        if (!$field) {
+            return null;
+        }
+
+        $value = $this->customFieldValues()
+            ->where('custom_field_id', $field->id)
+            ->first();
+
+        return $value ? $value->value : null;
+    }
+
     // Acessores
     public function getFormattedPhoneAttribute()
     {

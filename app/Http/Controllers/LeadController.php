@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Models\LeadHistory;
 use App\Models\Pipeline;
 use App\Models\PipelineStage;
 use App\Models\User;
@@ -115,7 +116,19 @@ class LeadController extends Controller
             $validated['user_id'] = Auth::id();
         }
 
-        Lead::create($validated);
+        $lead = Lead::create($validated);
+
+        // Registrar no histórico
+        LeadHistory::logAction(
+            $lead->id,
+            'created',
+            'Lead criado no sistema',
+            [
+                'pipeline' => $lead->pipeline?->name,
+                'stage' => $lead->stage?->name,
+                'assigned_to' => $lead->user?->name
+            ]
+        );
 
         // Redireciona para a página apropriada
         if (!empty($validated['pipeline_id'])) {
@@ -129,8 +142,22 @@ class LeadController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load(['pipeline', 'stage', 'user']);
-        return view('leads.show', compact('lead'));
+        $lead->load(['pipeline', 'stage', 'user', 'histories.user', 'customFieldValues.customField.fieldGroup']);
+        
+        // Carregar grupos de campos com seus campos e valores
+        $fieldGroups = \App\Models\FieldGroup::with(['customFields'])
+            ->where('type', 'contato')
+            ->orderBy('order')
+            ->get()
+            ->map(function ($group) use ($lead) {
+                $group->customFields->each(function ($field) use ($lead) {
+                    $value = $lead->customFieldValues->where('custom_field_id', $field->id)->first();
+                    $field->value = $value ? $value->value : null;
+                });
+                return $group;
+            });
+        
+        return view('leads.show', compact('lead', 'fieldGroups'));
     }
 
     public function edit(Lead $lead)
@@ -155,7 +182,40 @@ class LeadController extends Controller
 
         $validated['is_whatsapp'] = $request->has('is_whatsapp');
 
+        // Capturar alterações
+        $changes = [];
+        $changed = false;
+        
+        if ($lead->name !== $validated['name']) {
+            $changes['name'] = ['old' => $lead->name, 'new' => $validated['name']];
+            $changed = true;
+        }
+        if ($lead->phone !== $validated['phone']) {
+            $changes['phone'] = ['old' => $lead->phone, 'new' => $validated['phone']];
+            $changed = true;
+        }
+        if ($lead->email !== $validated['email']) {
+            $changes['email'] = ['old' => $lead->email, 'new' => $validated['email']];
+            $changed = true;
+        }
+        if ($lead->user_id !== $validated['user_id']) {
+            $oldUser = $lead->user?->name ?? 'Não atribuído';
+            $newUser = User::find($validated['user_id'])?->name ?? 'Não atribuído';
+            $changes['assigned_to'] = ['old' => $oldUser, 'new' => $newUser];
+            $changed = true;
+        }
+
         $lead->update($validated);
+
+        // Registrar no histórico se houver mudanças
+        if ($changed) {
+            LeadHistory::logAction(
+                $lead->id,
+                'updated',
+                'Informações do lead foram atualizadas',
+                $changes
+            );
+        }
 
         return redirect()->route('leads.index', ['pipeline_id' => $lead->pipeline_id])
             ->with('success', 'Lead atualizado com sucesso!');
@@ -178,7 +238,20 @@ class LeadController extends Controller
         ]);
 
         try {
+            $oldStage = $lead->stage;
             $lead->moveToStage($validated['stage_id']);
+            
+            // Registrar no histórico
+            $newStage = PipelineStage::find($validated['stage_id']);
+            LeadHistory::logAction(
+                $lead->id,
+                'stage_changed',
+                "Etapa alterada de \"{$oldStage->name}\" para \"{$newStage->name}\"",
+                [
+                    'old_stage' => $oldStage->name,
+                    'new_stage' => $newStage->name
+                ]
+            );
             
             if (isset($validated['order'])) {
                 $lead->update(['stage_order' => $validated['order']]);
@@ -199,6 +272,13 @@ class LeadController extends Controller
     public function archive(Lead $lead)
     {
         $lead->archive();
+        
+        // Registrar no histórico
+        LeadHistory::logAction(
+            $lead->id,
+            'archived',
+            'Lead foi arquivado'
+        );
         
         return redirect()->back()->with('success', 'Lead arquivado com sucesso!');
     }
@@ -240,11 +320,30 @@ class LeadController extends Controller
                 throw new \Exception('A etapa selecionada não pertence ao pipeline escolhido.');
             }
 
+            $oldPipeline = $lead->pipeline;
+            $oldStage = $lead->stage;
+            
             // Atualizar o lead
             $lead->update([
                 'pipeline_id' => $validated['pipeline_id'],
                 'pipeline_stage_id' => $validated['pipeline_stage_id']
             ]);
+            
+            // Registrar no histórico
+            $newPipeline = Pipeline::find($validated['pipeline_id']);
+            $newStage = PipelineStage::find($validated['pipeline_stage_id']);
+            
+            LeadHistory::logAction(
+                $lead->id,
+                'pipeline_changed',
+                "Pipeline alterado de \"{$oldPipeline->name}\" para \"{$newPipeline->name}\"",
+                [
+                    'old_pipeline' => $oldPipeline->name,
+                    'new_pipeline' => $newPipeline->name,
+                    'old_stage' => $oldStage->name,
+                    'new_stage' => $newStage->name
+                ]
+            );
             
             return response()->json([
                 'success' => true,

@@ -58,6 +58,14 @@ Route::middleware("auth")->group(function () {
     Route::post("/leads/{lead}/assign-pipeline", [LeadController::class, "assignPipeline"])->name("leads.assign-pipeline");
     Route::resource("pipelines", PipelineController::class);
     
+    // Rotas de Campos Customizados
+    Route::get("/custom-fields/{type?}", [\App\Http\Controllers\CustomFieldController::class, "index"])->name("custom-fields.index");
+    Route::post("/custom-fields/groups", [\App\Http\Controllers\CustomFieldController::class, "storeGroup"])->name("custom-fields.groups.store");
+    Route::post("/custom-fields/fields", [\App\Http\Controllers\CustomFieldController::class, "storeField"])->name("custom-fields.fields.store");
+    Route::delete("/custom-fields/groups/{group}", [\App\Http\Controllers\CustomFieldController::class, "destroyGroup"])->name("custom-fields.groups.destroy");
+    Route::delete("/custom-fields/fields/{field}", [\App\Http\Controllers\CustomFieldController::class, "destroyField"])->name("custom-fields.fields.destroy");
+    Route::post("/leads/{lead}/custom-fields/{field}", [\App\Http\Controllers\CustomFieldController::class, "updateLeadFieldValue"])->name("leads.custom-fields.update");
+    
     // Rotas de Clientes
     Route::resource("clients", ClientController::class);
     Route::get("/clients-kanban", [ClientController::class, "kanban"])->name("clients.kanban");

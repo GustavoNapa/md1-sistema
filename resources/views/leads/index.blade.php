@@ -77,6 +77,14 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
+.lead-card-content {
+    cursor: pointer;
+}
+
+.lead-card-content:hover {
+    opacity: 0.9;
+}
+
 .lead-card.dragging {
     opacity: 0.5;
 }
@@ -250,7 +258,7 @@
                                         @forelse($stage->leads as $lead)
                                             <div class="lead-card" draggable="true" data-lead-id="{{ $lead->id }}">
                                                 <div class="d-flex align-items-start">
-                                                    <div class="flex-grow-1">
+                                                    <div class="flex-grow-1 lead-card-content" onclick="window.location='{{ route('leads.show', $lead) }}'">
                                                         <h6 class="mb-1">
                                                             <i class="fas fa-user-circle text-primary"></i>
                                                             {{ $lead->name }}
@@ -266,34 +274,13 @@
                                                                 <i class="fas fa-envelope"></i> {{ $lead->email }}
                                                             </p>
                                                         @endif
-                                                        @if($lead->origin)
-                                                            <p class="mb-1 small">
-                                                                <span class="badge bg-info">{{ $lead->origin_label }}</span>
-                                                            </p>
-                                                        @endif
-                                                        @if($lead->user)
-                                                            <p class="mb-0 small text-muted">
-                                                                <i class="fas fa-user"></i> {{ $lead->user->name }}
-                                                            </p>
-                                                        @endif
                                                     </div>
                                                     <div class="dropdown">
                                                         <button class="btn btn-sm btn-link text-secondary p-0" type="button" 
-                                                                data-bs-toggle="dropdown">
+                                                                data-bs-toggle="dropdown" onclick="event.stopPropagation();">
                                                             <i class="fas fa-ellipsis-v"></i>
                                                         </button>
                                                         <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <a class="dropdown-item" href="{{ route('leads.show', $lead) }}">
-                                                                    <i class="fas fa-eye"></i> Ver detalhes
-                                                                </a>
-                                                            </li>
-                                                            <li>
-                                                                <a class="dropdown-item" href="{{ route('leads.edit', $lead) }}">
-                                                                    <i class="fas fa-edit"></i> Editar
-                                                                </a>
-                                                            </li>
-                                                            <li><hr class="dropdown-divider"></li>
                                                             <li>
                                                                 <a class="dropdown-item" href="#" onclick="openChangeStageModal({{ $lead->id }}, {{ $selectedPipeline->id }}, {{ $lead->pipeline_stage_id }}); return false;">
                                                                     <i class="fas fa-exchange-alt"></i> Alterar etapa
@@ -318,7 +305,6 @@
                                                         </ul>
                                                     </div>
                                                 </div>
-                                                <small class="text-muted">há {{ $lead->created_at->diffForHumans() }}</small>
                                             </div>
                                         @empty
                                             <div class="empty-state">
