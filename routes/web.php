@@ -115,13 +115,17 @@ Route::middleware("auth")->group(function () {
     });
     
     // Rotas para registros relacionados às inscrições
+    Route::get("/preceptor-records/{preceptorRecord}", [App\Http\Controllers\PreceptorRecordController::class, "show"])->name("preceptor-records.show");
     Route::post("/preceptor-records", [App\Http\Controllers\PreceptorRecordController::class, "store"])->name("preceptor-records.store");
+    Route::put("/preceptor-records/{preceptorRecord}", [App\Http\Controllers\PreceptorRecordController::class, "update"])->name("preceptor-records.update");
     Route::delete("/preceptor-records/{preceptorRecord}", [App\Http\Controllers\PreceptorRecordController::class, "destroy"])->name("preceptor-records.destroy");
     
     Route::post("/payments", [App\Http\Controllers\PaymentController::class, "store"])->name("payments.store");
     Route::delete("/payments/{payment}", [App\Http\Controllers\PaymentController::class, "destroy"])->name("payments.destroy");
     
+    Route::get("/sessions/{session}", [App\Http\Controllers\SessionController::class, "show"])->name("sessions.show");
     Route::post("/sessions", [App\Http\Controllers\SessionController::class, "store"])->name("sessions.store");
+    Route::put("/sessions/{session}", [App\Http\Controllers\SessionController::class, "update"])->name("sessions.update");
     Route::delete("/sessions/{session}", [App\Http\Controllers\SessionController::class, "destroy"])->name("sessions.destroy");
     
     Route::post("/diagnostics", [App\Http\Controllers\DiagnosticController::class, "store"])->name("diagnostics.store");

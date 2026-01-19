@@ -546,7 +546,7 @@ class InscriptionController extends Controller
             "product",
             "preceptorRecords", 
             "payments", 
-            "sessions", 
+            "sessions.preceptorRecord", 
             "diagnostics",
             "onboardingEvents",
             "achievements",

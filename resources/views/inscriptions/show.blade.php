@@ -302,25 +302,39 @@
                                         <div class="table-responsive">
                                             <table class="table table-sm" id="tabelaPreceptores">
                                                 <thead>
-                                                <thead>
                                                     <tr>
                                                         <th>Nome</th>
                                                         <th>Data Informado</th>
                                                         <th>Data Contato</th>
+                                                        <th>Acessos</th>
                                                         <th>Ações</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     @foreach($inscription->preceptorRecords as $record)
                                                         <tr>
-                                                            <td>{{ $record->preceptor->name ?? 'N/A' }}</td>
-                                                            <td>{{ $record->informed_date ? $record->informed_date->format('d/m/Y') : 'N/A' }}</td>
-                                                            <td>{{ $record->contact_date ? $record->contact_date->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $record->nome_preceptor ?? 'N/A' }}</td>
+                                                            <td>{{ $record->data_preceptor_informado ? $record->data_preceptor_informado->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>{{ $record->data_preceptor_contato ? $record->data_preceptor_contato->format('d/m/Y') : 'N/A' }}</td>
+                                                            <td>
+                                                                @if($record->usm)
+                                                                    <span class="badge bg-primary me-1">USM</span>
+                                                                @endif
+                                                                @if($record->acesso_vitrine_gmc)
+                                                                    <span class="badge bg-success me-1">Vitrine GMC</span>
+                                                                @endif
+                                                                @if($record->medico_celebridade)
+                                                                    <span class="badge bg-warning">Celebridade</span>
+                                                                @endif
+                                                                @if(!$record->usm && !$record->acesso_vitrine_gmc && !$record->medico_celebridade)
+                                                                    N/A
+                                                                @endif
+                                                            </td>
                                                             <td>
                                                                 <button class="btn btn-sm btn-info" onclick="editarPreceptor({{ $record->id }})">
                                                                     <i class="fas fa-edit"></i>
                                                                 </button>
-                                                                <button class="btn btn-sm btn-danger" onclick="excluirPreceptor({{ $record->id }})">
+                                                                <button class="btn btn-sm btn-danger" onclick="excluirRegistro('preceptor', {{ $record->id }})">
                                                                     <i class="fas fa-trash"></i>
                                                                 </button>
                                                             </td>
@@ -330,7 +344,7 @@
                                             </table>
                                         </div>
                                     @else
-                                        <p>Nenhum registro de preceptor encontrado.</p>
+                                        <p class="text-center py-4">Nenhum registro de preceptor encontrado.</p>
                                     @endif
                                 </div>
 
@@ -438,27 +452,49 @@
                                     <table class="table table-sm">
                                         <thead>
                                             <tr>
-                                                <th>Data</th>
-                                                <th>Tipo</th>
+                                                <th>Nº</th>
+                                                <th>Preceptor</th>
+                                                <th>Fase</th>
+                                                <th>Data Agendada</th>
                                                 <th>Status</th>
+                                                <th>Compareceu</th>
                                                 <th>Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($inscription->sessions as $session)
                                                 <tr>
-                                                    <td>{{ $session->session_date->format('d/m/Y') }}</td>
-                                                    <td>{{ $session->type }}</td>
+                                                    <td>{{ $session->numero_sessao }}</td>
+                                                    <td>{{ $session->preceptorRecord->nome_preceptor ?? 'N/A' }}</td>
+                                                    <td>{{ $session->fase ?? 'N/A' }}</td>
+                                                    <td>{{ $session->data_agendada ? $session->data_agendada->format('d/m/Y H:i') : 'N/A' }}</td>
                                                     <td>
-                                                        <span class="badge {{ $session->status === 'completed' ? 'bg-success' : 'bg-warning' }}">
-                                                            {{ $session->status }}
+                                                        @php
+                                                            $statusColors = [
+                                                                'agendada' => 'bg-warning',
+                                                                'realizada' => 'bg-success',
+                                                                'cancelada' => 'bg-danger',
+                                                                'reagendada' => 'bg-info'
+                                                            ];
+                                                        @endphp
+                                                        <span class="badge {{ $statusColors[$session->status] ?? 'bg-secondary' }}">
+                                                            {{ ucfirst($session->status) }}
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        @if($session->medico_compareceu === true || $session->medico_compareceu === 1)
+                                                            <span class="badge bg-success">Sim</span>
+                                                        @elseif($session->medico_compareceu === false || $session->medico_compareceu === 0)
+                                                            <span class="badge bg-danger">Não</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">N/A</span>
+                                                        @endif
                                                     </td>
                                                     <td>
                                                         <button class="btn btn-sm btn-info" onclick="editarSessao({{ $session->id }})">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
-                                                        <button class="btn btn-sm btn-danger" onclick="excluirSessao({{ $session->id }})">
+                                                        <button class="btn btn-sm btn-danger" onclick="excluirRegistro('session', {{ $session->id }})">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </td>
@@ -468,7 +504,7 @@
                                     </table>
                                 </div>
                             @else
-                                <p>Nenhum registro de sessão encontrado.</p>
+                                <p class="text-center py-4">Nenhum registro de sessão encontrado.</p>
                             @endif
                         </div>
 
