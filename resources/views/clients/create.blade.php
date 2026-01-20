@@ -228,6 +228,96 @@
                             @enderror
                         </div>
 
+                        <!-- Seção de Status e Pausa -->
+                        <hr class="my-4">
+                        <h5 class="mb-3">Status e Acompanhamento</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select @error('status') is-invalid @enderror" 
+                                            id="status" name="status">
+                                        <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Ativo</option>
+                                        <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
+                                        <option value="paused" {{ old('status') == 'paused' ? 'selected' : '' }}>Em Pausa</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="phase" class="form-label">Fase</label>
+                                    <select class="form-select @error('phase') is-invalid @enderror" 
+                                            id="phase" name="phase">
+                                        <option value="">Selecione uma fase</option>
+                                        @foreach(\App\Models\Client::getPhaseOptions() as $value => $label)
+                                            <option value="{{ $value }}" {{ old('phase') == $value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text">Para cálculo das 27 semanas previstas</div>
+                                    @error('phase')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="phase_start_date" class="form-label">Data de Início da Fase</label>
+                                    <input type="date" class="form-control @error('phase_start_date') is-invalid @enderror" 
+                                           id="phase_start_date" name="phase_start_date" value="{{ old('phase_start_date') }}">
+                                    <div class="form-text">Obrigatório se fase for selecionada</div>
+                                    @error('phase_start_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos de Pausa (exibidos condicionalmente) -->
+                        <div id="pause-fields" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-pause-circle"></i> Preencha os detalhes da pausa
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="pause_start_date" class="form-label">Data de Início da Pausa *</label>
+                                        <input type="date" class="form-control @error('pause_start_date') is-invalid @enderror" 
+                                               id="pause_start_date" name="pause_start_date" value="{{ old('pause_start_date') }}">
+                                        @error('pause_start_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="pause_end_date" class="form-label">Data de Fim da Pausa</label>
+                                        <input type="date" class="form-control @error('pause_end_date') is-invalid @enderror" 
+                                               id="pause_end_date" name="pause_end_date" value="{{ old('pause_end_date') }}">
+                                        <div class="form-text">Opcional - deixe vazio se não souber</div>
+                                        @error('pause_end_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="pause_reason" class="form-label">Motivo da Pausa</label>
+                                        <textarea class="form-control @error('pause_reason') is-invalid @enderror" 
+                                                  id="pause_reason" name="pause_reason" rows="2">{{ old('pause_reason') }}</textarea>
+                                        @error('pause_reason')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a href="{{ route('clients.index') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Voltar
@@ -334,6 +424,55 @@ $(document).ready(function() {
     $('#region').on('input blur', function() {
         const region = $(this).val().trim();
         const regionField = $(this);
+        
+        regionField.removeClass('is-invalid is-valid');
+        
+        if (region.length > 0 && region !== '') {
+            if (/^\d+$/.test(region)) {
+                regionField.addClass('is-invalid');
+            } else {
+                regionField.addClass('is-valid');
+            }
+        }
+    });
+
+    // Controle de exibição dos campos de pausa
+    $('#status').on('change', function() {
+        const status = $(this).val();
+        const pauseFields = $('#pause-fields');
+        
+        if (status === 'paused') {
+            pauseFields.slideDown();
+            $('#pause_start_date').prop('required', true);
+        } else {
+            pauseFields.slideUp();
+            $('#pause_start_date').prop('required', false);
+            // Limpar campos de pausa
+            $('#pause_start_date, #pause_end_date').val('');
+            $('#pause_reason').val('');
+        }
+    });
+
+    // Verificar no carregamento da página se deve mostrar campos de pausa
+    if ($('#status').val() === 'paused') {
+        $('#pause-fields').show();
+        $('#pause_start_date').prop('required', true);
+    }
+
+    // Validação de fase - tornar data obrigatória quando fase é selecionada
+    $('#phase').on('change', function() {
+        const phase = $(this).val();
+        const phaseStartDate = $('#phase_start_date');
+        
+        if (phase && phase !== '') {
+            phaseStartDate.prop('required', true);
+            phaseStartDate.closest('.mb-3').find('.form-text').addClass('text-danger fw-bold');
+        } else {
+            phaseStartDate.prop('required', false);
+            phaseStartDate.closest('.mb-3').find('.form-text').removeClass('text-danger fw-bold');
+        }
+    });
+});
         
         regionField.removeClass('is-invalid is-valid');
         

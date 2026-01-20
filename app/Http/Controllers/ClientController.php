@@ -39,13 +39,14 @@ class ClientController extends Controller
             });
         }
 
-        // filtro por status (ativo/inativo)
+        // filtro por status (ativo/inativo/pausa)
         if ($status = $request->input('status')) {
-            if ($status === 'active') {
-                $clientsQuery->where('active', true);
-            } elseif ($status === 'inactive') {
-                $clientsQuery->where('active', false);
-            }
+            $clientsQuery->where('status', $status);
+        }
+
+        // filtro por fase
+        if ($phase = $request->input('phase')) {
+            $clientsQuery->where('phase', $phase);
         }
 
         // filtro por especialidade
@@ -110,6 +111,12 @@ class ClientController extends Controller
             'region' => 'nullable|string|max:100|not_regex:/^[0-9]+$/|in:Norte,Nordeste,Centro-Oeste,Sudeste,Sul',
             'instagram' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20|regex:/^(\+?55\s?)?\(?(\d{2})\)?\s?(\d{4,5})\-?(\d{4})$/',
+            'status' => 'nullable|in:active,inactive,paused',
+            'pause_start_date' => 'nullable|date|required_if:status,paused',
+            'pause_end_date' => 'nullable|date|after:pause_start_date',
+            'pause_reason' => 'nullable|string|max:500',
+            'phase' => 'nullable|string|max:50',
+            'phase_start_date' => 'nullable|date|required_with:phase',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'cpf.required' => 'O CPF é obrigatório.',
@@ -126,7 +133,17 @@ class ClientController extends Controller
             'region.not_regex' => 'A região não pode conter apenas números.',
             'region.in' => 'Selecione uma região válida.',
             'phone.regex' => 'O telefone deve estar no formato brasileiro válido. Ex: (11) 98765-4321 ou 11987654321.',
+            'status.in' => 'Selecione um status válido.',
+            'pause_start_date.required_if' => 'A data de início da pausa é obrigatória quando o status é "Em Pausa".',
+            'pause_end_date.after' => 'A data de fim da pausa deve ser posterior à data de início.',
+            'phase_start_date.required_with' => 'A data de início da fase é obrigatória quando uma fase é selecionada.',
         ]);
+
+        // Atualiza a semana da fase automaticamente se phase_start_date for fornecido
+        if (isset($validated['phase_start_date'])) {
+            $client = new Client($validated);
+            $validated['phase_week'] = $client->calculatePhaseWeek();
+        }
 
         Client::create($validated);
 
@@ -185,6 +202,12 @@ class ClientController extends Controller
             'instagram' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20|regex:/^(\+?55\s?)?\(?(\d{2})\)?\s?(\d{4,5})\-?(\d{4})$/',
             'active' => 'boolean',
+            'status' => 'nullable|in:active,inactive,paused',
+            'pause_start_date' => 'nullable|date|required_if:status,paused',
+            'pause_end_date' => 'nullable|date|after:pause_start_date',
+            'pause_reason' => 'nullable|string|max:500',
+            'phase' => 'nullable|string|max:50',
+            'phase_start_date' => 'nullable|date|required_with:phase',
         ], [
             'name.required' => 'O nome é obrigatório.',
             'cpf.required' => 'O CPF é obrigatório.',
@@ -201,7 +224,18 @@ class ClientController extends Controller
             'region.not_regex' => 'A região não pode conter apenas números.',
             'region.in' => 'Selecione uma região válida.',
             'phone.regex' => 'O telefone deve estar no formato brasileiro válido. Ex: (11) 98765-4321 ou 11987654321.',
+            'status.in' => 'Selecione um status válido.',
+            'pause_start_date.required_if' => 'A data de início da pausa é obrigatória quando o status é "Em Pausa".',
+            'pause_end_date.after' => 'A data de fim da pausa deve ser posterior à data de início.',
+            'phase_start_date.required_with' => 'A data de início da fase é obrigatória quando uma fase é selecionada.',
         ]);
+
+        // Atualiza a semana da fase automaticamente se phase_start_date for fornecido
+        if (isset($validated['phase_start_date'])) {
+            $clientTemp = clone $client;
+            $clientTemp->phase_start_date = $validated['phase_start_date'];
+            $validated['phase_week'] = $clientTemp->calculatePhaseWeek();
+        }
 
         $client->update($validated);
 

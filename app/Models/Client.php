@@ -23,13 +23,24 @@ class Client extends Model
         'region',
         'instagram',
         'phone',
-        'active'
+        'active',
+        'status',
+        'pause_start_date',
+        'pause_end_date',
+        'pause_reason',
+        'phase',
+        'phase_start_date',
+        'phase_week'
     ];
 
     protected $casts = [
         'birth_date' => 'date',
         'active' => 'boolean',
-        'media_faturamento' => 'decimal:2'
+        'media_faturamento' => 'decimal:2',
+        'pause_start_date' => 'date',
+        'pause_end_date' => 'date',
+        'phase_start_date' => 'date',
+        'phase_week' => 'integer'
     ];
 
     // Relacionamentos
@@ -93,7 +104,85 @@ class Client extends Model
 
     public function getStatusLabelAttribute()
     {
-        return $this->active ? 'Ativo' : 'Inativo';
+        $labels = [
+            'active' => 'Ativo',
+            'inactive' => 'Inativo',
+            'paused' => 'Em Pausa'
+        ];
+        
+        return $labels[$this->status ?? 'active'] ?? ($this->active ? 'Ativo' : 'Inativo');
+    }
+
+    /**
+     * Retorna lista de opções de status
+     */
+    public static function getStatusOptions()
+    {
+        return [
+            'active' => 'Ativo',
+            'inactive' => 'Inativo',
+            'paused' => 'Em Pausa'
+        ];
+    }
+
+    /**
+     * Retorna lista de opções de fases
+     */
+    public static function getPhaseOptions()
+    {
+        return [
+            'fase_1' => 'Fase 1 - Inicial',
+            'fase_2' => 'Fase 2 - Desenvolvimento',
+            'fase_3' => 'Fase 3 - Consolidação',
+            'fase_4' => 'Fase 4 - Avançado',
+            'concluido' => 'Concluído'
+        ];
+    }
+
+    /**
+     * Calcula a semana atual baseado na data de início da fase
+     */
+    public function calculatePhaseWeek()
+    {
+        if (!$this->phase_start_date) {
+            return null;
+        }
+
+        $startDate = $this->phase_start_date;
+        $currentDate = now();
+        
+        // Calcula a diferença em semanas
+        $weeksDiff = $startDate->diffInWeeks($currentDate);
+        
+        // Retorna a semana atual (1-27)
+        return min($weeksDiff + 1, 27);
+    }
+
+    /**
+     * Verifica se o cliente está em pausa
+     */
+    public function isPaused()
+    {
+        return $this->status === 'paused';
+    }
+
+    /**
+     * Retorna o tempo restante de pausa em dias
+     */
+    public function getRemainingPauseDays()
+    {
+        if (!$this->isPaused() || !$this->pause_end_date) {
+            return null;
+        }
+
+        $endDate = $this->pause_end_date;
+        $now = now();
+
+        if ($endDate->isFuture()) {
+            return $now->diffInDays($endDate);
+        }
+
+        return 0;
     }
 
     public function getSexoLabelAttribute()

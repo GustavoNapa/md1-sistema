@@ -1,5 +1,38 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+.section-title {
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.card.border-info, .card.border-warning {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    font-weight: bold;
+    font-size: 11px;
+    line-height: 20px;
+}
+
+.alert .fa-2x {
+    opacity: 0.8;
+}
+
+.table-borderless td {
+    padding: 0.5rem 0.75rem;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">

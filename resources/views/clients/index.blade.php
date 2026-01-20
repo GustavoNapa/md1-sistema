@@ -18,7 +18,7 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{{ route('clients.index') }}" class="row g-2 mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <input type="search" name="q" value="{{ request('q') }}" class="form-control" placeholder="Buscar por nome, CPF, email ou telefone">
                         </div>
                         <div class="col-md-2">
@@ -26,9 +26,18 @@
                                 <option value="">Todos os status</option>
                                 <option value="active" @if(request('status')=='active') selected @endif>Ativo</option>
                                 <option value="inactive" @if(request('status')=='inactive') selected @endif>Inativo</option>
+                                <option value="paused" @if(request('status')=='paused') selected @endif>Em Pausa</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <select name="phase" class="form-select">
+                                <option value="">Todas as fases</option>
+                                @foreach(\App\Models\Client::getPhaseOptions() as $value => $label)
+                                    <option value="{{ $value }}" @if(request('phase') == $value) selected @endif>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
                             <select name="specialty" class="form-select">
                                 <option value="">Todas as especialidades</option>
                                 @foreach($specialties ?? [] as $sp)
@@ -65,6 +74,7 @@
                                     <th>Email</th>
                                     <th>Telefone</th>
                                     <th>Especialidade</th>
+                                    <th>Fase</th>
                                     <th>Status</th>
                                     <th>Inscrições</th>
                                     <th>Ações</th>
@@ -79,9 +89,41 @@
                                         <td>{{ $client->phone ? $client->formatted_phone : '-' }}</td>
                                         <td>{{ $client->specialty ?? '-' }}</td>
                                         <td>
-                                            <span class="badge {{ $client->active ? 'bg-success' : 'bg-danger' }}">
+                                            @if($client->phase)
+                                                <span class="badge bg-info">
+                                                    {{ \App\Models\Client::getPhaseOptions()[$client->phase] ?? $client->phase }}
+                                                </span>
+                                                @if($client->phase_week)
+                                                    <small class="text-muted d-block">Semana {{ $client->phase_week }}/27</small>
+                                                @endif
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @php
+                                                $statusClass = match($client->status ?? 'active') {
+                                                    'active' => 'bg-success',
+                                                    'paused' => 'bg-warning text-dark',
+                                                    'inactive' => 'bg-danger',
+                                                    default => 'bg-secondary'
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $statusClass }}">
                                                 {{ $client->status_label }}
                                             </span>
+                                            @if($client->isPaused() && $client->pause_end_date)
+                                                <small class="text-muted d-block">
+                                                    @php
+                                                        $daysRemaining = $client->getRemainingPauseDays();
+                                                    @endphp
+                                                    @if($daysRemaining > 0)
+                                                        {{ $daysRemaining }} dias restantes
+                                                    @else
+                                                        Vencida
+                                                    @endif
+                                                </small>
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-info">
@@ -120,7 +162,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted">
+                                        <td colspan="9" class="text-center text-muted">
                                             Nenhum cliente cadastrado.
                                             <a href="{{ route('clients.create') }}">Cadastre o primeiro cliente</a>
                                         </td>
