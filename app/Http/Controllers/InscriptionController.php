@@ -516,9 +516,20 @@ class InscriptionController extends Controller
             // Recarregar a inscrição com relacionamentos necessários para o webhook
             $inscription->load(['client.addresses', 'product.webhooks', 'payments']);
 
-            // Disparar evento (mantém compatibilidade) e também o job do webhook com tipo explícito
-            // \App\Events\InscriptionCreated::dispatch($inscription, 'inscricao.created');
-            \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.created');
+            // Verificar se o webhook deve ser enviado (checkbox no formulário)
+            // Aceita: 1, '1', true, 'true', 'on' como verdadeiro
+            // Aceita: 0, '0', false, 'false', null como falso
+            $webhookValue = $request->input('send_webhook', '1');
+            $shouldSendWebhook = in_array($webhookValue, [1, '1', true, 'true', 'on'], true);
+
+            if ($shouldSendWebhook) {
+                // Disparar evento (mantém compatibilidade) e também o job do webhook com tipo explícito
+                // \App\Events\InscriptionCreated::dispatch($inscription, 'inscricao.created');
+                \App\Jobs\SendInscriptionWebhook::dispatch($inscription, 'inscricao.created');
+                Log::info('Webhook dispatched for inscription', ['id' => $inscription->id, 'webhook_value' => $webhookValue]);
+            } else {
+                Log::info('Webhook skipped for inscription (user choice)', ['id' => $inscription->id, 'webhook_value' => $webhookValue]);
+            }
 
             Log::info('Inscription processing finished', ['id' => $inscription->id]);
 

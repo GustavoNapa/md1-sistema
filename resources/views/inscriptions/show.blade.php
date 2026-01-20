@@ -5,6 +5,41 @@
 @endphp
 @extends('layouts.app')
 
+@section('styles')
+<style>
+#file-info {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#documento_arquivo {
+    cursor: pointer;
+}
+
+#documento_arquivo:hover {
+    border-color: #667eea;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
@@ -806,16 +841,17 @@
                                                             <td>{{ $doc->file_type ?? 'N/A' }}</td>
                                                             <td>{{ $doc->formatted_file_size }}</td>
                                                             <td>
-                                                                @if($doc->file_web_view)
-                                                                    <a href="{{ $doc->file_web_view }}" target="_blank" class="btn btn-sm btn-info" title="Visualizar">
+                                                                @if($doc->file_path)
+                                                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-sm btn-info" title="Visualizar">
                                                                         <i class="fas fa-eye"></i>
                                                                     </a>
-                                                                @endif
-                                                                @if($doc->file_path)
                                                                     <a href="{{ asset('storage/' . $doc->file_path) }}" download class="btn btn-sm btn-success" title="Baixar">
                                                                         <i class="fas fa-download"></i>
                                                                     </a>
                                                                 @elseif($doc->file_web_view)
+                                                                    <a href="{{ $doc->file_web_view }}" target="_blank" class="btn btn-sm btn-info" title="Visualizar">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
                                                                     <a href="{{ $doc->file_web_view }}" download class="btn btn-sm btn-success" title="Baixar">
                                                                         <i class="fas fa-download"></i>
                                                                     </a>
@@ -835,6 +871,63 @@
                                             <p>Nenhum documento de contrato cadastrado para esta inscrição.</p>
                                         </div>
                                     @endif
+                                </div>
+
+                                <!-- Modal Upload Documento Contrato -->
+                                <div class="modal fade" id="modalContratoDocumento" tabindex="-1" aria-labelledby="modalContratoDocumentoLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="modalContratoDocumentoLabel">
+                                                    <i class="fas fa-file-upload"></i> Adicionar Documento de Contrato
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form id="formContratoDocumento" enctype="multipart/form-data">
+                                                @csrf
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="documento_titulo" class="form-label">Título do Documento *</label>
+                                                        <input type="text" class="form-control" id="documento_titulo" name="title" required
+                                                               placeholder="Ex: Contrato de Prestação de Serviços">
+                                                        <small class="text-muted">Nome descritivo para identificar o documento</small>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label for="documento_nome" class="form-label">Nome do Arquivo (opcional)</label>
+                                                        <input type="text" class="form-control" id="documento_nome" name="nome"
+                                                               placeholder="Ex: contrato_assinado.pdf">
+                                                        <small class="text-muted">Deixe em branco para usar o nome original do arquivo</small>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label for="documento_arquivo" class="form-label">Arquivo PDF *</label>
+                                                        <input type="file" class="form-control" id="documento_arquivo" name="file" 
+                                                               accept=".pdf,application/pdf" required>
+                                                        <small class="text-muted">Apenas arquivos PDF, tamanho máximo: 10MB</small>
+                                                        <div id="file-info" class="mt-2 d-none">
+                                                            <div class="alert alert-info mb-0">
+                                                                <i class="fas fa-file-pdf"></i> <span id="file-name"></span> (<span id="file-size"></span>)
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="alert alert-warning">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <strong>Importante:</strong> Este documento será armazenado no sistema e ficará disponível para download na aba de Contrato.
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times"></i> Cancelar
+                                                    </button>
+                                                    <button type="submit" class="btn btn-primary" id="btnSalvarDocumento">
+                                                        <i class="fas fa-upload"></i> Fazer Upload
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Bônus Tab -->
@@ -1947,10 +2040,153 @@
             }, 3000);
         }
 
+        function mostrarAlerta(mensagem, tipo = 'info') {
+            const tipoClasses = {
+                'success': 'alert-success',
+                'danger': 'alert-danger',
+                'warning': 'alert-warning',
+                'info': 'alert-info'
+            };
+            
+            const alertClass = tipoClasses[tipo] || 'alert-info';
+            
+            const alert = $(`
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                    style="top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 500px;">
+                    ${mensagem}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            
+            $('body').append(alert);
+            
+            // Remover automaticamente após 5 segundos
+            setTimeout(() => {
+                alert.alert('close');
+            }, 5000);
+        }
+
         // Funções para modal de contrato documento
         function abrirModalContratoDocumento() {
-            alert('Funcionalidade de adicionar documento de contrato será implementada.');
-            // TODO: Implementar modal para adicionar documento
+            // Resetar formulário
+            document.getElementById('formContratoDocumento').reset();
+            document.getElementById('file-info').classList.add('d-none');
+            
+            // Abrir modal
+            const modal = new bootstrap.Modal(document.getElementById('modalContratoDocumento'));
+            modal.show();
+        }
+
+        // Preview do arquivo selecionado
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('documento_arquivo');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Validar tipo de arquivo
+                        if (file.type !== 'application/pdf') {
+                            mostrarAlerta('Por favor, selecione apenas arquivos PDF.', 'warning');
+                            this.value = '';
+                            document.getElementById('file-info').classList.add('d-none');
+                            return;
+                        }
+
+                        // Validar tamanho (10MB)
+                        if (file.size > 10 * 1024 * 1024) {
+                            mostrarAlerta('O arquivo é muito grande. Tamanho máximo: 10MB', 'warning');
+                            this.value = '';
+                            document.getElementById('file-info').classList.add('d-none');
+                            return;
+                        }
+
+                        // Mostrar info do arquivo
+                        document.getElementById('file-name').textContent = file.name;
+                        document.getElementById('file-size').textContent = formatFileSize(file.size);
+                        document.getElementById('file-info').classList.remove('d-none');
+
+                        // Auto-preencher nome se estiver vazio
+                        const nomeInput = document.getElementById('documento_nome');
+                        if (!nomeInput.value) {
+                            nomeInput.value = file.name;
+                        }
+                    } else {
+                        document.getElementById('file-info').classList.add('d-none');
+                    }
+                });
+            }
+
+            // Submit do formulário
+            const form = document.getElementById('formContratoDocumento');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const btnSalvar = document.getElementById('btnSalvarDocumento');
+                    const btnSalvarHtml = btnSalvar.innerHTML;
+                    btnSalvar.disabled = true;
+                    btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+                    const formData = new FormData(this);
+
+                    fetch(`/inscriptions/{{ $inscription->id }}/contract-documents`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err;
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            mostrarAlerta('Documento adicionado com sucesso!', 'success');
+                            bootstrap.Modal.getInstance(document.getElementById('modalContratoDocumento')).hide();
+                            
+                            // Recarregar página após pequeno delay
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            mostrarAlerta('Erro ao adicionar documento: ' + (data.message || 'Erro desconhecido'), 'danger');
+                            btnSalvar.disabled = false;
+                            btnSalvar.innerHTML = btnSalvarHtml;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        
+                        // Tratar erros de validação do Laravel
+                        if (error.errors) {
+                            let errorMessages = Object.values(error.errors).flat().join('<br>');
+                            mostrarAlerta(errorMessages, 'danger');
+                        } else if (error.message) {
+                            mostrarAlerta('Erro: ' + error.message, 'danger');
+                        } else {
+                            mostrarAlerta('Erro ao adicionar documento. Verifique o console para mais detalhes.', 'danger');
+                        }
+                        
+                        btnSalvar.disabled = false;
+                        btnSalvar.innerHTML = btnSalvarHtml;
+                    });
+                });
+            }
+        });
+
+        // Função auxiliar para formatar tamanho de arquivo
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
         function excluirContratoDocumento(documentId) {

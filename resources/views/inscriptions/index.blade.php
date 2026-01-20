@@ -112,7 +112,9 @@
                                     @forelse($inscriptions as $inscription)
                                         <tr>
                                             <td>
-                                                <strong>{{ $inscription->client->name }}</strong><br>
+                                                <a href="{{ route('clients.show', $inscription->client) }}" class="text-decoration-none" title="Ver perfil do cliente">
+                                                    <strong class="text-primary">{{ $inscription->client->name }}</strong>
+                                                </a><br>
                                                 <small class="text-muted">{{ $inscription->client->email }}</small>
                                             </td>
                                             <td>{{ $inscription->product->name ?? '-' }}</td>

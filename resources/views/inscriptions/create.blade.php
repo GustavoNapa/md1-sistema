@@ -1,16 +1,83 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+.webhook-toggle {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.webhook-toggle:has(input:checked) {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+}
+
+.webhook-toggle:has(input:not(:checked)) {
+    background: #f8d7da;
+    border-color: #dc3545;
+}
+
+.webhook-toggle .form-check-input:checked {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.webhook-toggle .form-check-input:not(:checked) {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.webhook-toggle .form-check-input {
+    cursor: pointer;
+    width: 3rem;
+    height: 1.5rem;
+}
+
+.webhook-toggle label {
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: 500;
+    user-select: none;
+}
+
+.webhook-toggle i {
+    transition: all 0.3s ease;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <h4>Nova Inscrição</h4>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Nova Inscrição</h4>
+                    <div class="form-check form-switch webhook-toggle" 
+                         data-bs-toggle="tooltip" 
+                         data-bs-placement="left" 
+                         title="Controla se o webhook será enviado ao n8n para processar a liberação e automações">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               role="switch" 
+                               id="send_webhook" 
+                               name="send_webhook" 
+                               value="1" 
+                               checked>
+                        <label class="form-check-label" for="send_webhook">
+                            <i class="fas fa-paper-plane"></i> Enviar webhook?
+                        </label>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form id="inscription-form" method="POST" action="{{ route('inscriptions.store') }}">
                         @csrf
+                        
+                        <!-- Campo hidden para controlar envio de webhook -->
+                        <input type="hidden" id="send_webhook_hidden" name="send_webhook" value="1">
 
                         <!-- Seção Cliente -->
                         <div class="row">
@@ -873,5 +940,37 @@
             if (el) el.dispatchEvent(new Event('change'));
         });
     })();
+
+    // Inicializar tooltips do Bootstrap
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Feedback visual ao alterar checkbox do webhook
+        const webhookCheckbox = document.getElementById('send_webhook');
+        const webhookHidden = document.getElementById('send_webhook_hidden');
+        
+        if (webhookCheckbox && webhookHidden) {
+            webhookCheckbox.addEventListener('change', function() {
+                const icon = this.parentElement.querySelector('i');
+                
+                // Sincronizar o valor do campo hidden com o checkbox
+                webhookHidden.value = this.checked ? '1' : '0';
+                
+                if (this.checked) {
+                    icon.className = 'fas fa-paper-plane';
+                    // Pequeno feedback visual
+                    this.parentElement.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        this.parentElement.style.transform = 'scale(1)';
+                    }, 200);
+                } else {
+                    icon.className = 'fas fa-ban';
+                }
+            });
+        }
+    });
 </script>
 @endsection

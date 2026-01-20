@@ -28,19 +28,33 @@ class ContractDocumentController extends Controller
             'title' => 'required|string|max:255',
             'file_web_view' => 'nullable|url',
             'token' => 'nullable|string',
-            'file' => 'nullable|file|max:10240', // 10MB max
+            'file' => 'required|file|mimes:pdf|max:10240', // 10MB max, PDF only
+        ], [
+            'title.required' => 'O título do documento é obrigatório.',
+            'file.required' => 'Por favor, selecione um arquivo PDF.',
+            'file.mimes' => 'O arquivo deve ser um PDF.',
+            'file.max' => 'O arquivo não pode ser maior que 10MB.',
         ]);
 
         $validated['inscription_id'] = $inscription->id;
+        $validated['category'] = 'contrato'; // Definir categoria como contrato
 
-        // Handle file upload if present
+        // Handle file upload
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $path = $file->store('contract-documents', 'public');
+            
+            // Gerar nome único para o arquivo
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('contract-documents/' . $inscription->id, $fileName, 'public');
             
             $validated['file_path'] = $path;
             $validated['file_type'] = $file->getMimeType();
             $validated['file_size'] = $file->getSize();
+            
+            // Se nome não foi fornecido, usar o nome original do arquivo
+            if (empty($validated['nome'])) {
+                $validated['nome'] = $file->getClientOriginalName();
+            }
         }
 
         $document = Document::create($validated);
@@ -70,7 +84,11 @@ class ContractDocumentController extends Controller
             'title' => 'required|string|max:255',
             'file_web_view' => 'nullable|url',
             'token' => 'nullable|string',
-            'file' => 'nullable|file|max:10240',
+            'file' => 'nullable|file|mimes:pdf|max:10240',
+        ], [
+            'title.required' => 'O título do documento é obrigatório.',
+            'file.mimes' => 'O arquivo deve ser um PDF.',
+            'file.max' => 'O arquivo não pode ser maior que 10MB.',
         ]);
 
         // Handle file upload if present
@@ -81,11 +99,17 @@ class ContractDocumentController extends Controller
             }
 
             $file = $request->file('file');
-            $path = $file->store('contract-documents', 'public');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('contract-documents/' . $inscription->id, $fileName, 'public');
             
             $validated['file_path'] = $path;
             $validated['file_type'] = $file->getMimeType();
             $validated['file_size'] = $file->getSize();
+            
+            // Atualizar nome se necessário
+            if (empty($validated['nome'])) {
+                $validated['nome'] = $file->getClientOriginalName();
+            }
         }
 
         $document->update($validated);

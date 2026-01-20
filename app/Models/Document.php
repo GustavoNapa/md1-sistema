@@ -76,9 +76,17 @@ class Document extends Model
 
         // Se tiver file_path, gerar URL de storage
         if ($this->file_path) {
-            return \Storage::url($this->file_path);
+            return asset('storage/' . $this->file_path);
         }
 
         return null;
+    }
+
+    /**
+     * Get public storage URL (alias para getDownloadUrl)
+     */
+    public function getPublicUrlAttribute()
+    {
+        return $this->getDownloadUrl();
     }
 }
