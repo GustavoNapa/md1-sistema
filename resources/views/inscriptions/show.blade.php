@@ -141,23 +141,28 @@
                                 <div class="col-md-12">
                                     <h5 class="border-bottom pb-2">Informações do Cliente</h5>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Cliente:</strong> {{ $inscription->client->name ?? 'N/A' }}</p>
-                                    <p><strong>Email:</strong> {{ $inscription->client->email ?? 'N/A' }}</p>
-                                    <p><strong>CPF:</strong> {{ $inscription->client->cpf ?? 'N/A' }}</p>
+
+                                <div class="col-12">
+                                    @if($inscription->client)
+                                        @include('clients.tabs.info', ['client' => $inscription->client])
+                                    @else
+                                        <p class="text-muted">Cliente não informado.</p>
+                                    @endif
                                 </div>
+                            </div>
+
+                            {{-- Mantém informações do vendedor/produto abaixo da seção de cliente --}}
+                            <div class="row mb-4">
                                 <div class="col-md-6">
                                     <p><strong>Vendedor:</strong> {{ $inscription->vendor->name ?? 'Não informado' }}</p>
+                                </div>
+                                <div class="col-md-6">
                                     <p><strong>Produto:</strong> {{ $inscription->product->name ?? 'N/A' }}</p>
                                     @if($inscription->product)
-                                        <p><strong>Preço do Produto:</strong> 
+                                        <p><strong>Preço do Produto:</strong>
                                             @if($inscription->product->offer_price && $inscription->product->offer_price < $inscription->product->price)
-                                                <span class="text-success">
-                                                    R$ {{ number_format($inscription->product->offer_price, 2, ',', '.') }}
-                                                </span>
-                                                <small class="text-muted text-decoration-line-through">
-                                                    R$ {{ number_format($inscription->product->price, 2, ',', '.') }}
-                                                </small>
+                                                <span class="text-success">R$ {{ number_format($inscription->product->offer_price, 2, ',', '.') }}</span>
+                                                <small class="text-muted text-decoration-line-through">R$ {{ number_format($inscription->product->price, 2, ',', '.') }}</small>
                                             @else
                                                 R$ {{ number_format($inscription->product->price, 2, ',', '.') }}
                                             @endif
