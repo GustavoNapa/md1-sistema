@@ -14,6 +14,7 @@ class Bonus extends Model
         "description",
         "release_date",
         "expiration_date",
+        "notes",
     ];
 
     protected $casts = [

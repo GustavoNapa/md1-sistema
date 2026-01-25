@@ -361,6 +361,7 @@ class InscriptionController extends Controller
                 "bonuses.*.description" => "required_with:bonuses|string|max:500",
                 "bonuses.*.release_date" => "nullable|date",
                 "bonuses.*.expiration_date" => "nullable|date|after_or_equal:bonuses.*.release_date",
+                "bonuses.*.notes" => "nullable|string|max:1000",
             ];
 
             if ($isParcelado) {
@@ -475,8 +476,9 @@ class InscriptionController extends Controller
                     
                     $inscription->bonuses()->create([
                         'description' => trim($bonusData['description']),
-                        'release_date' => $bonusData['release_date'] ?? now()->format('Y-m-d'),
+                        'release_date' => !empty($bonusData['release_date']) ? $bonusData['release_date'] : null,
                         'expiration_date' => !empty($bonusData['expiration_date']) ? $bonusData['expiration_date'] : null,
+                        'notes' => !empty($bonusData['notes']) ? trim($bonusData['notes']) : null,
                     ]);
                     $bonusCount++;
                 }

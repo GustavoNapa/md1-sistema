@@ -574,21 +574,35 @@
                                                    class="form-control" 
                                                    name="bonuses[__INDEX__][description]" 
                                                    placeholder="Ex: 6 meses de acesso à Universidade Secretária Médica">
+                                            <small class="form-text text-muted">Descreva o bônus prometido ao cliente</small>
                                         </div>
                                     </div>
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label class="form-label">Data de Liberação</label>
+                                            <label class="form-label">Data de Liberação <small class="text-muted">(Opcional)</small></label>
                                             <input type="date" 
                                                    class="form-control" 
                                                    name="bonuses[__INDEX__][release_date]">
+                                            <small class="form-text text-muted">Quando o bônus será liberado para o cliente</small>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Data de Expiração <small class="text-muted">(Opcional)</small></label>
                                             <input type="date" 
                                                    class="form-control" 
                                                    name="bonuses[__INDEX__][expiration_date]">
+                                            <small class="form-text text-muted">Quando o bônus expira (deixe vazio se não expira)</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Observações <small class="text-muted">(Opcional)</small></label>
+                                            <textarea class="form-control" 
+                                                      name="bonuses[__INDEX__][notes]" 
+                                                      rows="2"
+                                                      placeholder="Ex: Ativar após 1 mês de início do curso, ou qualquer observação importante"></textarea>
+                                            <small class="form-text text-muted">Adicione observações importantes sobre este bônus</small>
                                         </div>
                                     </div>
                                 </div>
@@ -1037,7 +1051,7 @@
         
         if (!container || !template || !addBtn) return;
         
-        function addBonus(description = '', releaseDate = '', expirationDate = '') {
+        function addBonus(description = '', releaseDate = '', expirationDate = '', notes = '') {
             const html = template.innerHTML
                 .replace(/__INDEX__/g, bonusIndex)
                 .replace(/__NUMBER__/g, bonusIndex + 1);
@@ -1054,6 +1068,9 @@
             }
             if (expirationDate) {
                 bonusElement.querySelector('input[name*="[expiration_date]"]').value = expirationDate;
+            }
+            if (notes) {
+                bonusElement.querySelector('textarea[name*="[notes]"]').value = notes;
             }
             
             container.appendChild(bonusElement);
@@ -1106,7 +1123,8 @@
                 addBonus(
                     @json($bonus['description'] ?? ''),
                     @json($bonus['release_date'] ?? ''),
-                    @json($bonus['expiration_date'] ?? '')
+                    @json($bonus['expiration_date'] ?? ''),
+                    @json($bonus['notes'] ?? '')
                 );
             @endforeach
         @endif

@@ -1177,6 +1177,10 @@
                         <label for="bonusExpirationDate" class="form-label">Data de Expiração (Opcional)</label>
                         <input type="date" class="form-control" id="bonusExpirationDate" name="expiration_date">
                     </div>
+                    <div class="mb-3">
+                        <label for="bonusNotes" class="form-label">Observações (Opcional)</label>
+                        <textarea class="form-control" id="bonusNotes" name="notes" rows="3" placeholder="Ex: Ativar após 1 mês de início do curso"></textarea>
+                    </div>
                     <button type="submit" class="btn btn-primary">Salvar Bônus</button>
                 </form>
             </div>
@@ -1373,6 +1377,7 @@
             document.getElementById('bonusDescription').value = '';
             document.getElementById('bonusReleaseDate').value = '';
             document.getElementById('bonusExpirationDate').value = '';
+            document.getElementById('bonusNotes').value = '';
             
             console.log('✅ Formulário resetado');
             
@@ -1484,6 +1489,7 @@
                 document.getElementById('bonusDescription').value = bonus.description || '';
                 document.getElementById('bonusReleaseDate').value = formatDateForInput(bonus.release_date);
                 document.getElementById('bonusExpirationDate').value = formatDateForInput(bonus.expiration_date);
+                document.getElementById('bonusNotes').value = bonus.notes || '';
             }
         };
 
@@ -1645,7 +1651,8 @@
                         body: JSON.stringify({
                             description: document.getElementById('bonusDescription').value,
                             release_date: document.getElementById('bonusReleaseDate').value || null,
-                            expiration_date: document.getElementById('bonusExpirationDate').value || null
+                            expiration_date: document.getElementById('bonusExpirationDate').value || null,
+                            notes: document.getElementById('bonusNotes').value || null
                         })
                     })
                     .then(response => {
