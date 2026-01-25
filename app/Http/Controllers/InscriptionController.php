@@ -356,6 +356,11 @@ class InscriptionController extends Controller
                 "bairro" => "required|string|max:255",
                 "cidade" => "required|string|max:255",
                 "estado" => "required|string|size:2",
+                // Validação de bônus
+                "bonuses" => "nullable|array",
+                "bonuses.*.description" => "required_with:bonuses|string|max:500",
+                "bonuses.*.release_date" => "nullable|date",
+                "bonuses.*.expiration_date" => "nullable|date|after_or_equal:bonuses.*.release_date",
             ];
 
             if ($isParcelado) {
@@ -459,6 +464,27 @@ class InscriptionController extends Controller
             $validatedForLog = $validated;
             if (isset($validatedForLog['cpf_cnpj'])) unset($validatedForLog['cpf_cnpj']);
             Log::info('Inscription created (pre-relations)', ['id' => $inscription->id, 'validated' => $validatedForLog]);
+
+            // Processar bônus se houver
+            if ($request->has('bonuses') && is_array($request->bonuses)) {
+                $bonusCount = 0;
+                foreach ($request->bonuses as $bonusData) {
+                    if (empty($bonusData['description'])) {
+                        continue;
+                    }
+                    
+                    $inscription->bonuses()->create([
+                        'description' => trim($bonusData['description']),
+                        'release_date' => $bonusData['release_date'] ?? now()->format('Y-m-d'),
+                        'expiration_date' => !empty($bonusData['expiration_date']) ? $bonusData['expiration_date'] : null,
+                    ]);
+                    $bonusCount++;
+                }
+                
+                if ($bonusCount > 0) {
+                    Log::info("Inscription #{$inscription->id}: {$bonusCount} bônus cadastrados");
+                }
+            }
 
             // Criar endereço
             $address = $client->addresses()->create([

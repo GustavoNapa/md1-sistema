@@ -21,9 +21,19 @@ class Bonus extends Model
         "expiration_date" => "date",
     ];
 
+    /**
+     * Relacionamento com Inscription
+     * subscription_id na verdade referencia inscriptions.id
+     */
+    public function inscription()
+    {
+        return $this->belongsTo(Inscription::class, 'subscription_id');
+    }
+    
+    // Alias para compatibilidade
     public function subscription()
     {
-        return $this->belongsTo(Subscription::class);
+        return $this->inscription();
     }
 }
 
