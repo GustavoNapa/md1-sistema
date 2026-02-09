@@ -52,7 +52,32 @@ class InscriptionController extends Controller
             ));
         }
 
-        $query = Inscription::with(["client", "vendor", "product"]);
+        $query = Inscription::with([
+            "client",
+            "vendor",
+            "product",
+            "preceptorRecords" => function($q) { $q->latest()->limit(3); },
+            "payments" => function($q) { $q->latest()->limit(3); },
+            "sessions" => function($q) { $q->latest()->limit(3); },
+            "diagnostics" => function($q) { $q->latest()->limit(3); },
+            "achievements" => function($q) { $q->latest()->limit(3); },
+            "followUps" => function($q) { $q->latest()->limit(3); },
+            "documents" => function($q) { $q->latest()->limit(3); },
+            "bonuses" => function($q) { $q->latest()->limit(3); },
+            "faturamentos" => function($q) { $q->latest()->limit(3); },
+            "renovacoes" => function($q) { $q->latest()->limit(3); },
+        ])->withCount([
+            'preceptorRecords',
+            'payments',
+            'sessions',
+            'diagnostics',
+            'achievements',
+            'followUps',
+            'documents',
+            'bonuses',
+            'faturamentos',
+            'renovacoes',
+        ]);
 
         // filtros
         if ($clientName = $request->input('client_name')) {
@@ -254,6 +279,16 @@ class InscriptionController extends Controller
             'calendar_week' => 'Semana',
             'classification' => 'Fase',
             'created_at' => 'Criado em',
+            'preceptors_count' => 'Preceptores',
+            'payments_count' => 'Pagamentos',
+            'sessions_count' => 'Sessões',
+            'diagnostics_count' => 'Diagnósticos',
+            'achievements_count' => 'Conquistas',
+            'followups_count' => 'Follow-ups',
+            'documents_count' => 'Documentos',
+            'bonuses_count' => 'Bônus',
+            'faturamentos_count' => 'Faturamentos',
+            'renovacoes_count' => 'Renovações',
         ];
     }
 

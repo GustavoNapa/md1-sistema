@@ -124,11 +124,21 @@
                                 'calendar_week' => null,
                                 'classification' => null,
                                 'created_at' => ['asc' => 'created_at_asc', 'desc' => 'created_at_desc'],
+                                'preceptors_count' => null,
+                                'payments_count' => null,
+                                'sessions_count' => null,
+                                'diagnostics_count' => null,
+                                'achievements_count' => null,
+                                'followups_count' => null,
+                                'documents_count' => null,
+                                'bonuses_count' => null,
+                                'faturamentos_count' => null,
+                                'renovacoes_count' => null,
                             ];
                             $currentOrder = request('order_by', 'created_at_desc');
                         @endphp
-                        <div class="table-responsive">
-                            <table class="table table-striped">
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="table table-striped" style="min-width: 1400px;">
                                 <thead>
                                     <tr>
                                         @foreach($availableColumns as $key => $label)
@@ -223,6 +233,196 @@
                                                                 @break
                                                             @case('created_at')
                                                                 {{ $inscription->created_at ? $inscription->created_at->format('d/m/Y H:i') : '-' }}
+                                                                @break
+                                                            @case('preceptors_count')
+                                                                @php
+                                                                    $preceptorTooltip = '<div class="text-start"><strong>Preceptores</strong><br>';
+                                                                    if ($inscription->preceptorRecords->count() > 0) {
+                                                                        foreach ($inscription->preceptorRecords->take(3) as $p) {
+                                                                            $preceptorTooltip .= '<small>• ' . e($p->nome_preceptor ?? 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->preceptor_records_count > 3) {
+                                                                            $preceptorTooltip .= '<small>... +' . ($inscription->preceptor_records_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $preceptorTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $preceptorTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $preceptorTooltip !!}">
+                                                                    {{ $inscription->preceptor_records_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('payments_count')
+                                                                @php
+                                                                    $paymentTooltip = '<div class="text-start"><strong>Pagamentos</strong><br>';
+                                                                    if ($inscription->payments->count() > 0) {
+                                                                        foreach ($inscription->payments->take(3) as $p) {
+                                                                            $paymentTooltip .= '<small>• R$ ' . number_format($p->valor ?? 0, 2, ',', '.') . ' - ' . ($p->data_pagamento ? $p->data_pagamento->format('d/m/Y') : 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->payments_count > 3) {
+                                                                            $paymentTooltip .= '<small>... +' . ($inscription->payments_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $paymentTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $paymentTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $paymentTooltip !!}">
+                                                                    {{ $inscription->payments_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('sessions_count')
+                                                                @php
+                                                                    $sessionTooltip = '<div class="text-start"><strong>Sessões</strong><br>';
+                                                                    if ($inscription->sessions->count() > 0) {
+                                                                        foreach ($inscription->sessions->take(3) as $s) {
+                                                                            $sessionTooltip .= '<small>• #' . $s->numero_sessao . ' - ' . ($s->status ?? 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->sessions_count > 3) {
+                                                                            $sessionTooltip .= '<small>... +' . ($inscription->sessions_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $sessionTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $sessionTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $sessionTooltip !!}">
+                                                                    {{ $inscription->sessions_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('diagnostics_count')
+                                                                @php
+                                                                    $diagTooltip = '<div class="text-start"><strong>Diagnósticos</strong><br>';
+                                                                    if ($inscription->diagnostics->count() > 0) {
+                                                                        foreach ($inscription->diagnostics->take(3) as $d) {
+                                                                            $diagTooltip .= '<small>• ' . ($d->created_at ? $d->created_at->format('d/m/Y') : 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->diagnostics_count > 3) {
+                                                                            $diagTooltip .= '<small>... +' . ($inscription->diagnostics_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $diagTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $diagTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $diagTooltip !!}">
+                                                                    {{ $inscription->diagnostics_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('achievements_count')
+                                                                @php
+                                                                    $achievTooltip = '<div class="text-start"><strong>Conquistas</strong><br>';
+                                                                    if ($inscription->achievements->count() > 0) {
+                                                                        foreach ($inscription->achievements->take(3) as $a) {
+                                                                            $achievTooltip .= '<small>• ' . e($a->title ?? 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->achievements_count > 3) {
+                                                                            $achievTooltip .= '<small>... +' . ($inscription->achievements_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $achievTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $achievTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $achievTooltip !!}">
+                                                                    {{ $inscription->achievements_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('followups_count')
+                                                                @php
+                                                                    $followTooltip = '<div class="text-start"><strong>Follow-ups</strong><br>';
+                                                                    if ($inscription->followUps->count() > 0) {
+                                                                        foreach ($inscription->followUps->take(3) as $f) {
+                                                                            $followTooltip .= '<small>• ' . ($f->date ? $f->date->format('d/m/Y') : 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->follow_ups_count > 3) {
+                                                                            $followTooltip .= '<small>... +' . ($inscription->follow_ups_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $followTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $followTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $followTooltip !!}">
+                                                                    {{ $inscription->follow_ups_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('documents_count')
+                                                                @php
+                                                                    $docTooltip = '<div class="text-start"><strong>Documentos</strong><br>';
+                                                                    if ($inscription->documents->count() > 0) {
+                                                                        foreach ($inscription->documents->take(3) as $doc) {
+                                                                            $docTooltip .= '<small>• ' . e($doc->tipo ?? 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->documents_count > 3) {
+                                                                            $docTooltip .= '<small>... +' . ($inscription->documents_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $docTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $docTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $docTooltip !!}">
+                                                                    {{ $inscription->documents_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('bonuses_count')
+                                                                @php
+                                                                    $bonusTooltip = '<div class="text-start"><strong>Bônus</strong><br>';
+                                                                    if ($inscription->bonuses->count() > 0) {
+                                                                        foreach ($inscription->bonuses->take(3) as $b) {
+                                                                            $bonusTooltip .= '<small>• ' . e($b->description ?? 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->bonuses_count > 3) {
+                                                                            $bonusTooltip .= '<small>... +' . ($inscription->bonuses_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $bonusTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $bonusTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $bonusTooltip !!}">
+                                                                    {{ $inscription->bonuses_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('faturamentos_count')
+                                                                @php
+                                                                    $fatTooltip = '<div class="text-start"><strong>Faturamentos</strong><br>';
+                                                                    if ($inscription->faturamentos->count() > 0) {
+                                                                        foreach ($inscription->faturamentos->take(3) as $fat) {
+                                                                            $fatTooltip .= '<small>• R$ ' . number_format($fat->valor ?? 0, 2, ',', '.') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->faturamentos_count > 3) {
+                                                                            $fatTooltip .= '<small>... +' . ($inscription->faturamentos_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $fatTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $fatTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $fatTooltip !!}">
+                                                                    {{ $inscription->faturamentos_count ?? 0 }}
+                                                                </span>
+                                                                @break
+                                                            @case('renovacoes_count')
+                                                                @php
+                                                                    $renTooltip = '<div class="text-start"><strong>Renovações</strong><br>';
+                                                                    if ($inscription->renovacoes->count() > 0) {
+                                                                        foreach ($inscription->renovacoes->take(3) as $ren) {
+                                                                            $renTooltip .= '<small>• ' . ($ren->data_renovacao ? $ren->data_renovacao->format('d/m/Y') : 'N/A') . '</small><br>';
+                                                                        }
+                                                                        if ($inscription->renovacoes_count > 3) {
+                                                                            $renTooltip .= '<small>... +' . ($inscription->renovacoes_count - 3) . ' mais</small>';
+                                                                        }
+                                                                    } else {
+                                                                        $renTooltip .= '<small>Nenhum registro</small>';
+                                                                    }
+                                                                    $renTooltip .= '</div>';
+                                                                @endphp
+                                                                <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-html="true" title="{!! $renTooltip !!}">
+                                                                    {{ $inscription->renovacoes_count ?? 0 }}
+                                                                </span>
                                                                 @break
                                                             @default
                                                                 -
@@ -343,6 +543,30 @@
 .table.table-striped {
     font-size: 0.75rem;
     margin-bottom: 0;
+    table-layout: auto;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }
 
 .table thead th {
