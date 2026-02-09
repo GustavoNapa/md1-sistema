@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             UserSeeder::class,
             InscriptionSeeder::class,
+            DevTestingSeeder::class,
         ]);
     }
 }

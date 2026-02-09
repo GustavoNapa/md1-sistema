@@ -278,7 +278,7 @@
                                 </div>
                                 <div class="col-md-5">
                                     <p><strong>Método Pagamento:</strong> 
-                                        {{ $inscription->payment_method ? AppHttpControllersInscriptionController::getPaymentMethodOptions()[$inscription->payment_method] ?? $inscription->payment_method : 'Não informado' }}
+                                        {{ $inscription->payment_method_label ?? 'Não informado' }}
                                     </p>
                                 </div>
                                 <div class="col-md-2">
@@ -410,30 +410,30 @@
                                     $pl_rest = $inscription->meio_pagamento_restante ? PaymentPlatform::find($inscription->meio_pagamento_restante) : null;
                                     $ch_rest = $inscription->payment_channel_restante ? PaymentChannel::find($inscription->payment_channel_restante) : null;
 
-                                    function formatForma($val) {
+                                    $formatForma = function($val) {
                                         if ($val === null || $val === '') return 'N/A';
                                         if (is_numeric($val)) {
                                             return ((int)$val === 1) ? 'À vista' : ((int)$val) . 'x';
                                         }
                                         return (string)$val;
-                                    }
+                                    };
                                 @endphp
 
                                 <div class="row">
                                     <div class="col-md-4">
                                         <p><strong>Pagamento Único - Plataforma:</strong> {{ $pl_avista?->name ?? 'N/A' }}</p>
                                         <p><strong>Canal:</strong> {{ $ch_avista?->name ?? 'N/A' }}</p>
-                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_avista ?? '') }}</p>
+                                        <p><strong>Forma:</strong> {{ $formatForma($inscription->forma_pagamento_avista ?? '') }}</p>
                                     </div>
                                     <div class="col-md-4">
                                         <p><strong>Entrada - Plataforma:</strong> {{ $pl_entrada?->name ?? 'N/A' }}</p>
                                         <p><strong>Canal:</strong> {{ $ch_entrada?->name ?? 'N/A' }}</p>
-                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_entrada ?? '') }}</p>
+                                        <p><strong>Forma:</strong> {{ $formatForma($inscription->forma_pagamento_entrada ?? '') }}</p>
                                     </div>
                                     <div class="col-md-4">
                                         <p><strong>Restante - Plataforma:</strong> {{ $pl_rest?->name ?? 'N/A' }}</p>
                                         <p><strong>Canal:</strong> {{ $ch_rest?->name ?? 'N/A' }}</p>
-                                        <p><strong>Forma:</strong> {{ formatForma($inscription->forma_pagamento_restante ?? '') }}</p>
+                                        <p><strong>Forma:</strong> {{ $formatForma($inscription->forma_pagamento_restante ?? '') }}</p>
                                     </div>
                                 </div>
                             </div>

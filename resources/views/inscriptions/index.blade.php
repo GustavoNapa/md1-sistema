@@ -156,22 +156,37 @@
                                                 </th>
                                             @endif
                                         @endforeach
-                                        <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($inscriptions as $inscription)
-                                        <tr>
+                                        @php
+                                            $tooltipContent = 
+                                                "<div class='text-start'>" .
+                                                "<strong>" . e($inscription->client->name) . "</strong><br>" .
+                                                "<small>ID: #" . $inscription->id . "</small><br>" .
+                                                "<hr class='my-1'>" .
+                                                "Email: " . e($inscription->client->email ?? '-') . "<br>" .
+                                                "Produto: " . e($inscription->product->name ?? '-') . "<br>" .
+                                                "Vendedor: " . e($inscription->vendor->name ?? '-') . "<br>" .
+                                                "Fase: " . e($inscription->classification ?? '-') . "<br>" .
+                                                "<hr class='my-1'>" .
+                                                "<em>Clique para visualizar</em>" .
+                                                "</div>";
+                                        @endphp
+                                        <tr class="excel-row" 
+                                            onclick="window.location.href='{{ route('inscriptions.show', $inscription) }}'" 
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-html="true" 
+                                            data-bs-placement="right"
+                                            title="{!! $tooltipContent !!}"
+                                            style="cursor: pointer;">
                                             @foreach($availableColumns as $key => $label)
                                                 @if(in_array($key, $visibleColumns))
                                                     <td>
                                                         @switch($key)
                                                             @case('client')
-                                                                <a href="{{ route('clients.show', $inscription->client) }}" class="text-decoration-none" title="Ver perfil do cliente">
-                                                                    <strong class="text-primary">{{ $inscription->client->name }}</strong>
-                                                                </a>
-                                                                <br>
-                                                                <small class="text-muted">{{ $inscription->client->email ?? '-' }}</small>
+                                                                <strong>{{ $inscription->client->name }}</strong>
                                                                 @break
                                                             @case('client_email')
                                                                 <small class="text-muted">{{ $inscription->client->email ?? '-' }}</small>
@@ -215,39 +230,10 @@
                                                     </td>
                                                 @endif
                                             @endforeach
-                                            <td>
-                                                <div class="btn-group btn-group-sm" role="group" aria-label="Ações da inscrição">
-                                                    <a href="{{ route('inscriptions.show', $inscription) }}" 
-                                                       class="btn btn-primary" 
-                                                       title="Visualizar inscrição"
-                                                       data-bs-toggle="tooltip">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{{ route('inscriptions.edit', $inscription) }}" 
-                                                       class="btn btn-warning" 
-                                                       title="Editar inscrição"
-                                                       data-bs-toggle="tooltip">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <form action="{{ route('inscriptions.destroy', $inscription) }}" 
-                                                          method="POST" 
-                                                          style="display: inline;"
-                                                          onsubmit="return confirm('Tem certeza que deseja excluir esta inscrição? Esta ação não pode ser desfeita.')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" 
-                                                                class="btn btn-danger btn-sm" 
-                                                                title="Excluir inscrição"
-                                                                data-bs-toggle="tooltip">
-                                                            <i class="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted">
+                                            <td colspan="{{ count($visibleColumns) }}" class="text-center text-muted">
                                                 Nenhuma inscrição cadastrada.
                                                 <a href="{{ route('inscriptions.create') }}">Cadastre a primeira inscrição</a>
                                             </td>
@@ -351,6 +337,101 @@
 
 .gap-3 {
     gap: 1rem !important;
+}
+
+/* Excel-style table */
+.table.table-striped {
+    font-size: 0.75rem;
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #e8e8e8;
+    border: 1px solid #c0c0c0;
+    padding: 4px 8px;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.table thead th a {
+    font-size: 0.7rem;
+}
+
+.table tbody td {
+    border: 1px solid #d0d0d0;
+    padding: 3px 8px;
+    vertical-align: middle;
+    line-height: 1.3;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #ffffff;
+}
+
+.excel-row:hover {
+    background-color: #e3f2fd !important;
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr.excel-row {
+    transition: all 0.1s ease;
+}
+
+.badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    font-weight: 500;
+}
+
+/* Status colors - subtle Excel-like */
+.badge.bg-success {
+    background-color: #c6efce !important;
+    color: #006100 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffeb9c !important;
+    color: #9c5700 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ffc7ce !important;
+    color: #9c0006 !important;
+}
+
+.badge.bg-info {
+    background-color: #bdd7ee !important;
+    color: #0c5288 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #e0e0e0 !important;
+    color: #505050 !important;
+}
+
+/* Compact form controls */
+.form-control, .form-select {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Tooltips */
+.tooltip-inner {
+    max-width: 350px;
+    text-align: left;
 }
 </style>
 
@@ -511,6 +592,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.Inputmask) {
         var elements = document.querySelectorAll('.date-br');
         Inputmask({'mask': '99/99/9999', 'placeholder': 'dd/mm/aaaa', 'clearIncomplete': false}).mask(elements);
+    }
+
+    // Inicializar tooltips do Bootstrap para linhas da tabela
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                html: true,
+                trigger: 'hover focus'
+            });
+        });
     }
 
 });
