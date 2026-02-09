@@ -205,7 +205,13 @@ class InscriptionController extends Controller
                 break;
         }
 
-        $inscriptions = $query->paginate(15)->appends($request->except('page'));
+        $groupingAll = $request->boolean('grouping_all');
+
+        if ($groupingAll) {
+            $inscriptions = $query->get();
+        } else {
+            $inscriptions = $query->paginate(15)->appends($request->except('page'));
+        }
 
         // dados para filtros (dropdowns)
         $vendors = Vendor::where('active', true)->orderBy('name')->get();
@@ -225,6 +231,7 @@ class InscriptionController extends Controller
         "displayStartTo",
         "availableColumns",
         "visibleColumns",
+            "groupingAll",
     ));
     }
 

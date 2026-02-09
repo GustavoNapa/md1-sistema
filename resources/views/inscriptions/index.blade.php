@@ -109,6 +109,17 @@
                             </div>
                         </form>
 
+                        <!-- Área de Agrupamento de Campos -->
+                        <div class="grouping-zone mb-3" id="groupingZone">
+                            <div class="grouping-header">
+                                <i class="fas fa-layer-group"></i>
+                                <span>Arraste colunas aqui para agrupar</span>
+                            </div>
+                            <div class="grouping-items" id="groupingItems">
+                                <!-- Grupos ativos aparecerão aqui -->
+                            </div>
+                        </div>
+
                         @php
                             $sortMap = [
                                 'client' => ['asc' => 'name_asc', 'desc' => 'name_desc'],
@@ -154,7 +165,10 @@
                                                         $icon = str_ends_with($currentOrder, '_asc') ? 'fa-arrow-up' : 'fa-arrow-down';
                                                     }
                                                 @endphp
-                                                <th>
+                                                <th data-column="{{ $key }}" 
+                                                    data-label="{{ $label }}"
+                                                    class="draggable-column" 
+                                                    draggable="true">
                                                     @if($sortConfig)
                                                         <a href="{{ request()->fullUrlWithQuery(['order_by' => $nextOrder]) }}" class="text-decoration-none text-reset d-flex align-items-center gap-1">
                                                             <span>{{ $label }}</span>
@@ -657,6 +671,194 @@
     max-width: 350px;
     text-align: left;
 }
+
+/* Grouping Zone */
+.grouping-zone {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+}
+
+.grouping-zone.drag-over {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    transform: scale(1.02);
+}
+
+.grouping-header {
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.grouping-header i {
+    font-size: 1rem;
+}
+
+.grouping-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 20px;
+}
+
+.grouping-items:empty::before {
+    content: '';
+    display: block;
+    width: 100%;
+}
+
+.group-item {
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: all 0.2s ease;
+}
+
+.group-item:hover {
+    background: white;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.group-item .group-type {
+    background: #667eea;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+}
+
+.group-item .remove-group {
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.group-item .remove-group:hover {
+    background: #cc0000;
+    transform: scale(1.1);
+}
+
+.grouping-options {
+    margin-top: 4px;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.grouping-options select {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    margin-left: 4px;
+}
+
+/* Draggable columns */
+.draggable-column {
+    cursor: move;
+    position: relative;
+    user-select: none;
+}
+
+.draggable-column:hover::after {
+    content: '⋮⋮';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.draggable-column.dragging {
+    opacity: 0.5;
+}
+
+/* Grouped rows */
+.group-header-row {
+    background: linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 100%);
+    font-weight: 600;
+    cursor: pointer;
+    border-left: 4px solid #667eea !important;
+}
+
+.group-header-row:hover {
+    background: linear-gradient(90deg, #e8e8e8 0%, #f0f0f0 100%);
+}
+
+.group-header-row td {
+    padding: 8px !important;
+}
+
+.group-header-row[data-level="1"] td {
+    padding-left: 28px !important;
+}
+
+.group-header-row[data-level="2"] td {
+    padding-left: 44px !important;
+}
+
+.group-header-row[data-level="3"] td {
+    padding-left: 60px !important;
+}
+
+.group-toggle {
+    display: inline-block;
+    width: 16px;
+    text-align: center;
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.group-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.grouped-row {
+    display: none;
+}
+
+.grouped-row.show {
+    display: table-row;
+}
+
+.grouped-row td:first-child {
+    padding-left: 30px !important;
+}
+
+.group-count {
+    background: #667eea;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    margin-left: 8px;
+}
 </style>
 
 @endsection
@@ -678,6 +880,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const kanbanView = document.getElementById('kanbanView');
     const loadingSpinner = document.getElementById('loadingSpinner');
     const kanbanBoard = document.getElementById('kanbanBoard');
+
+    const groupingStateKey = 'inscriptionsGroupingState';
+    const isGroupingAll = {{ ($groupingAll ?? false) ? 'true' : 'false' }};
+    const paginationInfo = {
+        hasPages: {{ (method_exists($inscriptions, 'hasPages') && $inscriptions->hasPages()) ? 'true' : 'false' }},
+        total: {{ method_exists($inscriptions, 'total') ? $inscriptions->total() : (is_countable($inscriptions) ? count($inscriptions) : 0) }},
+        count: {{ is_countable($inscriptions) ? count($inscriptions) : 0 }}
+    };
+    let isRestoringState = false;
 
     viewModeSelect.addEventListener('change', function() {
         const selectedMode = this.value;
@@ -829,6 +1040,449 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ========== SISTEMA DE AGRUPAMENTO DE CAMPOS ==========
+    
+    // Definir tipos de colunas para diferentes opções de agrupamento
+    const columnTypes = {
+        'client': { type: 'text', label: 'Cliente' },
+        'client_email': { type: 'text', label: 'E-mail' },
+        'product': { type: 'text', label: 'Produto' },
+        'class_group': { type: 'text', label: 'Turma' },
+        'status': { type: 'text', label: 'Status' },
+        'vendor': { type: 'text', label: 'Vendedor' },
+        'valor_total': { type: 'number', label: 'Valor Total' },
+        'amount_paid': { type: 'number', label: 'Valor Pago' },
+        'payment_method': { type: 'text', label: 'Forma de Pagamento' },
+        'start_date': { type: 'date', label: 'Data Início' },
+        'calendar_week': { type: 'number', label: 'Semana' },
+        'classification': { type: 'text', label: 'Fase' },
+        'created_at': { type: 'date', label: 'Criado em' },
+        'preceptors_count': { type: 'number', label: 'Preceptores' },
+        'payments_count': { type: 'number', label: 'Pagamentos' },
+        'sessions_count': { type: 'number', label: 'Sessões' },
+        'diagnostics_count': { type: 'number', label: 'Diagnósticos' },
+        'achievements_count': { type: 'number', label: 'Conquistas' },
+        'followups_count': { type: 'number', label: 'Follow-ups' },
+        'documents_count': { type: 'number', label: 'Documentos' },
+        'bonuses_count': { type: 'number', label: 'Bônus' },
+        'faturamentos_count': { type: 'number', label: 'Faturamentos' },
+        'renovacoes_count': { type: 'number', label: 'Renovações' }
+    };
+
+    let activeGroups = [];
+    let collapsedGroups = new Set();
+    let draggedColumn = null;
+
+    // Habilitar drag nas colunas
+    const columns = document.querySelectorAll('.draggable-column');
+    columns.forEach(column => {
+        column.addEventListener('dragstart', handleDragStart);
+        column.addEventListener('dragend', handleDragEnd);
+    });
+
+    // Configurar drop zone
+    const groupingZone = document.getElementById('groupingZone');
+    const groupingItems = document.getElementById('groupingItems');
+    
+    if (groupingZone) {
+        groupingZone.addEventListener('dragover', handleDragOver);
+        groupingZone.addEventListener('dragleave', handleDragLeave);
+        groupingZone.addEventListener('drop', handleDrop);
+    }
+
+    function saveGroupingState() {
+        try {
+            localStorage.setItem(groupingStateKey, JSON.stringify(activeGroups));
+        } catch (e) {
+            console.warn('Nao foi possivel salvar o estado de agrupamento', e);
+        }
+    }
+
+    function restoreGroupingState() {
+        const raw = localStorage.getItem(groupingStateKey);
+        if (!raw) return;
+        let parsed = [];
+        try {
+            parsed = JSON.parse(raw) || [];
+        } catch (e) {
+            console.warn('Nao foi possivel restaurar agrupamentos salvos', e);
+            return;
+        }
+        if (!Array.isArray(parsed) || parsed.length === 0) return;
+        isRestoringState = true;
+        parsed.forEach(g => {
+            if (!g || !g.key) return;
+            const label = (columnTypes[g.key]?.label) || g.label || g.key;
+            addGroup(g.key, label, { restore: true, mode: g.mode });
+        });
+        isRestoringState = false;
+        if (!isGroupingAll && paginationInfo.hasPages && activeGroups.length > 0) {
+            handleGroupingPaginationSwitch();
+        }
+    }
+
+    function handleGroupingPaginationSwitch() {
+        if (activeGroups.length === 0) return;
+        if (isGroupingAll) return;
+        if (!paginationInfo.hasPages) return;
+
+        const params = new URLSearchParams(window.location.search);
+        params.set('grouping_all', '1');
+        params.delete('page');
+        saveGroupingState();
+        window.location.search = params.toString();
+    }
+
+    function handleGroupingPaginationResetIfNeeded() {
+        if (!isGroupingAll) return;
+        if (activeGroups.length > 0) return;
+
+        const params = new URLSearchParams(window.location.search);
+        params.delete('grouping_all');
+        params.delete('page');
+        localStorage.removeItem(groupingStateKey);
+        window.location.search = params.toString();
+    }
+
+    function handleDragStart(e) {
+        draggedColumn = {
+            key: this.dataset.column,
+            label: this.dataset.label
+        };
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        groupingZone.classList.add('drag-over');
+        return false;
+    }
+
+    function handleDragLeave(e) {
+        groupingZone.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        e.preventDefault();
+        
+        groupingZone.classList.remove('drag-over');
+        
+        if (draggedColumn && !activeGroups.find(g => g.key === draggedColumn.key)) {
+            addGroup(draggedColumn.key, draggedColumn.label);
+        }
+        
+        return false;
+    }
+
+    function addGroup(columnKey, columnLabel, options = {}) {
+        if (activeGroups.find(g => g.key === columnKey)) return;
+        const columnType = columnTypes[columnKey] || { type: 'text', label: columnLabel };
+        
+        const groupItem = document.createElement('div');
+        groupItem.className = 'group-item';
+        groupItem.dataset.column = columnKey;
+        
+        let groupingOptions = getGroupingOptions(columnType.type);
+        
+        groupItem.innerHTML = `
+            <span class="group-type">${columnType.type === 'number' ? '#' : (columnType.type === 'date' ? '📅' : 'Abc')}</span>
+            <strong>${columnLabel}</strong>
+            ${groupingOptions}
+            <button class="remove-group" onclick="removeGroup('${columnKey}')" title="Remover agrupamento">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        groupingItems.appendChild(groupItem);
+        const select = groupItem.querySelector('.grouping-mode');
+        const modeToUse = options.mode || getDefaultGroupMode(columnType.type);
+        if (select) {
+            select.value = modeToUse;
+        }
+        activeGroups.push({
+            key: columnKey,
+            label: columnLabel,
+            type: columnType.type,
+            mode: modeToUse
+        });
+        saveGroupingState();
+        if (!options.restore) {
+            handleGroupingPaginationSwitch();
+        }
+        applyGrouping();
+    }
+
+    function getGroupingOptions(type) {
+        if (type === 'number') {
+            return `
+                <select class="grouping-mode" onchange="updateGroupMode(this)">
+                    <option value="exact">Valor exato</option>
+                    <option value="range">Por faixa</option>
+                    <option value="count">Por quantidade</option>
+                </select>
+            `;
+        } else if (type === 'date') {
+            return `
+                <select class="grouping-mode" onchange="updateGroupMode(this)">
+                    <option value="exact">Data exata</option>
+                    <option value="day">Por dia</option>
+                    <option value="month">Por mês</option>
+                    <option value="year">Por ano</option>
+                </select>
+            `;
+        } else {
+            return `
+                <select class="grouping-mode" onchange="updateGroupMode(this)">
+                    <option value="exact">Texto exato</option>
+                    <option value="starts">Iniciado em</option>
+                    <option value="ends">Finalizado em</option>
+                    <option value="contains">Contém</option>
+                </select>
+            `;
+        }
+    }
+
+    function getDefaultGroupMode(type) {
+        if (type === 'number') return 'exact';
+        if (type === 'date') return 'month';
+        return 'exact';
+    }
+
+    window.updateGroupMode = function(selectElement) {
+        const groupItem = selectElement.closest('.group-item');
+        const columnKey = groupItem.dataset.column;
+        const group = activeGroups.find(g => g.key === columnKey);
+        if (group) {
+            group.mode = selectElement.value;
+            saveGroupingState();
+            applyGrouping();
+        }
+    };
+
+    window.removeGroup = function(columnKey) {
+        activeGroups = activeGroups.filter(g => g.key !== columnKey);
+        const groupItem = document.querySelector(`.group-item[data-column="${columnKey}"]`);
+        if (groupItem) {
+            groupItem.remove();
+        }
+        saveGroupingState();
+        handleGroupingPaginationResetIfNeeded();
+        applyGrouping();
+    };
+
+    function applyGrouping() {
+        const tableBody = document.querySelector('.table tbody');
+        if (!tableBody) return;
+
+        // Remover headers antigos e resetar linhas
+        document.querySelectorAll('.group-header-row').forEach(h => h.remove());
+        const allRows = Array.from(document.querySelectorAll('.excel-row'));
+        allRows.forEach(row => {
+            row.classList.remove('grouped-row', 'show');
+            row.dataset.groupPath = '';
+            row.style.display = '';
+        });
+
+        if (activeGroups.length === 0) {
+            collapsedGroups.clear();
+            return;
+        }
+
+        collapsedGroups.clear();
+
+        const groupedStructure = buildGroupStructure(allRows, 0);
+
+        // Render headers and tag rows with group paths
+        renderGroupLevel(groupedStructure, 0, '');
+
+        const headerPaths = Array.from(document.querySelectorAll('.group-header-row'))
+            .map(h => h.dataset.groupPath)
+            .filter(Boolean);
+        collapsedGroups = new Set(headerPaths);
+
+        refreshVisibility();
+    }
+
+    function buildGroupStructure(rows, level) {
+        if (level >= activeGroups.length) return [];
+        const group = activeGroups[level];
+        const map = new Map();
+
+        rows.forEach(row => {
+            const key = getGroupKeyForRow(row, group);
+            if (!map.has(key)) {
+                map.set(key, []);
+            }
+            map.get(key).push(row);
+        });
+
+        const result = [];
+        map.forEach((rowsForGroup, key) => {
+            const entry = {
+                key,
+                rows: rowsForGroup,
+                count: rowsForGroup.length
+            };
+            if (level < activeGroups.length - 1) {
+                entry.children = buildGroupStructure(rowsForGroup, level + 1);
+            }
+            result.push(entry);
+        });
+
+        return result;
+    }
+
+    function renderGroupLevel(groups, level, parentPath) {
+        const displayLevel = level + 1;
+        groups.forEach(group => {
+            const safeKey = encodeURIComponent(group.key || '(Vazio)');
+            const groupPath = parentPath ? `${parentPath}||${safeKey}` : safeKey;
+            const firstRow = findFirstRow(group);
+            const headerRow = document.createElement('tr');
+            headerRow.className = 'group-header-row';
+            headerRow.dataset.groupPath = groupPath;
+            headerRow.dataset.level = displayLevel;
+            headerRow.innerHTML = `
+                <td colspan="100%">
+                    <span class="group-toggle">▼</span>
+                    <strong>${activeGroups[level]?.label ? `${activeGroups[level].label}: ` : ''}${group.key || '(Vazio)'}</strong>
+                    <span class="group-count">${group.count}</span>
+                </td>
+            `;
+
+            firstRow.parentNode.insertBefore(headerRow, firstRow);
+
+            headerRow.addEventListener('click', () => toggleGroup(groupPath, headerRow));
+
+            if (group.children && group.children.length) {
+                renderGroupLevel(group.children, level + 1, groupPath);
+            } else {
+                group.rows.forEach(row => {
+                    row.classList.add('grouped-row');
+                    row.dataset.groupPath = groupPath;
+                });
+            }
+        });
+    }
+
+    function findFirstRow(group) {
+        if (group.children && group.children.length) {
+            return findFirstRow(group.children[0]);
+        }
+        return group.rows[0];
+    }
+
+    function toggleGroup(groupPath) {
+        if (collapsedGroups.has(groupPath)) {
+            collapsedGroups.delete(groupPath);
+        } else {
+            collapsedGroups.add(groupPath);
+        }
+        refreshVisibility();
+    }
+
+    function hasCollapsedAncestor(path, includeSelf = true) {
+        if (!path) return false;
+        const parts = path.split('||');
+        let current = '';
+        for (let i = 0; i < parts.length; i++) {
+            current = current ? `${current}||${parts[i]}` : parts[i];
+            const isSelf = i === parts.length - 1;
+            if (!includeSelf && isSelf) continue;
+            if (collapsedGroups.has(current)) return true;
+        }
+        return false;
+    }
+
+    function refreshVisibility() {
+        const headers = Array.from(document.querySelectorAll('.group-header-row'));
+        const rows = Array.from(document.querySelectorAll('.grouped-row'));
+
+        headers.forEach(header => {
+            const path = header.dataset.groupPath || '';
+            const isCollapsed = collapsedGroups.has(path);
+            const hidden = hasCollapsedAncestor(path, false);
+            header.style.display = hidden ? 'none' : '';
+            const toggle = header.querySelector('.group-toggle');
+            if (toggle) {
+                toggle.classList.toggle('collapsed', isCollapsed);
+            }
+        });
+
+        rows.forEach(row => {
+            const path = row.dataset.groupPath || '';
+            const hidden = hasCollapsedAncestor(path);
+            row.classList.toggle('show', !hidden);
+        });
+    }
+
+    function getGroupKeyForRow(row, group) {
+        const columnIndex = getColumnIndex(group.key);
+        if (columnIndex === -1) return '(Desconhecido)';
+        
+        const cell = row.cells[columnIndex];
+        if (!cell) return '(Vazio)';
+        
+        let value = cell.textContent.trim();
+        if (!value) return '(Vazio)';
+        
+        // Aplicar modo de agrupamento
+        if (group.type === 'number') {
+            const num = parseFloat(value.replace(/[^\d,.-]/g, '').replace(',', '.'));
+            if (isNaN(num)) return '(Vazio)';
+            
+            if (group.mode === 'range') {
+                if (num < 1000) return '< R$ 1.000';
+                if (num < 5000) return 'R$ 1.000 - R$ 5.000';
+                if (num < 10000) return 'R$ 5.000 - R$ 10.000';
+                return '> R$ 10.000';
+            } else if (group.mode === 'count') {
+                return `Qtd: ${num}`;
+            }
+            return value;
+        } else if (group.type === 'date') {
+            if (group.mode === 'month') {
+                const match = value.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                if (match) {
+                    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                    return `${months[parseInt(match[2]) - 1]}/${match[3]}`;
+                }
+            } else if (group.mode === 'year') {
+                const match = value.match(/(\d{4})/);
+                if (match) return match[1];
+            }
+            return value;
+        } else {
+            // Texto
+            if (group.mode === 'starts') {
+                return value.charAt(0).toUpperCase();
+            } else if (group.mode === 'ends') {
+                return value.charAt(value.length - 1).toUpperCase();
+            } else if (group.mode === 'contains') {
+                return value.substring(0, 3).toUpperCase();
+            }
+            return value;
+        }
+    }
+    
+    function getColumnIndex(columnKey) {
+        const headers = Array.from(document.querySelectorAll('.table thead th'));
+        return headers.findIndex(h => h.dataset.column === columnKey);
+    }
+
+    restoreGroupingState();
 });
 </script>
 @endsection
