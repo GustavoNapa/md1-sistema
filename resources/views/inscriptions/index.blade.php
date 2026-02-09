@@ -94,39 +94,127 @@
                                 <a href="{{ route('inscriptions.index') }}" class="btn btn-outline-secondary ms-1">Limpar</a>
                             </div>
                         </form>
+
+                        <form method="POST" action="{{ route('inscriptions.columns') }}" class="mb-3">
+                            @csrf
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <div class="fw-semibold">Colunas visíveis:</div>
+                                @foreach($availableColumns as $key => $label)
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="{{ $key }}" id="col_{{ $key }}" name="columns[]" @if(in_array($key, $visibleColumns)) checked @endif>
+                                        <label class="form-check-label" for="col_{{ $key }}">{{ $label }}</label>
+                                    </div>
+                                @endforeach
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Salvar colunas</button>
+                            </div>
+                        </form>
+
+                        @php
+                            $sortMap = [
+                                'client' => ['asc' => 'name_asc', 'desc' => 'name_desc'],
+                                'client_email' => null,
+                                'product' => ['asc' => 'product_asc', 'desc' => 'product_desc'],
+                                'class_group' => ['asc' => 'class_group_asc', 'desc' => 'class_group_desc'],
+                                'status' => ['asc' => 'status_asc', 'desc' => 'status_desc'],
+                                'vendor' => ['asc' => 'vendor_asc', 'desc' => 'vendor_desc'],
+                                'valor_total' => ['asc' => 'value_asc', 'desc' => 'value_desc'],
+                                'amount_paid' => ['asc' => 'amount_paid_asc', 'desc' => 'amount_paid_desc'],
+                                'payment_method' => null,
+                                'start_date' => ['asc' => 'date_asc', 'desc' => 'date_desc'],
+                                'calendar_week' => null,
+                                'classification' => null,
+                                'created_at' => ['asc' => 'created_at_asc', 'desc' => 'created_at_desc'],
+                            ];
+                            $currentOrder = request('order_by', 'created_at_desc');
+                        @endphp
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Cliente</th>
-                                        <th>Produto</th>
-                                        <th>Turma</th>
-                                        <th>Status</th>
-                                        <th>Vendedor</th>
-                                        <th>Valor</th>
-                                        <th>Data Início</th>
+                                        @foreach($availableColumns as $key => $label)
+                                            @if(in_array($key, $visibleColumns))
+                                                @php
+                                                    $sortConfig = $sortMap[$key] ?? null;
+                                                    $isActive = $sortConfig && in_array($currentOrder, $sortConfig);
+                                                    $nextOrder = $sortConfig
+                                                        ? (($isActive && $currentOrder === $sortConfig['asc']) ? $sortConfig['desc'] : $sortConfig['asc'])
+                                                        : null;
+                                                    $icon = 'fa-sort';
+                                                    if ($isActive) {
+                                                        $icon = str_ends_with($currentOrder, '_asc') ? 'fa-arrow-up' : 'fa-arrow-down';
+                                                    }
+                                                @endphp
+                                                <th>
+                                                    @if($sortConfig)
+                                                        <a href="{{ request()->fullUrlWithQuery(['order_by' => $nextOrder]) }}" class="text-decoration-none text-reset d-flex align-items-center gap-1">
+                                                            <span>{{ $label }}</span>
+                                                            <i class="fas {{ $icon }}"></i>
+                                                        </a>
+                                                    @else
+                                                        {{ $label }}
+                                                    @endif
+                                                </th>
+                                            @endif
+                                        @endforeach
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($inscriptions as $inscription)
                                         <tr>
-                                            <td>
-                                                <a href="{{ route('clients.show', $inscription->client) }}" class="text-decoration-none" title="Ver perfil do cliente">
-                                                    <strong class="text-primary">{{ $inscription->client->name }}</strong>
-                                                </a><br>
-                                                <small class="text-muted">{{ $inscription->client->email }}</small>
-                                            </td>
-                                            <td>{{ $inscription->product->name ?? '-' }}</td>
-                                            <td>{{ $inscription->class_group ?? '-' }}</td>
-                                            <td>
-                                                <span class="badge {{ $inscription->status_badge_class }}">
-                                                    {{ $inscription->status_label }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $inscription->vendor->name ?? '-' }}</td>
-                                            <td>R$ {{ number_format($inscription->valor_total ?? 0, 2, ',', '.') }}</td>
-                                            <td>{{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}</td>
+                                            @foreach($availableColumns as $key => $label)
+                                                @if(in_array($key, $visibleColumns))
+                                                    <td>
+                                                        @switch($key)
+                                                            @case('client')
+                                                                <a href="{{ route('clients.show', $inscription->client) }}" class="text-decoration-none" title="Ver perfil do cliente">
+                                                                    <strong class="text-primary">{{ $inscription->client->name }}</strong>
+                                                                </a>
+                                                                <br>
+                                                                <small class="text-muted">{{ $inscription->client->email ?? '-' }}</small>
+                                                                @break
+                                                            @case('client_email')
+                                                                <small class="text-muted">{{ $inscription->client->email ?? '-' }}</small>
+                                                                @break
+                                                            @case('product')
+                                                                {{ $inscription->product->name ?? '-' }}
+                                                                @break
+                                                            @case('class_group')
+                                                                {{ $inscription->class_group ?? '-' }}
+                                                                @break
+                                                            @case('status')
+                                                                <span class="badge {{ $inscription->status_badge_class }}">{{ $inscription->status_label }}</span>
+                                                                @break
+                                                            @case('vendor')
+                                                                {{ $inscription->vendor->name ?? '-' }}
+                                                                @break
+                                                            @case('valor_total')
+                                                                R$ {{ number_format($inscription->valor_total ?? 0, 2, ',', '.') }}
+                                                                @break
+                                                            @case('amount_paid')
+                                                                R$ {{ number_format($inscription->amount_paid ?? 0, 2, ',', '.') }}
+                                                                @break
+                                                            @case('payment_method')
+                                                                {{ $inscription->payment_method ?? '-' }}
+                                                                @break
+                                                            @case('start_date')
+                                                                {{ $inscription->start_date ? $inscription->start_date->format('d/m/Y') : '-' }}
+                                                                @break
+                                                            @case('calendar_week')
+                                                                {{ $inscription->calendar_week ?? '-' }}
+                                                                @break
+                                                            @case('classification')
+                                                                {{ $inscription->classification ?? '-' }}
+                                                                @break
+                                                            @case('created_at')
+                                                                {{ $inscription->created_at ? $inscription->created_at->format('d/m/Y H:i') : '-' }}
+                                                                @break
+                                                            @default
+                                                                -
+                                                        @endswitch
+                                                    </td>
+                                                @endif
+                                            @endforeach
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group" aria-label="Ações da inscrição">
                                                     <a href="{{ route('inscriptions.show', $inscription) }}" 

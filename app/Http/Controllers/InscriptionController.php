@@ -6,10 +6,12 @@ use App\Models\Inscription;
 use App\Models\Client;
 use App\Models\Vendor;
 use App\Models\Product;
+use App\Models\UserTablePreference;
 use App\Events\InscriptionCreated;
 use App\Events\InscriptionUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class InscriptionController extends Controller
@@ -19,6 +21,37 @@ class InscriptionController extends Controller
      */
     public function index(Request $request)
     {
+        $availableColumns = $this->getAvailableColumns();
+        $defaultVisibleColumns = [
+            "client",
+            "product",
+            "class_group",
+            "status",
+            "vendor",
+            "valor_total",
+            "start_date",
+            "created_at",
+        ];
+
+        $visibleColumns = $defaultVisibleColumns;
+
+        if (Auth::check()) {
+            $preference = UserTablePreference::firstOrCreate(
+                [
+                    "user_id" => Auth::id(),
+                    "table_name" => "inscriptions",
+                ],
+                [
+                    "visible_columns" => $defaultVisibleColumns,
+                ]
+            );
+
+            $visibleColumns = array_values(array_intersect(
+                $preference->visible_columns ?? $defaultVisibleColumns,
+                array_keys($availableColumns)
+            ));
+        }
+
         $query = Inscription::with(["client", "vendor", "product"]);
 
         // filtros
@@ -81,17 +114,45 @@ class InscriptionController extends Controller
             case 'created_at_desc':
                 $query->orderBy('created_at', 'desc');
                 break;
+            case 'product_asc':
+                $query->join('products', 'inscriptions.product_id', '=', 'products.id')
+                      ->orderBy('products.name', 'asc')
+                      ->select('inscriptions.*');
+                break;
+            case 'product_desc':
+                $query->join('products', 'inscriptions.product_id', '=', 'products.id')
+                      ->orderBy('products.name', 'desc')
+                      ->select('inscriptions.*');
+                break;
             case 'date_asc':
                 $query->orderBy('start_date', 'asc');
                 break;
             case 'date_desc':
                 $query->orderBy('start_date', 'desc');
                 break;
+            case 'class_group_asc':
+                $query->orderBy('class_group', 'asc');
+                break;
+            case 'class_group_desc':
+                $query->orderBy('class_group', 'desc');
+                break;
             case 'value_asc':
                 $query->orderBy('valor_total', 'asc');
                 break;
             case 'value_desc':
                 $query->orderBy('valor_total', 'desc');
+                break;
+            case 'amount_paid_asc':
+                $query->orderBy('amount_paid', 'asc');
+                break;
+            case 'amount_paid_desc':
+                $query->orderBy('amount_paid', 'desc');
+                break;
+            case 'status_asc':
+                $query->orderBy('status', 'asc');
+                break;
+            case 'status_desc':
+                $query->orderBy('status', 'desc');
                 break;
             case 'name_asc':
                 $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
@@ -101,6 +162,16 @@ class InscriptionController extends Controller
             case 'name_desc':
                 $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
                       ->orderBy('clients.name', 'desc')
+                      ->select('inscriptions.*');
+                break;
+            case 'vendor_asc':
+                $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id')
+                      ->orderBy('vendors.name', 'asc')
+                      ->select('inscriptions.*');
+                break;
+            case 'vendor_desc':
+                $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id')
+                      ->orderBy('vendors.name', 'desc')
                       ->select('inscriptions.*');
                 break;
             default:
@@ -120,7 +191,70 @@ class InscriptionController extends Controller
     $displayStartFrom = $fromDate ? $fromDate->format('d/m/Y') : ($from && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $from) ? $from : null);
     $displayStartTo = $toDate ? $toDate->format('d/m/Y') : ($to && preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $to) ? $to : null);
 
-    return view("inscriptions.index", compact("inscriptions", "vendors", "products", "statusOptions", "displayStartFrom", "displayStartTo"));
+    return view("inscriptions.index", compact(
+        "inscriptions",
+        "vendors",
+        "products",
+        "statusOptions",
+        "displayStartFrom",
+        "displayStartTo",
+        "availableColumns",
+        "visibleColumns",
+    ));
+    }
+
+    /**
+     * Salva preferências de colunas por usuário.
+     */
+    public function saveColumnPreferences(Request $request)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('inscriptions.index')->with('error', 'Faça login para salvar preferências.');
+        }
+
+        $available = array_keys($this->getAvailableColumns());
+
+        $validated = $request->validate([
+            'columns' => 'nullable|array',
+            'columns.*' => 'in:' . implode(',', $available),
+        ]);
+
+        $columns = $validated['columns'] ?? [];
+
+        if (empty($columns)) {
+            $columns = $available;
+        }
+
+        UserTablePreference::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'table_name' => 'inscriptions',
+            ],
+            [
+                'visible_columns' => array_values(array_unique($columns)),
+            ]
+        );
+
+        return redirect()->route('inscriptions.index')->with('success', 'Preferências de colunas salvas.');
+    }
+
+    private function getAvailableColumns(): array
+    {
+        return [
+            'client' => 'Cliente',
+            'client_email' => 'E-mail',
+            'product' => 'Produto',
+            'class_group' => 'Turma',
+            'status' => 'Status',
+            'vendor' => 'Vendedor',
+            'valor_total' => 'Valor Total',
+            'amount_paid' => 'Valor Pago',
+            'payment_method' => 'Forma de Pagamento',
+            'start_date' => 'Data Início',
+            'calendar_week' => 'Semana',
+            'classification' => 'Fase',
+            'created_at' => 'Criado em',
+        ];
     }
 
     /**

@@ -98,6 +98,7 @@ Route::middleware("auth")->group(function () {
     
     // Rotas de Inscrições
     Route::resource("inscriptions", InscriptionController::class);
+    Route::post("/inscriptions/columns", [InscriptionController::class, "saveColumnPreferences"])->name("inscriptions.columns");
     Route::get("/api/inscriptions/kanban", [InscriptionController::class, "kanbanData"])->name("inscriptions.kanban-data");
     
     // Rotas de Importação

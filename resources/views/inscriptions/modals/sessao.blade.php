@@ -88,6 +88,7 @@
                                     <option value="realizada">Realizada</option>
                                     <option value="cancelada">Cancelada</option>
                                     <option value="reagendada">Reagendada</option>
+                                    <option value="no_show">No show</option>
                                 </select>
                             </div>
                         </div>
@@ -213,6 +214,12 @@
                     $('#campos_no_show').show();
                 } else {
                     $('#campos_no_show').hide();
+                }
+            });
+
+            $('#status').on('change', function() {
+                if ($(this).val() === 'no_show') {
+                    $('#medico_compareceu').val('0').trigger('change');
                 }
             });
 
@@ -353,7 +360,7 @@
                         }
                         
                         // No show
-                        if (sessao.medico_compareceu === 0 || sessao.medico_compareceu === false) {
+                        if (sessao.status === 'no_show' || sessao.medico_compareceu === 0 || sessao.medico_compareceu === false) {
                             $('#campos_no_show').show();
                             $('#status_reagendamento').val(sessao.status_reagendamento);
                             
