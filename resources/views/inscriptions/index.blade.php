@@ -120,6 +120,17 @@
                             </div>
                         </div>
 
+                        <!-- Área de Ordenação de Campos -->
+                        <div class="grouping-zone sorting-zone mb-3" id="sortingZone">
+                            <div class="grouping-header">
+                                <i class="fas fa-sort-amount-down"></i>
+                                <span>Arraste colunas aqui para ordenar (ordenação em cascata)</span>
+                            </div>
+                            <div class="grouping-items" id="sortingItems">
+                                <!-- Ordenações ativas aparecerão aqui -->
+                            </div>
+                        </div>
+
                         @php
                             $sortMap = [
                                 'client' => ['asc' => 'name_asc', 'desc' => 'name_desc'],
@@ -859,6 +870,37 @@
     font-size: 0.7rem;
     margin-left: 8px;
 }
+
+.sorting-zone {
+    background: linear-gradient(90deg, #5a67d8 0%, #9f7aea 100%);
+}
+
+.sorting-zone .group-item {
+    background: #fff;
+    border: 1px dashed rgba(0,0,0,0.08);
+}
+
+.sort-direction {
+    border: 0;
+    background: #e2e8f0;
+    color: #1a202c;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.sort-item-index {
+    background: #edf2f7;
+    color: #2d3748;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-right: 6px;
+    font-weight: 600;
+}
 </style>
 
 @endsection
@@ -883,6 +925,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const groupingStateKey = 'inscriptionsGroupingState';
     const isGroupingAll = {{ ($groupingAll ?? false) ? 'true' : 'false' }};
+    const initialSortStack = @json($sortStack ?? []);
     const paginationInfo = {
         hasPages: {{ (method_exists($inscriptions, 'hasPages') && $inscriptions->hasPages()) ? 'true' : 'false' }},
         total: {{ method_exists($inscriptions, 'total') ? $inscriptions->total() : (is_countable($inscriptions) ? count($inscriptions) : 0) }},
@@ -1072,6 +1115,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let activeGroups = [];
     let collapsedGroups = new Set();
     let draggedColumn = null;
+    let activeSorts = [];
+    let sortsTouchedManually = false;
 
     // Habilitar drag nas colunas
     const columns = document.querySelectorAll('.draggable-column');
@@ -1080,14 +1125,22 @@ document.addEventListener('DOMContentLoaded', function() {
         column.addEventListener('dragend', handleDragEnd);
     });
 
-    // Configurar drop zone
+    // Configurar drop zones
     const groupingZone = document.getElementById('groupingZone');
     const groupingItems = document.getElementById('groupingItems');
+    const sortingZone = document.getElementById('sortingZone');
+    const sortingItems = document.getElementById('sortingItems');
     
     if (groupingZone) {
         groupingZone.addEventListener('dragover', handleDragOver);
         groupingZone.addEventListener('dragleave', handleDragLeave);
         groupingZone.addEventListener('drop', handleDrop);
+    }
+
+    if (sortingZone) {
+        sortingZone.addEventListener('dragover', handleDragOverSort);
+        sortingZone.addEventListener('dragleave', handleDragLeaveSort);
+        sortingZone.addEventListener('drop', handleDropSort);
     }
 
     function saveGroupingState() {
@@ -1117,6 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         isRestoringState = false;
         if (!isGroupingAll && paginationInfo.hasPages && activeGroups.length > 0) {
+            ensureDefaultSortsFromGroups();
             handleGroupingPaginationSwitch();
         }
     }
@@ -1126,10 +1180,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isGroupingAll) return;
         if (!paginationInfo.hasPages) return;
 
+        ensureDefaultSortsFromGroups();
+
         const params = new URLSearchParams(window.location.search);
         params.set('grouping_all', '1');
         params.delete('page');
         saveGroupingState();
+        applySortParams(params);
         window.location.search = params.toString();
     }
 
@@ -1141,6 +1198,10 @@ document.addEventListener('DOMContentLoaded', function() {
         params.delete('grouping_all');
         params.delete('page');
         localStorage.removeItem(groupingStateKey);
+        if (!sortsTouchedManually) {
+            activeSorts = [];
+            applySortParams(params);
+        }
         window.location.search = params.toString();
     }
 
@@ -1186,6 +1247,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
 
+    function handleDragOverSort(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        sortingZone.classList.add('drag-over');
+        return false;
+    }
+
+    function handleDragLeaveSort(e) {
+        sortingZone.classList.remove('drag-over');
+    }
+
+    function handleDropSort(e) {
+        if (e.stopPropagation) {
+            e.stopPropagation();
+        }
+        e.preventDefault();
+        sortingZone.classList.remove('drag-over');
+        if (draggedColumn) {
+            addSort(draggedColumn.key, draggedColumn.label);
+        }
+        return false;
+    }
+
     function addGroup(columnKey, columnLabel, options = {}) {
         if (activeGroups.find(g => g.key === columnKey)) return;
         const columnType = columnTypes[columnKey] || { type: 'text', label: columnLabel };
@@ -1222,6 +1308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             handleGroupingPaginationSwitch();
         }
         applyGrouping();
+        ensureDefaultSortsFromGroups();
     }
 
     function getGroupingOptions(type) {
@@ -1280,6 +1367,10 @@ document.addEventListener('DOMContentLoaded', function() {
         saveGroupingState();
         handleGroupingPaginationResetIfNeeded();
         applyGrouping();
+        if (!sortsTouchedManually) {
+            activeSorts = activeSorts.filter(s => s.key !== columnKey);
+            renderSortingItems();
+        }
     };
 
     function applyGrouping() {
@@ -1428,6 +1519,87 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ====== ORDENACAO EM CASCATA ======
+
+    function renderSortingItems() {
+        sortingItems.innerHTML = '';
+        activeSorts.forEach((sort, index) => {
+            const item = document.createElement('div');
+            item.className = 'group-item sort-item';
+            item.dataset.column = sort.key;
+            item.innerHTML = `
+                <span class="sort-item-index">${index + 1}</span>
+                <strong>${sort.label}</strong>
+                <button class="sort-direction" onclick="toggleSortDirection('${sort.key}')">
+                    <i class="fas ${sort.dir === 'desc' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                    ${sort.dir === 'desc' ? 'Desc' : 'Asc'}
+                </button>
+                <button class="remove-group" onclick="removeSort('${sort.key}')" title="Remover ordenação">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            sortingItems.appendChild(item);
+        });
+    }
+
+    function addSort(columnKey, columnLabel, dir = 'asc', options = {}) {
+        if (activeSorts.find(s => s.key === columnKey)) return;
+        const label = columnLabel || (columnTypes[columnKey]?.label) || columnKey;
+        activeSorts.push({ key: columnKey, label, dir });
+        sortsTouchedManually = options.restore ? sortsTouchedManually : true;
+        renderSortingItems();
+        if (!options.skipReload) {
+            syncSortParamsAndReload();
+        }
+    }
+
+    window.toggleSortDirection = function(columnKey) {
+        const sort = activeSorts.find(s => s.key === columnKey);
+        if (!sort) return;
+        sort.dir = sort.dir === 'desc' ? 'asc' : 'desc';
+        sortsTouchedManually = true;
+        renderSortingItems();
+        syncSortParamsAndReload();
+    };
+
+    window.removeSort = function(columnKey) {
+        activeSorts = activeSorts.filter(s => s.key !== columnKey);
+        renderSortingItems();
+        sortsTouchedManually = true;
+        syncSortParamsAndReload();
+    };
+
+    function ensureDefaultSortsFromGroups() {
+        if (sortsTouchedManually) return;
+        if (activeGroups.length === 0) return;
+        const existingKeys = new Set(activeSorts.map(s => s.key));
+        const newSorts = [];
+        activeGroups.forEach(g => {
+            if (!existingKeys.has(g.key)) {
+                newSorts.push({ key: g.key, label: g.label, dir: 'asc' });
+            }
+        });
+        if (newSorts.length === 0 && activeSorts.length > 0) return;
+        activeSorts = [...activeGroups.map(g => ({ key: g.key, label: g.label, dir: 'asc' }))];
+        renderSortingItems();
+    }
+
+    function applySortParams(params) {
+        params.delete('sort_stack');
+        params.delete('sort_stack[]');
+        params.delete('order_by');
+        activeSorts.forEach(s => {
+            params.append('sort_stack[]', `${s.key}:${s.dir}`);
+        });
+    }
+
+    function syncSortParamsAndReload() {
+        const params = new URLSearchParams(window.location.search);
+        applySortParams(params);
+        params.delete('page');
+        window.location.search = params.toString();
+    }
+
     function getGroupKeyForRow(row, group) {
         const columnIndex = getColumnIndex(group.key);
         if (columnIndex === -1) return '(Desconhecido)';
@@ -1482,7 +1654,32 @@ document.addEventListener('DOMContentLoaded', function() {
         return headers.findIndex(h => h.dataset.column === columnKey);
     }
 
+    // inicializar ordenações vindas do backend
+    if (Array.isArray(initialSortStack) && initialSortStack.length > 0) {
+        activeSorts = initialSortStack.map(item => {
+            if (typeof item === 'string') {
+                const [key, dirRaw] = item.split(':');
+                const dir = dirRaw === 'desc' ? 'desc' : 'asc';
+                return { key, dir, label: (columnTypes[key]?.label) || key };
+            }
+            if (item && item.key) {
+                return {
+                    key: item.key,
+                    dir: item.dir === 'desc' ? 'desc' : 'asc',
+                    label: (columnTypes[item.key]?.label) || item.label || item.key,
+                };
+            }
+            return null;
+        }).filter(Boolean);
+        sortsTouchedManually = activeSorts.length > 0;
+        renderSortingItems();
+    }
+
     restoreGroupingState();
+
+    // Se não houver ordenação prévia mas houver agrupamento ativo (no front), gerar padrão
+    ensureDefaultSortsFromGroups();
+    renderSortingItems();
 });
 </script>
 @endsection

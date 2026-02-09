@@ -130,79 +130,223 @@ class InscriptionController extends Controller
             $query->whereDate('start_date', '<=', $toDate->format('Y-m-d'));
         }
 
-        // ordenação: padrão agora é por created_at (mais recentes)
-        $order = $request->input('order_by', 'created_at_desc');
-        switch ($order) {
-            case 'created_at_asc':
-                $query->orderBy('created_at', 'asc');
-                break;
-            case 'created_at_desc':
-                $query->orderBy('created_at', 'desc');
-                break;
-            case 'product_asc':
-                $query->join('products', 'inscriptions.product_id', '=', 'products.id')
-                      ->orderBy('products.name', 'asc')
-                      ->select('inscriptions.*');
-                break;
-            case 'product_desc':
-                $query->join('products', 'inscriptions.product_id', '=', 'products.id')
-                      ->orderBy('products.name', 'desc')
-                      ->select('inscriptions.*');
-                break;
-            case 'date_asc':
-                $query->orderBy('start_date', 'asc');
-                break;
-            case 'date_desc':
-                $query->orderBy('start_date', 'desc');
-                break;
-            case 'class_group_asc':
-                $query->orderBy('class_group', 'asc');
-                break;
-            case 'class_group_desc':
-                $query->orderBy('class_group', 'desc');
-                break;
-            case 'value_asc':
-                $query->orderBy('valor_total', 'asc');
-                break;
-            case 'value_desc':
-                $query->orderBy('valor_total', 'desc');
-                break;
-            case 'amount_paid_asc':
-                $query->orderBy('amount_paid', 'asc');
-                break;
-            case 'amount_paid_desc':
-                $query->orderBy('amount_paid', 'desc');
-                break;
-            case 'status_asc':
-                $query->orderBy('status', 'asc');
-                break;
-            case 'status_desc':
-                $query->orderBy('status', 'desc');
-                break;
-            case 'name_asc':
-                $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
-                      ->orderBy('clients.name', 'asc')
-                      ->select('inscriptions.*');
-                break;
-            case 'name_desc':
-                $query->join('clients', 'inscriptions.client_id', '=', 'clients.id')
-                      ->orderBy('clients.name', 'desc')
-                      ->select('inscriptions.*');
-                break;
-            case 'vendor_asc':
-                $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id')
-                      ->orderBy('vendors.name', 'asc')
-                      ->select('inscriptions.*');
-                break;
-            case 'vendor_desc':
-                $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id')
-                      ->orderBy('vendors.name', 'desc')
-                      ->select('inscriptions.*');
-                break;
-            default:
-                // fallback para created_at desc
-                $query->orderBy('created_at', 'desc');
-                break;
+        // ordenação composta: aceita sort_stack[] (ex.: status:asc, created_at:desc). Se vazio, usa order_by legado.
+        $rawSortStack = $request->input('sort_stack', []);
+        if (!is_array($rawSortStack)) {
+            $rawSortStack = [$rawSortStack];
+        }
+
+        $sortStack = [];
+        foreach ($rawSortStack as $item) {
+            if (!$item) continue;
+            [$key, $dir] = array_pad(explode(':', $item), 2, 'asc');
+            $dir = strtolower($dir) === 'desc' ? 'desc' : 'asc';
+            $sortStack[] = [
+                'key' => $key,
+                'dir' => $dir,
+            ];
+        }
+
+        $appliedSort = false;
+        $joinedClients = false;
+        $joinedProducts = false;
+        $joinedVendors = false;
+
+        $applySort = function(string $key, string $dir) use (&$query, &$joinedClients, &$joinedProducts, &$joinedVendors, &$appliedSort) {
+            switch ($key) {
+                case 'created_at':
+                    $query->orderBy('created_at', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'product':
+                    if (!$joinedProducts) {
+                        $query->join('products', 'inscriptions.product_id', '=', 'products.id');
+                        $joinedProducts = true;
+                    }
+                    $query->orderBy('products.name', $dir)->select('inscriptions.*');
+                    $appliedSort = true;
+                    break;
+                case 'start_date':
+                    $query->orderBy('start_date', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'class_group':
+                    $query->orderBy('class_group', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'valor_total':
+                    $query->orderBy('valor_total', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'amount_paid':
+                    $query->orderBy('amount_paid', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'status':
+                    $query->orderBy('status', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'client':
+                    if (!$joinedClients) {
+                        $query->join('clients', 'inscriptions.client_id', '=', 'clients.id');
+                        $joinedClients = true;
+                    }
+                    $query->orderBy('clients.name', $dir)->select('inscriptions.*');
+                    $appliedSort = true;
+                    break;
+                case 'vendor':
+                    if (!$joinedVendors) {
+                        $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id');
+                        $joinedVendors = true;
+                    }
+                    $query->orderBy('vendors.name', $dir)->select('inscriptions.*');
+                    $appliedSort = true;
+                    break;
+                case 'payment_method':
+                    $query->orderBy('payment_method', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'calendar_week':
+                    $query->orderBy('calendar_week', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'classification':
+                    $query->orderBy('classification', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'preceptors_count':
+                    $query->orderBy('preceptor_records_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'payments_count':
+                    $query->orderBy('payments_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'sessions_count':
+                    $query->orderBy('sessions_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'diagnostics_count':
+                    $query->orderBy('diagnostics_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'achievements_count':
+                    $query->orderBy('achievements_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'followups_count':
+                    $query->orderBy('follow_ups_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'documents_count':
+                    $query->orderBy('documents_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'bonuses_count':
+                    $query->orderBy('bonuses_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'faturamentos_count':
+                    $query->orderBy('faturamentos_count', $dir);
+                    $appliedSort = true;
+                    break;
+                case 'renovacoes_count':
+                    $query->orderBy('renovacoes_count', $dir);
+                    $appliedSort = true;
+                    break;
+            }
+        };
+
+        foreach ($sortStack as $sortItem) {
+            $applySort($sortItem['key'], $sortItem['dir']);
+        }
+
+        if (!$appliedSort) {
+            // ordenação legado: padrão agora é por created_at (mais recentes)
+            $order = $request->input('order_by', 'created_at_desc');
+            switch ($order) {
+                case 'created_at_asc':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'created_at_desc':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 'product_asc':
+                    if (!$joinedProducts) {
+                        $query->join('products', 'inscriptions.product_id', '=', 'products.id');
+                        $joinedProducts = true;
+                    }
+                    $query->orderBy('products.name', 'asc')->select('inscriptions.*');
+                    break;
+                case 'product_desc':
+                    if (!$joinedProducts) {
+                        $query->join('products', 'inscriptions.product_id', '=', 'products.id');
+                        $joinedProducts = true;
+                    }
+                    $query->orderBy('products.name', 'desc')->select('inscriptions.*');
+                    break;
+                case 'date_asc':
+                    $query->orderBy('start_date', 'asc');
+                    break;
+                case 'date_desc':
+                    $query->orderBy('start_date', 'desc');
+                    break;
+                case 'class_group_asc':
+                    $query->orderBy('class_group', 'asc');
+                    break;
+                case 'class_group_desc':
+                    $query->orderBy('class_group', 'desc');
+                    break;
+                case 'value_asc':
+                    $query->orderBy('valor_total', 'asc');
+                    break;
+                case 'value_desc':
+                    $query->orderBy('valor_total', 'desc');
+                    break;
+                case 'amount_paid_asc':
+                    $query->orderBy('amount_paid', 'asc');
+                    break;
+                case 'amount_paid_desc':
+                    $query->orderBy('amount_paid', 'desc');
+                    break;
+                case 'status_asc':
+                    $query->orderBy('status', 'asc');
+                    break;
+                case 'status_desc':
+                    $query->orderBy('status', 'desc');
+                    break;
+                case 'name_asc':
+                    if (!$joinedClients) {
+                        $query->join('clients', 'inscriptions.client_id', '=', 'clients.id');
+                        $joinedClients = true;
+                    }
+                    $query->orderBy('clients.name', 'asc')->select('inscriptions.*');
+                    break;
+                case 'name_desc':
+                    if (!$joinedClients) {
+                        $query->join('clients', 'inscriptions.client_id', '=', 'clients.id');
+                        $joinedClients = true;
+                    }
+                    $query->orderBy('clients.name', 'desc')->select('inscriptions.*');
+                    break;
+                case 'vendor_asc':
+                    if (!$joinedVendors) {
+                        $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id');
+                        $joinedVendors = true;
+                    }
+                    $query->orderBy('vendors.name', 'asc')->select('inscriptions.*');
+                    break;
+                case 'vendor_desc':
+                    if (!$joinedVendors) {
+                        $query->join('vendors', 'inscriptions.vendor_id', '=', 'vendors.id');
+                        $joinedVendors = true;
+                    }
+                    $query->orderBy('vendors.name', 'desc')->select('inscriptions.*');
+                    break;
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
         }
 
         $groupingAll = $request->boolean('grouping_all');
@@ -232,6 +376,7 @@ class InscriptionController extends Controller
         "availableColumns",
         "visibleColumns",
             "groupingAll",
+            "sortStack",
     ));
     }
 
