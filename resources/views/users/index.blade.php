@@ -304,16 +304,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     userModal.hide();
                     userForm.reset();
-                    location.reload();
-                    alert(data.message);
+                    toastr.success(data.message || 'Usuário salvo com sucesso!', 'Sucesso');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
                     console.error('Erro ao salvar:', data);
-                    alert('Ocorreu um erro ao salvar o usuário.');
+                    
+                    // Extrair mensagens de erro de forma amigável
+                    let mensagemErro = data.message || 'Ocorreu um erro ao salvar o usuário.';
+                    
+                    if (data.errors) {
+                        const erros = Object.values(data.errors).flat();
+                        if (erros.length > 0) {
+                            mensagemErro = erros.join('<br>');
+                        }
+                    }
+                    
+                    toastr.error(mensagemErro, 'Erro ao Salvar');
                 }
             })
             .catch(error => {
                 console.error('Erro na requisição AJAX:', error);
-                alert('Não foi possível conectar ao servidor.');
+                toastr.error('Não foi possível conectar ao servidor. Tente novamente.', 'Erro de Conexão');
             })
             .finally(() => {
                 submitBtn.disabled = false;
@@ -343,15 +356,17 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.success) {
                     assignRoleModal.hide();
-                    location.reload();
-                    alert(data.message);
+                    toastr.success(data.message || 'Cargo atribuído com sucesso!', 'Sucesso');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert('Erro ao atribuir cargo.');
+                    toastr.error(data.message || 'Erro ao atribuir cargo.', 'Erro');
                 }
             })
             .catch(error => {
                 console.error('Erro ao atribuir cargo:', error);
-                alert('Erro ao atribuir cargo.');
+                toastr.error('Não foi possível atribuir o cargo. Tente novamente.', 'Erro de Conexão');
             });
         });
     }
@@ -437,7 +452,7 @@ function editUser(id) {
     })
     .catch(error => {
         console.error('Erro ao carregar usuário:', error);
-        alert('Erro ao carregar dados do usuário.');
+        toastr.error('Erro ao carregar dados do usuário. Tente novamente.', 'Erro de Carregamento');
     });
 }
 
@@ -453,15 +468,17 @@ function deleteUser(id) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
-                alert(data.message);
+                toastr.success(data.message || 'Usuário excluído com sucesso!', 'Sucesso');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
             } else {
-                alert(data.message || 'Erro ao excluir usuário.');
+                toastr.error(data.message || 'Erro ao excluir usuário.', 'Erro');
             }
         })
         .catch(error => {
             console.error('Erro ao excluir usuário:', error);
-            alert('Erro ao excluir usuário.');
+            toastr.error('Não foi possível excluir o usuário. Tente novamente.', 'Erro de Conexão');
         });
     }
 }
@@ -484,15 +501,17 @@ function removeRole(userId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
-                alert(data.message);
+                toastr.success(data.message || 'Cargo removido com sucesso!', 'Sucesso');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
             } else {
-                alert('Erro ao remover cargo.');
+                toastr.error('Erro ao remover cargo.', 'Erro');
             }
         })
         .catch(error => {
             console.error('Erro ao remover cargo:', error);
-            alert('Erro ao remover cargo.');
+            toastr.error('Não foi possível remover o cargo. Tente novamente.', 'Erro de Conexão');
         });
     }
 }
