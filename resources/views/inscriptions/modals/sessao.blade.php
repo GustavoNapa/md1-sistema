@@ -18,7 +18,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="numero_sessao" class="form-label">Número da Sessão *</label>
+                                <label for="numero_sessao" class="form-label">Fase *</label>
                                 <input type="number" class="form-control" name="numero_sessao" id="numero_sessao" required>
                             </div>
                         </div>
@@ -316,7 +316,13 @@
             $('#campo_motivo_desmarcou').hide();
             $('#campos_no_show').hide();
             $('#campo_data_remarcada').hide();
-            
+            // pré-preencher fase como quantidade de sessões existentes + 1
+            try {
+                $('#numero_sessao').val({{ $inscription->sessions->count() + 1 }});
+            } catch (e) {
+                // se não houver $inscription no contexto, ignore
+            }
+
             $('#modalSessao').modal('show');
         }
 
