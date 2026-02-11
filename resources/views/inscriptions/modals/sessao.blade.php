@@ -1,12 +1,12 @@
 <!-- Modal Sessão -->
 <div class="modal fade" id="modalSessao" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalSessaoTitle">Nova Sessão</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form class="form-modal" action="{{ route('sessions.store') }}" method="POST" id="formSessao">
+            <form class="form-modal" action="{{ route('sessions.store') }}" method="POST" id="formSessao" data-next-session="{{ $inscription->sessions->count() + 1 }}">
                 @csrf
                 <input type="hidden" name="_method" value="POST" id="sessaoMethod">
                 <input type="hidden" name="inscription_id" value="{{ $inscription->id }}">
@@ -16,13 +16,13 @@
                     <!-- Informações Básicas -->
                     <h6 class="mb-3 text-primary">Informações Básicas</h6>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col col-md-6">
                             <div class="mb-3">
                                 <label for="numero_sessao" class="form-label">Fase *</label>
                                 <input type="number" class="form-control" name="numero_sessao" id="numero_sessao" required>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col col-md-6">
                             <div class="mb-3">
                                 <label for="preceptor_record_id" class="form-label">Preceptor *</label>
                                 <select class="form-select" name="preceptor_record_id" id="preceptor_record_id" required>
@@ -33,9 +33,11 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    <div class="row">
+                        <div class="col col-md-6">
                             <div class="mb-3">
-                                <label for="semana_mes" class="form-label">Semana do Mês *</label>
+                                <label for="semana_mes" class="form-label">Semana do mês em que a preceptoria foi realizada *</label>
                                 <select class="form-select" name="semana_mes" id="semana_mes" required>
                                     <option value="">Selecione</option>
                                     <option value="1">1</option>
@@ -46,12 +48,10 @@
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
+
+                        <div class="col col-md-6">
                             <div class="mb-3">
-                                <label for="fase" class="form-label">Qual fase o médico se encontra? *</label>
+                                <label for="fase" class="form-label">Qual fase foi trabalhada com o médico na chamada? *</label>
                                 <select class="form-select" name="fase" id="fase" required>
                                     <option value="">Selecione</option>
                                     <option value="Start">Start</option>
@@ -67,9 +67,16 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+
+                    
+
+                        
+                    
+                    <div class="row">
+                        <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="tipo" class="form-label">Tipo</label>
+                                <label for="tipo" class="form-label">Tipo de sessão *</label>
                                 <select class="form-select" name="tipo" id="tipo">
                                     <option value="">Selecione</option>
                                     <option value="diagnostico">Diagnóstico</option>
@@ -80,7 +87,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select class="form-select" name="status" id="status">
@@ -112,36 +119,29 @@
                     <!-- Confirmação -->
                     <hr class="my-4">
                     <h6 class="mb-3 text-primary">Confirmação e Comparecimento</h6>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="confirmou_24h" class="form-label">Mandou Mensagem confirmando 24hrs antes? *</label>
-                                <select class="form-select" name="confirmou_24h" id="confirmou_24h" required>
-                                    <option value="">Selecione</option>
-                                    <option value="1">Sim</option>
-                                    <option value="0">Não</option>
-                                </select>
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="confirmou_24h" id="confirmou_24h" value="1">
+                                <label class="form-check-label" for="confirmou_24h">
+                                    Confirmou 24hrs antes? *
+                                </label>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="medico_confirmou" class="form-label">O Médico confirmou? *</label>
-                                <select class="form-select" name="medico_confirmou" id="medico_confirmou" required>
-                                    <option value="">Selecione</option>
-                                    <option value="confirmou">Confirmou</option>
-                                    <option value="desmarcou">Desmarcou</option>
-                                    <option value="nao_respondeu">Não Respondeu</option>
-                                </select>
+                        <div class="col-md-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="medico_confirmou" id="medico_confirmou" value="confirmou" data-value-desmarcou="desmarcou">
+                                <label class="form-check-label" for="medico_confirmou">
+                                    Médico confirmou? *
+                                </label>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="medico_compareceu" class="form-label">O médico compareceu? *</label>
-                                <select class="form-select" name="medico_compareceu" id="medico_compareceu" required>
-                                    <option value="">Selecione</option>
-                                    <option value="1">Compareceu</option>
-                                    <option value="0">Não Compareceu</option>
-                                </select>
+                        <div class="col-md-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="medico_compareceu" id="medico_compareceu" value="1" data-value-unchecked="0">
+                                <label class="form-check-label" for="medico_compareceu">
+                                    Médico compareceu? *
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -200,29 +200,42 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Controle de exibição de campos condicionais
+            // Variável para rastrear o estado real de medico_confirmou (para suportar ambos checkbox e select)
+            let medicoConfirmouValue = '';
+            let medicoCompareceuValue = '';
+
+            // Controle de checkbox para "Médico confirmou?"
             $('#medico_confirmou').on('change', function() {
-                if ($(this).val() === 'desmarcou') {
-                    $('#campo_motivo_desmarcou').show();
-                } else {
+                if (this.checked) {
+                    medicoConfirmouValue = 'confirmou';
                     $('#campo_motivo_desmarcou').hide();
-                }
-            });
-
-            $('#medico_compareceu').on('change', function() {
-                if ($(this).val() === '0') {
-                    $('#campos_no_show').show();
                 } else {
-                    $('#campos_no_show').hide();
+                    // Se não marcado, mostrar opção de desmarcamento
+                    medicoConfirmouValue = 'desmarcou';
+                    $('#campo_motivo_desmarcou').show();
                 }
             });
 
+            // Controle de checkbox para "Médico compareceu?"
+            $('#medico_compareceu').on('change', function() {
+                if (this.checked) {
+                    medicoCompareceuValue = '1';
+                    $('#campos_no_show').hide();
+                } else {
+                    medicoCompareceuValue = '0';
+                    $('#campos_no_show').show();
+                }
+            });
+
+            // Controle para status
             $('#status').on('change', function() {
                 if ($(this).val() === 'no_show') {
-                    $('#medico_compareceu').val('0').trigger('change');
+                    // Ao selecionar no_show, desmarcar comparecimento
+                    $('#medico_compareceu').prop('checked', false).trigger('change');
                 }
             });
 
+            // Controle de reagendamento
             $('#status_reagendamento').on('change', function() {
                 if ($(this).val() === 'reagendado') {
                     $('#campo_data_remarcada').show();
@@ -238,6 +251,11 @@
                 
                 const form = $(this);
                 const formData = new FormData(this);
+                
+                // Ajustar valores dos checkboxes para valores esperados
+                formData.set('medico_confirmou', medicoConfirmouValue || $('#medico_confirmou').is(':checked') ? 'confirmou' : 'desmarcou');
+                formData.set('medico_compareceu', medicoCompareceuValue || ($('#medico_compareceu').is(':checked') ? '1' : '0'));
+                
                 const method = $('#sessaoMethod').val();
                 const sessaoId = $('#sessaoId').val();
                 
@@ -316,11 +334,15 @@
             $('#campo_motivo_desmarcou').hide();
             $('#campos_no_show').hide();
             $('#campo_data_remarcada').hide();
-            // pré-preencher fase como quantidade de sessões existentes + 1
-            try {
-                $('#numero_sessao').val({{ $inscription->sessions->count() + 1 }});
-            } catch (e) {
-                // se não houver $inscription no contexto, ignore
+            
+            // Resetar variáveis de estado
+            medicoConfirmouValue = '';
+            medicoCompareceuValue = '';
+            
+            // Pré-preencher fase com o próximo número de sessão
+            const nextSession = $('#formSessao').data('next-session');
+            if (nextSession) {
+                $('#numero_sessao').val(nextSession);
             }
 
             $('#modalSessao').modal('show');
@@ -355,14 +377,22 @@
                         }
                         
                         // Campos de confirmação
-                        $('#confirmou_24h').val(sessao.confirmou_24h ? '1' : '0');
-                        $('#medico_confirmou').val(sessao.medico_confirmou);
-                        $('#medico_compareceu').val(sessao.medico_compareceu ? '1' : '0');
+                        $('#confirmou_24h').prop('checked', sessao.confirmou_24h ? true : false);
+                        
+                        // Médico confirmou - atualizar checkbox
+                        medicoConfirmouValue = sessao.medico_confirmou;
+                        $('#medico_confirmou').prop('checked', sessao.medico_confirmou === 'confirmou' ? true : false);
+                        
+                        // Médico compareceu - atualizar checkbox
+                        medicoCompareceuValue = sessao.medico_compareceu ? '1' : '0';
+                        $('#medico_compareceu').prop('checked', sessao.medico_compareceu ? true : false);
                         
                         // Motivo desmarcou
                         if (sessao.medico_confirmou === 'desmarcou') {
                             $('#campo_motivo_desmarcou').show();
                             $('#motivo_desmarcou').val(sessao.motivo_desmarcou);
+                        } else {
+                            $('#campo_motivo_desmarcou').hide();
                         }
                         
                         // No show
@@ -373,7 +403,11 @@
                             if (sessao.status_reagendamento === 'reagendado') {
                                 $('#campo_data_remarcada').show();
                                 $('#data_remarcada').val(sessao.data_remarcada);
+                            } else {
+                                $('#campo_data_remarcada').hide();
                             }
+                        } else {
+                            $('#campos_no_show').hide();
                         }
                         
                         // Observações

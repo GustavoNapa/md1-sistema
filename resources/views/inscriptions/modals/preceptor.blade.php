@@ -23,8 +23,8 @@
                                     @endforeach
                                 @endisset
                             </select>
-                            <label for="nome_preceptor" class="form-label">Nome do Preceptor *</label>
-                            <input type="text" class="form-control" name="nome_preceptor" id="nome_preceptor" required>
+                            <label for="nome_preceptor" class="form-label" style="display: none;">Nome do Preceptor *</label>
+                            <input type="text" class="form-control" name="nome_preceptor" id="nome_preceptor" style="display: none;">
                             <input type="hidden" name="preceptor_user_id" id="preceptor_user_id_hidden" value="">
                         </div>
                     
