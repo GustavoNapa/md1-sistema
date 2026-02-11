@@ -28,7 +28,22 @@ class Session extends Model
         'observacoes',
         'resultado',
         'media_mensal_antes',
-        'meta_mensal_desejada'
+        'meta_mensal_desejada',
+        // Novos campos de implementação e desenvolvimento
+        'implementacao_fase',
+        'impacto_faturamento',
+        'dificuldades_travas',
+        'desenvolvimento_ultima_preceptoria',
+        'avancos_importantes',
+        'momento_depoimento',
+        'conseguiu_indicacao',
+        'detalhes_indicacao',
+        // Campos de faturamento
+        'faturamento_mes_ano',
+        'faturamento_valor',
+        'faturamento_data_vencimento',
+        'faturamento_status',
+        'faturamento_observacoes',
     ];
 
     protected $casts = [
@@ -38,7 +53,11 @@ class Session extends Model
         'confirmou_24h' => 'boolean',
         'medico_compareceu' => 'boolean',
         'media_mensal_antes' => 'decimal:2',
-        'meta_mensal_desejada' => 'decimal:2'
+        'meta_mensal_desejada' => 'decimal:2',
+        // Novos campos
+        'conseguiu_indicacao' => 'boolean',
+        'faturamento_valor' => 'decimal:2',
+        'faturamento_data_vencimento' => 'date',
     ];
 
     public function inscription()

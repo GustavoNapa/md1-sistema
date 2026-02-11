@@ -35,7 +35,22 @@ class SessionController extends Controller
             'status_reagendamento' => 'nullable|in:reagendado,em_processo,sem_comunicacao',
             'data_remarcada' => 'nullable|date',
             'observacoes' => 'nullable|string',
-            'resultado' => 'nullable|string'
+            'resultado' => 'nullable|string',
+            // Novos campos de implementação e desenvolvimento
+            'implementacao_fase' => 'nullable|string|in:0-25,25-50,50-75,75-100,100',
+            'impacto_faturamento' => 'nullable|string|in:sem_impacto,baixo,medio,alto,muito_alto',
+            'dificuldades_travas' => 'nullable|string',
+            'desenvolvimento_ultima_preceptoria' => 'nullable|string',
+            'avancos_importantes' => 'nullable|string',
+            'momento_depoimento' => 'nullable|string',
+            'conseguiu_indicacao' => 'nullable|boolean',
+            'detalhes_indicacao' => 'nullable|string',
+            // Campos de faturamento
+            'faturamento_mes_ano' => 'nullable|string|regex:/^\d{4}-\d{2}$/',
+            'faturamento_valor' => 'nullable|numeric|min:0',
+            'faturamento_data_vencimento' => 'nullable|date',
+            'faturamento_status' => 'nullable|string|in:pendente,pago,vencido,cancelado',
+            'faturamento_observacoes' => 'nullable|string',
         ]);
 
         $session = Session::create($validated);
@@ -65,7 +80,22 @@ class SessionController extends Controller
             'status_reagendamento' => 'nullable|in:reagendado,em_processo,sem_comunicacao',
             'data_remarcada' => 'nullable|date',
             'observacoes' => 'nullable|string',
-            'resultado' => 'nullable|string'
+            'resultado' => 'nullable|string',
+            // Novos campos de implementação e desenvolvimento
+            'implementacao_fase' => 'nullable|string|in:0-25,25-50,50-75,75-100,100',
+            'impacto_faturamento' => 'nullable|string|in:sem_impacto,baixo,medio,alto,muito_alto',
+            'dificuldades_travas' => 'nullable|string',
+            'desenvolvimento_ultima_preceptoria' => 'nullable|string',
+            'avancos_importantes' => 'nullable|string',
+            'momento_depoimento' => 'nullable|string',
+            'conseguiu_indicacao' => 'nullable|boolean',
+            'detalhes_indicacao' => 'nullable|string',
+            // Campos de faturamento
+            'faturamento_mes_ano' => 'nullable|string|regex:/^\d{4}-\d{2}$/',
+            'faturamento_valor' => 'nullable|numeric|min:0',
+            'faturamento_data_vencimento' => 'nullable|date',
+            'faturamento_status' => 'nullable|string|in:pendente,pago,vencido,cancelado',
+            'faturamento_observacoes' => 'nullable|string',
         ]);
 
         $session->update($validated);
