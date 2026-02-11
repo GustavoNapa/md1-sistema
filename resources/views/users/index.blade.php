@@ -263,6 +263,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const userModal = new bootstrap.Modal(document.getElementById('userModal'));
     const assignRoleForm = document.getElementById('assignRoleForm');
     const assignRoleModal = new bootstrap.Modal(document.getElementById('assignRoleModal'));
+    
+    // Auto-clear password_confirmation when password is cleared
+    const passwordField = document.getElementById('password');
+    const passwordConfirmationField = document.getElementById('password_confirmation');
+    
+    if (passwordField && passwordConfirmationField) {
+        passwordField.addEventListener('input', function () {
+            if (this.value === '') {
+                passwordConfirmationField.value = '';
+            }
+        });
+    }
 
     // Load roles when modals are shown
     document.getElementById('userModal').addEventListener('show.bs.modal', function () {
@@ -299,9 +311,19 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': formData.get('_token')
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            .then(response => {
+                // Log response status for debugging
+                console.log('Response Status:', response.status);
+                return response.json().then(data => ({
+                    status: response.status,
+                    data: data
+                }));
+            })
+            .then(({ status, data }) => {
+                console.log('Response Data:', data);
+                
+                // Sucesso: status 200-299 e success: true
+                if (status >= 200 && status < 300 && data.success) {
                     userModal.hide();
                     userForm.reset();
                     toastr.success(data.message || 'Usuário salvo com sucesso!', 'Sucesso');
@@ -309,18 +331,20 @@ document.addEventListener('DOMContentLoaded', function () {
                         location.reload();
                     }, 1500);
                 } else {
-                    console.error('Erro ao salvar:', data);
+                    // Erro: qualquer outro caso (422, 400, sucesso:false, etc)
+                    console.error('Erro ao salvar usuário:', data);
                     
-                    // Extrair mensagens de erro de forma amigável
                     let mensagemErro = data.message || 'Ocorreu um erro ao salvar o usuário.';
                     
-                    if (data.errors) {
+                    // Extrair erros de validação do Laravel
+                    if (data.errors && typeof data.errors === 'object') {
                         const erros = Object.values(data.errors).flat();
                         if (erros.length > 0) {
                             mensagemErro = erros.join('<br>');
                         }
                     }
                     
+                    console.log('Mensagem de erro:', mensagemErro);
                     toastr.error(mensagemErro, 'Erro ao Salvar');
                 }
             })

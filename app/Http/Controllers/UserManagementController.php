@@ -59,7 +59,7 @@ class UserManagementController extends Controller
         ]);
 
         // Atribuir cargo usando Spatie Permission
-        if (isset($request->role_id)) {
+        if (isset($request->role_id) && !empty($request->role_id)) {
             Log::info('Assigning role to user', ['role_id' => $request->role_id]);
             
             $role = \Spatie\Permission\Models\Role::findById($request->role_id);
@@ -70,19 +70,13 @@ class UserManagementController extends Controller
             Log::info('User role assigned successfully', ['user' => $user, 'role' => $role]);
         }
 
-        if ($request->expectsJson()) {
-            Log::info('Returning JSON response for user creation');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Usuário criado com sucesso!',
-                'data' => $user->load('roles')
-            ]);
-        }
-
         Log::info('User created successfully', ['user' => $user]);
 
-        return response()->json(['success' => false], 400);
+        return response()->json([
+            'success' => true,
+            'message' => 'Usuário criado com sucesso!',
+            'data' => $user->load('roles')
+        ]);
     }
 
     /**
@@ -147,15 +141,14 @@ class UserManagementController extends Controller
             // 'role_id' => $request->role_id ?? null, // Removido, Spatie Permission gerencia isso
         ];
 
-        if (!empty($validated['password']) && !empty($validated['password_confirmation'])) {
-            Log::info('Update user password data: ', ['password' => $validated['password']]);
-
+        // Only update password if provided
+        if (!empty($validated['password'])) {
+            Log::info('Updating user password');
             $updateData['password'] = Hash::make($validated['password']);
-
-            Log::info('Updated user password data: ', $updateData['password']);
         }
 
-        if (isset($request->role_id)) {
+        // Update role if provided
+        if (isset($request->role_id) && !empty($request->role_id)) {
             Log::info('Update user role data: ', ['role_id' => $request->role_id]);
 
             $role = \Spatie\Permission\Models\Role::findById($request->role_id);
@@ -170,27 +163,11 @@ class UserManagementController extends Controller
 
         Log::info('Updated user final data: ', $user->toArray());
 
-        if (!empty($validated['password']) && !empty($validated['password_confirmation'])) {
-            Log::info('Update user password data: ', ['password' => $validated['password']]);
-
-            $updateData['password'] = Hash::make($validated['password']);
-
-            Log::info('Updated user password data: ', $updateData['password']);
-        }
-
-        $user->update($updateData);
-
-        Log::info('Updated user final data: ', $user->toArray());
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Usuário atualizado com sucesso!',
-                'data' => $user->load('roles')
-            ]);
-        }
-
-        return response()->json(['success' => false], 400);
+        return response()->json([
+            'success' => true,
+            'message' => 'Usuário atualizado com sucesso!',
+            'data' => $user->load('roles')
+        ]);
     }
 
     /**
