@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_preceptor',
+        'is_vendor',
     ];
 
     /**
@@ -43,6 +45,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_preceptor' => 'boolean',
+        'is_vendor' => 'boolean',
     ];
 
 

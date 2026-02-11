@@ -14,9 +14,19 @@
                 
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="nome_preceptor" class="form-label">Nome do Preceptor *</label>
-                        <input type="text" class="form-control" name="nome_preceptor" id="nome_preceptor" required>
-                    </div>
+                            <label for="preceptor_user_id" class="form-label">Preceptor (selecionar usuário) </label>
+                            <select class="form-select mb-2" id="preceptor_user_id">
+                                <option value="">-- Nenhum (digitar manualmente) --</option>
+                                @isset($preceptorUsers)
+                                    @foreach($preceptorUsers as $u)
+                                        <option value="{{ $u->id }}">{{ $u->name }} @if($u->email) - {{ $u->email }} @endif</option>
+                                    @endforeach
+                                @endisset
+                            </select>
+                            <label for="nome_preceptor" class="form-label">Nome do Preceptor *</label>
+                            <input type="text" class="form-control" name="nome_preceptor" id="nome_preceptor" required>
+                            <input type="hidden" name="preceptor_user_id" id="preceptor_user_id_hidden" value="">
+                        </div>
                     
                     <div class="mb-3">
                         <label for="historico_preceptor" class="form-label">Histórico do Preceptor</label>
@@ -191,6 +201,20 @@
                         $('#preceptorId').val(preceptor.id);
                         $('#preceptorMethod').val('PUT');
                         $('#nome_preceptor').val(preceptor.nome_preceptor);
+                        // tentar achar usuário correspondente na lista (por nome)
+                        try {
+                            const match = Array.from(document.querySelectorAll('#preceptor_user_id option')).find(o => o.text.trim().startsWith(preceptor.nome_preceptor));
+                            if (match) {
+                                $('#preceptor_user_id').val(match.value);
+                                $('#preceptor_user_id_hidden').val(match.value);
+                            } else {
+                                $('#preceptor_user_id').val('');
+                                $('#preceptor_user_id_hidden').val('');
+                            }
+                        } catch (e) {
+                            $('#preceptor_user_id').val('');
+                            $('#preceptor_user_id_hidden').val('');
+                        }
                         $('#historico_preceptor').val(preceptor.historico_preceptor);
                         $('#data_preceptor_informado').val(preceptor.data_preceptor_informado);
                         $('#data_preceptor_contato').val(preceptor.data_preceptor_contato);
@@ -215,5 +239,19 @@
                     alert('Erro ao carregar dados do preceptor');
                 });
         }
+        // sincronizar select -> input de nome
+        $('#preceptor_user_id').on('change', function() {
+            const uid = $(this).val();
+            if (!uid) {
+                $('#preceptor_user_id_hidden').val('');
+                return;
+            }
+            // buscar nome no option e setar no input
+            const txt = $(this).find('option:selected').text();
+            // remover email se presente
+            const name = txt.split(' - ')[0].trim();
+            $('#nome_preceptor').val(name);
+            $('#preceptor_user_id_hidden').val(uid);
+        });
     </script>
 @endpush

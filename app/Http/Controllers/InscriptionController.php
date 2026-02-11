@@ -576,6 +576,24 @@ class InscriptionController extends Controller
     {
         $clients = Client::where("active", true)->orderBy("name")->get();
         $vendors = Vendor::where("active", true)->orderBy("name")->get();
+        // Incluir usuários marcados como vendor na lista de vendedores (cria Vendor quando necessário)
+        try {
+            $vendorUsers = \App\Models\User::where('is_vendor', true)->orderBy('name')->get();
+            foreach ($vendorUsers as $u) {
+                // preferir encontrar por email quando disponível, senão por nome
+                $criteria = $u->email ? ['email' => $u->email] : ['name' => $u->name];
+                $v = Vendor::firstOrCreate($criteria, ['name' => $u->name, 'phone' => $u->phone ?? null, 'active' => true]);
+                // garantir que está na coleção
+                if (!$vendors->contains('id', $v->id)) {
+                    $vendors->push($v);
+                }
+            }
+            // ordenar novamente
+            $vendors = $vendors->sortBy('name')->values();
+        } catch (\Exception $e) {
+            // se algo falhar aqui, não quebremos o formulário; só ignorar
+            \Illuminate\Support\Facades\Log::warning('Could not merge vendor users: ' . $e->getMessage());
+        }
         $products = Product::where("is_active", true)->orderBy("name")->get();
         $entryChannels = \App\Models\EntryChannel::all();
         $paymentPlatforms = \App\Models\PaymentPlatform::all();
@@ -914,7 +932,9 @@ class InscriptionController extends Controller
             "documents"
         ]);
         $achievementTypes = \App\Models\AchievementType::all();
-        return view("inscriptions.show", compact("inscription", "achievementTypes"));
+        // passar lista de usuários marcados como preceptor para o modal
+        $preceptorUsers = \App\Models\User::where('is_preceptor', true)->orderBy('name')->get();
+        return view("inscriptions.show", compact("inscription", "achievementTypes", "preceptorUsers"));
     }
 
     /**
@@ -924,6 +944,20 @@ class InscriptionController extends Controller
     {
         $clients = Client::where("active", true)->orderBy("name")->get();
         $vendors = Vendor::where("active", true)->orderBy("name")->get();
+        // incluir usuários marcados como vendor (cria Vendor quando necessário)
+        try {
+            $vendorUsers = \App\Models\User::where('is_vendor', true)->orderBy('name')->get();
+            foreach ($vendorUsers as $u) {
+                $criteria = $u->email ? ['email' => $u->email] : ['name' => $u->name];
+                $v = Vendor::firstOrCreate($criteria, ['name' => $u->name, 'phone' => $u->phone ?? null, 'active' => true]);
+                if (!$vendors->contains('id', $v->id)) {
+                    $vendors->push($v);
+                }
+            }
+            $vendors = $vendors->sortBy('name')->values();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Could not merge vendor users on edit: ' . $e->getMessage());
+        }
         $products = Product::where("is_active", true)->orderBy("name")->get();
         $entryChannels = \App\Models\EntryChannel::all();
 
