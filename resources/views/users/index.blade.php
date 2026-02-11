@@ -311,19 +311,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': formData.get('_token')
                 }
             })
-            .then(response => {
-                // Log response status for debugging
-                console.log('Response Status:', response.status);
-                return response.json().then(data => ({
-                    status: response.status,
-                    data: data
-                }));
+            .then(async (response) => {
+                const status = response.status;
+                let data;
+                
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    console.error('Erro ao fazer parse JSON:', e);
+                    throw new Error('Resposta inválida do servidor');
+                }
+                
+                return { status, data };
             })
             .then(({ status, data }) => {
-                console.log('Response Data:', data);
-                
                 // Sucesso: status 200-299 e success: true
                 if (status >= 200 && status < 300 && data.success) {
+                    console.log('✓ Usuário salvo com sucesso');
                     userModal.hide();
                     userForm.reset();
                     toastr.success(data.message || 'Usuário salvo com sucesso!', 'Sucesso');
@@ -331,9 +335,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         location.reload();
                     }, 1500);
                 } else {
-                    // Erro: qualquer outro caso (422, 400, sucesso:false, etc)
-                    console.error('Erro ao salvar usuário:', data);
-                    
+                    // Erro: qualquer outro caso (422, 400, etc)
                     let mensagemErro = data.message || 'Ocorreu um erro ao salvar o usuário.';
                     
                     // Extrair erros de validação do Laravel
@@ -344,13 +346,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                     
-                    console.log('Mensagem de erro:', mensagemErro);
+                    console.error('✗ Erro ao salvar:', mensagemErro);
                     toastr.error(mensagemErro, 'Erro ao Salvar');
                 }
             })
             .catch(error => {
-                console.error('Erro na requisição AJAX:', error);
-                toastr.error('Não foi possível conectar ao servidor. Tente novamente.', 'Erro de Conexão');
+                console.error('✗ Erro na requisição:', error.message, error);
+                toastr.error(
+                    error.message || 'Não foi possível conectar ao servidor. Tente novamente.',
+                    'Erro de Conexão'
+                );
             })
             .finally(() => {
                 submitBtn.disabled = false;
