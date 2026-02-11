@@ -43,8 +43,8 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'is_preceptor' => 'boolean',
-            'is_vendor' => 'boolean',
+            'is_preceptor' => 'nullable|boolean',
+            'is_vendor' => 'nullable|boolean',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
@@ -54,8 +54,8 @@ class UserManagementController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'is_preceptor' => $validated['is_preceptor'] ?? false,
-            'is_vendor' => $validated['is_vendor'] ?? false,
+            'is_preceptor' => (bool) ($validated['is_preceptor'] ?? false),
+            'is_vendor' => (bool) ($validated['is_vendor'] ?? false),
         ]);
 
         // Atribuir cargo usando Spatie Permission
@@ -132,8 +132,8 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'is_preceptor' => 'boolean',
-            'is_vendor' => 'boolean',
+            'is_preceptor' => 'nullable|boolean',
+            'is_vendor' => 'nullable|boolean',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
@@ -142,10 +142,18 @@ class UserManagementController extends Controller
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'is_preceptor' => $validated['is_preceptor'] ?? false,
-            'is_vendor' => $validated['is_vendor'] ?? false,
+            'is_preceptor' => (bool) ($validated['is_preceptor'] ?? false),
+            'is_vendor' => (bool) ($validated['is_vendor'] ?? false),
             // 'role_id' => $request->role_id ?? null, // Removido, Spatie Permission gerencia isso
         ];
+
+        if (!empty($validated['password']) && !empty($validated['password_confirmation'])) {
+            Log::info('Update user password data: ', ['password' => $validated['password']]);
+
+            $updateData['password'] = Hash::make($validated['password']);
+
+            Log::info('Updated user password data: ', $updateData['password']);
+        }
 
         if (isset($request->role_id)) {
             Log::info('Update user role data: ', ['role_id' => $request->role_id]);
@@ -157,6 +165,10 @@ class UserManagementController extends Controller
 
             Log::info('Updated user role data: ', $role ? $role->toArray() : null);
         }
+
+        $user->update($updateData);
+
+        Log::info('Updated user final data: ', $user->toArray());
 
         if (!empty($validated['password']) && !empty($validated['password_confirmation'])) {
             Log::info('Update user password data: ', ['password' => $validated['password']]);

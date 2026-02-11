@@ -127,8 +127,6 @@
                 @csrf
                 <input type="hidden" id="user_id" name="user_id">
                 <input type="hidden" id="form_method" name="_method" value="POST">
-                <input type="hidden" id="is_preceptor_value" name="is_preceptor" value="0">
-                <input type="hidden" id="is_vendor_value" name="is_vendor" value="0">
                 
                 
                 <div class="modal-body">
@@ -280,16 +278,17 @@ document.addEventListener('DOMContentLoaded', function () {
         userForm.addEventListener('submit', function (event) {
             event.preventDefault();
 
-            // Sincronizar valores dos checkboxes com os hidden inputs
-            document.getElementById('is_preceptor_value').value = document.getElementById('is_preceptor').checked ? '1' : '0';
-            document.getElementById('is_vendor_value').value = document.getElementById('is_vendor').checked ? '1' : '0';
-
             const submitBtn = userForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...';
 
             const formData = new FormData(userForm);
+            
+            // Garantir que checkboxes sejam enviadas (mesmo desmarcadas)
+            formData.set('is_preceptor', document.getElementById('is_preceptor').checked ? '1' : '0');
+            formData.set('is_vendor', document.getElementById('is_vendor').checked ? '1' : '0');
+            
             const url = userForm.action;
 
             fetch(url, {
@@ -308,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     location.reload();
                     alert(data.message);
                 } else {
+                    console.error('Erro ao salvar:', data);
                     alert('Ocorreu um erro ao salvar o usuário.');
                 }
             })
@@ -374,6 +374,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function loadRoles(selectId) {
     const select = document.getElementById(selectId);
+    const currentValue = select.value; // Recordar o valor selecionado
     select.innerHTML = '<option value="">Carregando...</option>';
 
     fetch('/roles', {
@@ -381,14 +382,18 @@ function loadRoles(selectId) {
     })
     .then(response => response.json())
     .then(roles => {
-        let options = '<option value=\"\">Selecione um cargo</option>';
+        let options = '<option value="">Selecione um cargo</option>';
         roles.forEach(role => {
-            options += `<option value=\"${role.id}\">${role.name}</option>`;
+            options += `<option value="${role.id}">${role.name}</option>`;
         });
         select.innerHTML = options;
+        // Restaurar o valor que estava selecionado
+        if (currentValue) {
+            select.value = currentValue;
+        }
     })
     .catch(() => {
-        select.innerHTML = '<option value=\"\">Erro ao carregar cargos</option>';
+        select.innerHTML = '<option value="">Erro ao carregar cargos</option>';
     });
 }
 
@@ -404,7 +409,6 @@ function editUser(id) {
             document.getElementById('user_id').value = data.data.id;
             document.getElementById('name').value = data.data.name;
             document.getElementById('email').value = data.data.email;
-            document.getElementById('role_id').value = data.data.role_id || '';
             document.getElementById('is_preceptor').checked = data.data.is_preceptor || false;
             document.getElementById('is_vendor').checked = data.data.is_vendor || false;
             document.getElementById('form_method').value = 'PUT';
@@ -419,6 +423,16 @@ function editUser(id) {
             
             const modal = new bootstrap.Modal(document.getElementById('userModal'));
             modal.show();
+            
+            // Aguardar o modal ser totalmente exibido antes de setar o role_id
+            document.getElementById('userModal').addEventListener('shown.bs.modal', function setRoleAfterModal() {
+                // Pequeno delay para garantir que o loadRoles já terminou
+                setTimeout(() => {
+                    document.getElementById('role_id').value = data.data.role_id || '';
+                }, 200);
+                // Remover o listener após usar uma única vez
+                document.getElementById('userModal').removeEventListener('shown.bs.modal', setRoleAfterModal);
+            }, { once: true });
         }
     })
     .catch(error => {
