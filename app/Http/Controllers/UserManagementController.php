@@ -43,6 +43,8 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'is_preceptor' => 'boolean',
+            'is_vendor' => 'boolean',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
@@ -52,6 +54,8 @@ class UserManagementController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'is_preceptor' => $validated['is_preceptor'] ?? false,
+            'is_vendor' => $validated['is_vendor'] ?? false,
         ]);
 
         // Atribuir cargo usando Spatie Permission
@@ -96,6 +100,8 @@ class UserManagementController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'role_id' => $user->role ? $user->role->id : null,
+                    'is_preceptor' => $user->is_preceptor,
+                    'is_vendor' => $user->is_vendor,
                     // Adicione outros campos necessários
                 ]
             ]);
@@ -126,6 +132,8 @@ class UserManagementController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
+            'is_preceptor' => 'boolean',
+            'is_vendor' => 'boolean',
             // 'role_id' => 'nullable|exists:roles,id', // Removido, Spatie Permission gerencia isso
         ]);
 
@@ -134,6 +142,8 @@ class UserManagementController extends Controller
         $updateData = [
             'name' => $validated['name'],
             'email' => $validated['email'],
+            'is_preceptor' => $validated['is_preceptor'] ?? false,
+            'is_vendor' => $validated['is_vendor'] ?? false,
             // 'role_id' => $request->role_id ?? null, // Removido, Spatie Permission gerencia isso
         ];
 

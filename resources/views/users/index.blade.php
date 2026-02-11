@@ -127,6 +127,9 @@
                 @csrf
                 <input type="hidden" id="user_id" name="user_id">
                 <input type="hidden" id="form_method" name="_method" value="POST">
+                <input type="hidden" id="is_preceptor_value" name="is_preceptor" value="0">
+                <input type="hidden" id="is_vendor_value" name="is_vendor" value="0">
+                
                 
                 <div class="modal-body">
                     <div class="mb-3">
@@ -182,6 +185,29 @@
                             </span>
                         @enderror
                         <div class="form-text">Deixe em branco se não quiser atribuir um cargo agora</div>
+                    </div>
+                    
+                    <hr class="my-3">
+                    <h6 class="mb-3">Flags Funcionais</h6>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_preceptor" name="is_preceptor" value="1">
+                            <label class="form-check-label" for="is_preceptor">
+                                É Preceptor
+                            </label>
+                            <div class="form-text">Marque se este usuário é um preceptor e deverá aparecer na lista de preceptores</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_vendor" name="is_vendor" value="1">
+                            <label class="form-check-label" for="is_vendor">
+                                É Vendedor
+                            </label>
+                            <div class="form-text">Marque se este usuário é um vendedor e deverá aparecer na lista de vendedores</div>
+                        </div>
                     </div>
                 </div>
                 
@@ -253,6 +279,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (userForm) {
         userForm.addEventListener('submit', function (event) {
             event.preventDefault();
+
+            // Sincronizar valores dos checkboxes com os hidden inputs
+            document.getElementById('is_preceptor_value').value = document.getElementById('is_preceptor').checked ? '1' : '0';
+            document.getElementById('is_vendor_value').value = document.getElementById('is_vendor').checked ? '1' : '0';
 
             const submitBtn = userForm.querySelector('button[type="submit"]');
             const originalBtnText = submitBtn.innerHTML;
@@ -331,6 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
         userForm.reset();
         document.getElementById('user_id').value = '';
         document.getElementById('form_method').value = 'POST';
+        document.getElementById('is_preceptor').checked = false;
+        document.getElementById('is_vendor').checked = false;
         userForm.action = '{{ route("users.store") }}';
         document.getElementById('userModalLabel').textContent = 'Novo Usuário';
         document.getElementById('password').required = true;
@@ -373,6 +405,8 @@ function editUser(id) {
             document.getElementById('name').value = data.data.name;
             document.getElementById('email').value = data.data.email;
             document.getElementById('role_id').value = data.data.role_id || '';
+            document.getElementById('is_preceptor').checked = data.data.is_preceptor || false;
+            document.getElementById('is_vendor').checked = data.data.is_vendor || false;
             document.getElementById('form_method').value = 'PUT';
             document.getElementById('userForm').action = `/users/${id}`;
             document.getElementById('userModalLabel').textContent = 'Editar Usuário';
