@@ -14,9 +14,9 @@
                 
                 <div class="modal-body">
                     <div class="mb-3">
-                            <label for="preceptor_user_id" class="form-label">Preceptor (selecionar usuário) </label>
-                            <select class="form-select mb-2" id="preceptor_user_id">
-                                <option value="">-- Nenhum (digitar manualmente) --</option>
+                            <label for="preceptor_user_id" class="form-label">Preceptor (selecionar usuário) *</label>
+                            <select class="form-select mb-2" id="preceptor_user_id" required>
+                                <option value="">Selecionar *</option>
                                 @isset($preceptorUsers)
                                     @foreach($preceptorUsers as $u)
                                         <option value="{{ $u->id }}">{{ $u->name }} @if($u->email) - {{ $u->email }} @endif</option>
