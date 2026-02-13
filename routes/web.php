@@ -17,6 +17,7 @@ use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\ZapsignController;
 use App\Http\Controllers\EntryChannelController;
 use App\Http\Controllers\AchievementTypeController;
+use App\Http\Controllers\QuizResponseController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WhatsappController;
@@ -100,6 +101,11 @@ Route::middleware("auth")->group(function () {
     Route::resource("inscriptions", InscriptionController::class);
     Route::post("/inscriptions/columns", [InscriptionController::class, "saveColumnPreferences"])->name("inscriptions.columns");
     Route::get("/api/inscriptions/kanban", [InscriptionController::class, "kanbanData"])->name("inscriptions.kanban-data");
+    
+    // Rotas de Testes DISC
+    Route::get("/quiz-responses", [QuizResponseController::class, "index"])->name("quiz-responses.index");
+    Route::get("/quiz-responses/{quizResponse}", [QuizResponseController::class, "show"])->name("quiz-responses.show");
+    Route::get("/quiz-responses/{quizResponse}/download", [QuizResponseController::class, "downloadReport"])->name("quiz-responses.download");
     
     // Rotas de Importação
     Route::get("/import", [ImportController::class, "index"])->name("import.index");

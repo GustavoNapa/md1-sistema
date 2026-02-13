@@ -28,6 +28,12 @@ return [
             'icon' => 'fas fa-file-signature',
         ],
         [
+            'name' => 'Testes DISC',
+            'route' => 'quiz-responses.index',
+            'permission' => 'quiz-responses.index',
+            'icon' => 'fas fa-chart-pie',
+        ],
+        [
             'name' => 'Importação',
             'route' => 'import.index',
             'permission' => 'import.index',
