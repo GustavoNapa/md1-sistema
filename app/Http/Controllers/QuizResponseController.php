@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\QuizResponse;
+use App\Services\DISCReportGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QuizResponseController extends Controller
 {
@@ -22,14 +25,19 @@ class QuizResponseController extends Controller
         // Busca por nome ou email
         if ($search = $request->input('q')) {
             $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                // Buscar por email
+                $q->where('email', 'like', "%{$search}%");
+                
+                // Buscar por nome se existir dados
+                if ($q->getConnection()->getSchemaBuilder()->hasColumn('quiz_responses', 'name')) {
+                    $q->orWhere('name', 'like', "%{$search}%");
+                }
             });
         }
 
         // Filtro por perfil dominante
         if ($profile = $request->input('profile')) {
-            $query->whereRaw("JSON_EXTRACT(summary, '$.ordenacao[0]') = ?", [$profile]);
+            $query->whereRaw("JSON_EXTRACT(summary, '$.ordered[0].profile') = ?", [$profile]);
         }
 
         // Ordenação
@@ -41,6 +49,12 @@ class QuizResponseController extends Controller
                 break;
             case 'name_desc':
                 $query->orderBy('name', 'desc');
+                break;
+            case 'email_asc':
+                $query->orderBy('email', 'asc');
+                break;
+            case 'email_desc':
+                $query->orderBy('email', 'desc');
                 break;
             case 'created_at_asc':
                 $query->orderBy('created_at', 'asc');
@@ -87,19 +101,98 @@ class QuizResponseController extends Controller
      */
     public function downloadReport(QuizResponse $quizResponse)
     {
-        // Se tiver report_html salvo, usa ele
-        if ($quizResponse->report_html) {
-            $html = $quizResponse->report_html;
-        } else {
-            // Gera relatório dinamicamente
-            $html = $this->generateReportHtml($quizResponse);
+        $generator = new DISCReportGenerator();
+
+        // Preparar dados do summary
+        $summary = $quizResponse->summary ?? [];
+        
+        // Converter para formato esperado pelo generator se necessário
+        if (!isset($summary['counts']) || !isset($summary['perc'])) {
+            // Se não tiver o formato completo, tenta extrair do que tiver
+            $summary = [
+                'counts' => $summary['counts'] ?? [],
+                'perc' => $summary['perc'] ?? [],
+                'ordered' => $summary['ordered'] ?? [],
+            ];
         }
+
+        // Gerar relatório
+        $report = $generator->generate($summary);
         
-        $filename = $quizResponse->report_filename ?: 'relatorio-disc-' . $quizResponse->id;
-        
-        return response($html)
-            ->header('Content-Type', 'text/html; charset=UTF-8')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '.html"');
+        // Gerar HTML
+        $html = $generator->generateHTML(
+            $report,
+            $quizResponse->name ?? 'Respondente',
+            $quizResponse->email ?? null,
+            $quizResponse->response_time_minutes ?? null
+        );
+
+        // Converter para PDF
+        $pdf = Pdf::loadHTML($html)
+            ->setPaper('a4', 'portrait')
+            ->setOption('margin-top', 0)
+            ->setOption('margin-bottom', 0)
+            ->setOption('margin-left', 0)
+            ->setOption('margin-right', 0);
+
+        $filename = 'relatorio-disc-' . ($quizResponse->name ? str_slug($quizResponse->name) : $quizResponse->id) . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Download PDF from external DISC system (Sistema A)
+     */
+    public function downloadReportFromExternal(Request $request)
+    {
+        // Validação
+        $request->validate([
+            'id' => 'required|integer',
+        ]);
+
+        $externalId = $request->get('id');
+
+        try {
+            // Conectar ao banco externo e puxar dados
+            $externalData = DB::connection('disc_external')
+                ->table('quiz_responses')
+                ->where('id', $externalId)
+                ->select('id', 'name', 'email', 'summary', 'response_time_minutes')
+                ->first();
+
+            if (!$externalData) {
+                return back()->with('error', 'Registro não encontrado no banco externo');
+            }
+
+            // Converter summary de JSON para array se necessário
+            $summary = is_string($externalData->summary) 
+                ? json_decode($externalData->summary, true) 
+                : (array)$externalData->summary;
+
+            // Gerar PDF
+            $generator = new DISCReportGenerator();
+            $report = $generator->generate($summary);
+            
+            $html = $generator->generateHTML(
+                $report,
+                $externalData->name ?? 'Respondente',
+                $externalData->email ?? null,
+                $externalData->response_time_minutes ?? null
+            );
+
+            $pdf = Pdf::loadHTML($html)
+                ->setPaper('a4', 'portrait')
+                ->setOption('margin-top', 0)
+                ->setOption('margin-bottom', 0)
+                ->setOption('margin-left', 0)
+                ->setOption('margin-right', 0);
+
+            $filename = 'relatorio-disc-' . ($externalData->name ? str_slug($externalData->name) : $externalId) . '.pdf';
+
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erro ao gerar relatório: ' . $e->getMessage());
+        }
     }
     
     /**

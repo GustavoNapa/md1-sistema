@@ -79,4 +79,12 @@ class QuizResponse extends Model
 
         return $this->summary['ordered'];
     }
+
+    /**
+     * Get formatted response time
+     */
+    public function getResponseTimeMinutesAttribute($value)
+    {
+        return $value !== null ? (int)$value : null;
+    }
 }

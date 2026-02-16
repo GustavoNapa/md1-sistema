@@ -31,7 +31,13 @@
                                     </tr>
                                     <tr>
                                         <th>Tempo de Resposta:</th>
-                                        <td>{{ $quizResponse->response_time_minutes ?? '-' }} minutos</td>
+                                        <td>
+                                            @if($quizResponse->response_time_minutes)
+                                                <strong>{{ $quizResponse->response_time_minutes }}</strong> minutos
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

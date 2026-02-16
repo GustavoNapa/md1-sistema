@@ -106,6 +106,7 @@ Route::middleware("auth")->group(function () {
     Route::get("/quiz-responses", [QuizResponseController::class, "index"])->name("quiz-responses.index");
     Route::get("/quiz-responses/{quizResponse}", [QuizResponseController::class, "show"])->name("quiz-responses.show");
     Route::get("/quiz-responses/{quizResponse}/download", [QuizResponseController::class, "downloadReport"])->name("quiz-responses.download");
+    Route::post("/quiz-responses/external/download", [QuizResponseController::class, "downloadReportFromExternal"])->name("quiz-responses.download-external");
     
     // Rotas de Importação
     Route::get("/import", [ImportController::class, "index"])->name("import.index");
